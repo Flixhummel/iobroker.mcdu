@@ -129,10 +129,11 @@ function validateColor(color) {
 }
 
 /**
- * Build MQTT topic with prefix
+ * Build MQTT topic with prefix and deviceId
+ * Format: mcdu/{deviceId}/{suffix}
  */
 function topic(suffix) {
-  return `${CONFIG.mqtt.topicPrefix}/${suffix}`;
+  return `${CONFIG.mqtt.topicPrefix}/${CONFIG.mqtt.clientId}/${suffix}`;
 }
 
 // ============================================================================

@@ -155,14 +155,15 @@ class McduAdapter extends utils.Adapter {
             
             this.log.debug('Timeout check interval started');
             
-            // Phase 3.7: Subscribe to device announcements
+            // Phase 3.7: Subscribe to device announcements (all devices)
             this.log.debug('Subscribing to device announcements...');
-            await this.mqttClient.subscribe('status/announce', (topic, message) => {
+            // Wildcard pattern: mcdu/+/status/announce
+            await this.mqttClient.subscribe('+/status/announce', (topic, message) => {
                 this.handleDeviceAnnouncement(message).catch(error => {
                     this.log.error(`Failed to handle device announcement: ${error.message}`);
                 });
             });
-            this.log.info('✅ Device announcement subscription active');
+            this.log.info('✅ Device announcement subscription active (all devices)');
             
             // Phase 4: Setup button event handling
             this.log.debug('Setting up button event handling...');
