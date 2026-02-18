@@ -1,0 +1,309 @@
+{
+  "common": {
+    "name": "mcdu",
+    "version": "1.1.0",
+    "news": {
+      "1.1.0": {
+        "en": "Phase 4.1: Added 32 automation states for external control (LEDs, notifications, navigation, buttons, runtime monitoring)",
+        "de": "Phase 4.1: 32 Automatisierungs-States hinzugefügt für externe Steuerung (LEDs, Benachrichtigungen, Navigation, Tasten, Laufzeit-Überwachung)"
+      },
+      "1.0.0": {
+        "en": "Production release - Complete Phase 1-4 implementation with admin UI and comprehensive documentation",
+        "de": "Produktions-Release - Vollständige Phase 1-4 Implementierung mit Admin UI und umfassender Dokumentation"
+      },
+      "0.1.0": {
+        "en": "Initial release - Phase 1 foundation",
+        "de": "Erstveröffentlichung - Phase 1 Grundlage"
+      }
+    },
+    "title": "MCDU Smart Home Control",
+    "titleLang": {
+      "en": "MCDU Smart Home Control",
+      "de": "MCDU Smart Home Steuerung"
+    },
+    "desc": {
+      "en": "Control your smart home with WINWING MCDU hardware via MQTT",
+      "de": "Steuern Sie Ihr Smart Home mit WINWING MCDU Hardware über MQTT"
+    },
+    "authors": [
+      "Kira Holt <kiraholtvi@gmail.com>"
+    ],
+    "keywords": [
+      "MCDU",
+      "smart home",
+      "aviation",
+      "MQTT",
+      "display"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "hardware",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "push",
+    "tier": 3,
+    "icon": "mcdu.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/kiraholt/iobroker.mcdu/main/admin/mcdu.png",
+    "readme": "https://github.com/kiraholt/iobroker.mcdu/blob/main/README.md",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=3.3.22"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=5.0.0"
+      }
+    ]
+  },
+  "native": {
+    "mqtt": {
+      "broker": "10.10.5.149",
+      "port": 1883,
+      "username": "iobroker",
+      "password": "",
+      "topicPrefix": "mcdu"
+    },
+    "display": {
+      "columns": 24,
+      "rows": 14,
+      "defaultColor": "white"
+    },
+    "performance": {
+      "renderThrottle": 100,
+      "maxQueueSize": 100
+    },
+    "debug": {
+      "enabled": false,
+      "logMqtt": false
+    },
+    "pages": [
+      {
+        "id": "home-main",
+        "name": "Hauptmenü",
+        "parent": null,
+        "lines": [
+          {
+            "row": 1,
+            "leftButton": {
+              "type": "navigation",
+              "action": "goto",
+              "target": "lights-main",
+              "label": "LIGHTS"
+            },
+            "display": {
+              "type": "label",
+              "label": "BELEUCHTUNG",
+              "color": "white",
+              "align": "left"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 2,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 3,
+            "leftButton": {
+              "type": "navigation",
+              "action": "goto",
+              "target": "climate-main",
+              "label": "CLIMATE"
+            },
+            "display": {
+              "type": "label",
+              "label": "KLIMA",
+              "color": "white",
+              "align": "left"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 4,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 5,
+            "leftButton": {
+              "type": "navigation",
+              "action": "goto",
+              "target": "status-main",
+              "label": "STATUS"
+            },
+            "display": {
+              "type": "label",
+              "label": "SYSTEM STATUS",
+              "color": "white",
+              "align": "left"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 6,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 7,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 8,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 9,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 10,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 11,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 12,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 13,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "empty"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          },
+          {
+            "row": 14,
+            "leftButton": {
+              "type": "empty"
+            },
+            "display": {
+              "type": "label",
+              "label": "____________________",
+              "color": "white",
+              "align": "left"
+            },
+            "rightButton": {
+              "type": "empty"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "MQTT Connection",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
+}

@@ -1,0 +1,426 @@
+{
+  "name": "Climate Control",
+  "description": "Multi-room temperature monitoring and control with editable setpoints",
+  "version": "1.0.0",
+  "author": "Kira Holt",
+  "preview": null,
+  "pages": [
+    {
+      "id": "climate-main",
+      "name": "Klima Übersicht",
+      "parent": null,
+      "icon": "thermostat",
+      "lines": [
+        {
+          "row": 1,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "label",
+            "label": "CLIMATE CONTROL",
+            "color": "green",
+            "align": "center"
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 2,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "empty"
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 3,
+          "leftButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-living",
+            "label": "WOHN"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Living",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "left",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 4,
+          "leftButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-bedroom",
+            "label": "SCHLAF"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Bedroom",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "left",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 5,
+          "leftButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-kitchen",
+            "label": "KÜCHE"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Kitchen",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "left",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 6,
+          "leftButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-bathroom",
+            "label": "BAD"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Bathroom",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "left",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        }
+      ]
+    },
+    {
+      "id": "climate-living",
+      "name": "Klima Wohnzimmer",
+      "parent": "climate-main",
+      "icon": "thermostat",
+      "lines": [
+        {
+          "row": 1,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "label",
+            "label": "LIVING ROOM",
+            "color": "green",
+            "align": "center"
+          },
+          "rightButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-main",
+            "label": "ZURÜCK"
+          }
+        },
+        {
+          "row": 2,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "empty"
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 3,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Current",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "right",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 4,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Setpoint",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "amber",
+            "align": "right",
+            "editable": true,
+            "inputType": "numeric",
+            "validation": {
+              "min": 15.0,
+              "max": 28.0,
+              "step": 0.5
+            }
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 5,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Humidity",
+            "source": "",
+            "format": "%d%%",
+            "unit": "%",
+            "color": "cyan",
+            "align": "right",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 6,
+          "leftButton": {
+            "type": "datapoint",
+            "action": "toggle",
+            "target": "",
+            "label": "MODE"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Heating Mode",
+            "source": "",
+            "format": "%s",
+            "color": "white",
+            "align": "left",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        }
+      ]
+    },
+    {
+      "id": "climate-bedroom",
+      "name": "Klima Schlafzimmer",
+      "parent": "climate-main",
+      "icon": "thermostat",
+      "lines": [
+        {
+          "row": 1,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "label",
+            "label": "BEDROOM",
+            "color": "green",
+            "align": "center"
+          },
+          "rightButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-main",
+            "label": "ZURÜCK"
+          }
+        },
+        {
+          "row": 2,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "empty"
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 3,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Current",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "right",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        },
+        {
+          "row": 4,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Setpoint",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "amber",
+            "align": "right",
+            "editable": true,
+            "inputType": "numeric",
+            "validation": {
+              "min": 15.0,
+              "max": 28.0,
+              "step": 0.5
+            }
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        }
+      ]
+    },
+    {
+      "id": "climate-kitchen",
+      "name": "Klima Küche",
+      "parent": "climate-main",
+      "icon": "thermostat",
+      "lines": [
+        {
+          "row": 1,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "label",
+            "label": "KITCHEN",
+            "color": "green",
+            "align": "center"
+          },
+          "rightButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-main",
+            "label": "ZURÜCK"
+          }
+        },
+        {
+          "row": 3,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Current",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "right",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        }
+      ]
+    },
+    {
+      "id": "climate-bathroom",
+      "name": "Klima Badezimmer",
+      "parent": "climate-main",
+      "icon": "thermostat",
+      "lines": [
+        {
+          "row": 1,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "label",
+            "label": "BATHROOM",
+            "color": "green",
+            "align": "center"
+          },
+          "rightButton": {
+            "type": "navigation",
+            "action": "goto",
+            "target": "climate-main",
+            "label": "ZURÜCK"
+          }
+        },
+        {
+          "row": 3,
+          "leftButton": {
+            "type": "empty"
+          },
+          "display": {
+            "type": "datapoint",
+            "label": "Current",
+            "source": "",
+            "format": "%.1f°C",
+            "unit": "°C",
+            "color": "white",
+            "align": "right",
+            "editable": false
+          },
+          "rightButton": {
+            "type": "empty"
+          }
+        }
+      ]
+    }
+  ]
+}

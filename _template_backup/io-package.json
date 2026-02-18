@@ -1,0 +1,110 @@
+{
+    "common": {
+        "name": "mcdu",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "MCDU",
+            "de": "MCDU",
+            "ru": "МКДУ",
+            "pt": "MCDU",
+            "nl": "MCDU",
+            "fr": "MCDU",
+            "it": "MCDU",
+            "es": "MCDU",
+            "pl": "MCDU",
+            "uk": "MCDU",
+            "zh-cn": "MCDU"
+        },
+        "desc": {
+            "en": "control your smarthome with airline mcdu",
+            "de": "Steuern Sie Ihr Smarthome mit Airline McDu",
+            "ru": "управляйте своим умным домом с помощью авиакомпании mcdu",
+            "pt": "controle seu smarthome com a companhia aérea mcdu",
+            "nl": "bedien uw smarthome met luchtvaartmaatschappij mcdu",
+            "fr": "contrôlez votre maison intelligente avec la compagnie aérienne mcdu",
+            "it": "controlla la tua casa intelligente con la compagnia aerea mcdu",
+            "es": "controle su hogar inteligente con mcdu de aerolínea",
+            "pl": "kontroluj swój smarthome za pomocą linii lotniczej mcdu",
+            "uk": "керуйте своїм розумним будинком за допомогою авіакомпанії mcdu",
+            "zh-cn": "使用航空公司 Mcdu 控制您的智能家居"
+        },
+        "authors": [
+            "Flixhummel <hummelimages@googlemail.com>"
+        ],
+        "keywords": [
+            "mcdu cockpit smarthome"
+        ],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "mcdu.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/Flixhummel/ioBroker.mcdu/main/admin/mcdu.png",
+        "readme": "https://github.com/Flixhummel/ioBroker.mcdu/blob/main/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "visualization",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.0.23"
+            }
+        ]
+    },
+    "native": {
+        "option1": true,
+        "option2": "42"
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}

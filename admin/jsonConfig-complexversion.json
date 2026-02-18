@@ -1,0 +1,530 @@
+{
+  "i18n": true,
+  "type": "tabs",
+  "items": {
+    "generalTab": {
+      "type": "panel",
+      "label": "General Settings",
+      "icon": "settings",
+      "items": {
+        "mqttSettings": {
+          "type": "panel",
+          "label": "MQTT Connection",
+          "items": {
+            "mqtt.broker": {
+              "type": "text",
+              "label": "Broker Address",
+              "placeholder": "10.10.5.149",
+              "default": "10.10.5.149",
+              "sm": 12,
+              "md": 6
+            },
+            "mqtt.port": {
+              "type": "number",
+              "label": "Port",
+              "default": 1883,
+              "min": 1,
+              "max": 65535,
+              "sm": 12,
+              "md": 6
+            },
+            "mqtt.username": {
+              "type": "text",
+              "label": "Username",
+              "default": "iobroker",
+              "sm": 12,
+              "md": 6
+            },
+            "mqtt.password": {
+              "type": "password",
+              "label": "Password",
+              "sm": 12,
+              "md": 6
+            },
+            "mqtt.topicPrefix": {
+              "type": "text",
+              "label": "Topic Prefix",
+              "default": "mcdu",
+              "pattern": "^[a-z0-9/-]+$",
+              "help": "MQTT topic prefix (lowercase, numbers, dashes, slashes only)",
+              "sm": 12,
+              "md": 6
+            }
+          }
+        },
+        "_divider1": {
+          "type": "divider"
+        },
+        "displaySettings": {
+          "type": "panel",
+          "label": "Display Settings",
+          "items": {
+            "display.columns": {
+              "type": "number",
+              "label": "Columns",
+              "default": 24,
+              "disabled": true,
+              "help": "Fixed by hardware",
+              "sm": 12,
+              "md": 4
+            },
+            "display.rows": {
+              "type": "number",
+              "label": "Rows",
+              "default": 14,
+              "disabled": true,
+              "help": "Fixed by hardware",
+              "sm": 12,
+              "md": 4
+            },
+            "display.defaultColor": {
+              "type": "select",
+              "label": "Default Color",
+              "options": [
+                {"label": "White", "value": "white"},
+                {"label": "Green", "value": "green"},
+                {"label": "Blue", "value": "blue"},
+                {"label": "Amber", "value": "amber"},
+                {"label": "Red", "value": "red"},
+                {"label": "Magenta", "value": "magenta"},
+                {"label": "Cyan", "value": "cyan"},
+                {"label": "Yellow", "value": "yellow"}
+              ],
+              "default": "white",
+              "sm": 12,
+              "md": 4
+            }
+          }
+        },
+        "_divider2": {
+          "type": "divider"
+        },
+        "performanceSettings": {
+          "type": "panel",
+          "label": "Performance",
+          "items": {
+            "performance.renderThrottle": {
+              "type": "number",
+              "label": "Render Throttle (ms)",
+              "default": 100,
+              "min": 50,
+              "max": 1000,
+              "help": "Minimum time between display updates (prevents flooding)",
+              "sm": 12,
+              "md": 6
+            },
+            "performance.maxQueueSize": {
+              "type": "number",
+              "label": "Max Queue Size",
+              "default": 100,
+              "min": 10,
+              "max": 1000,
+              "help": "Maximum pending display updates",
+              "sm": 12,
+              "md": 6
+            }
+          }
+        }
+      }
+    },
+    "pagesTab": {
+      "type": "panel",
+      "label": "Pages",
+      "icon": "pages",
+      "items": {
+        "pages": {
+          "type": "accordion",
+          "label": "MCDU Pages",
+          "titleAttr": "name",
+          "clone": true,
+          "items": {
+            "id": {
+              "type": "text",
+              "label": "Page ID",
+              "pattern": "^[a-z0-9-]+$",
+              "placeholder": "home-main",
+              "help": "Unique page identifier (lowercase, numbers, dashes only)",
+              "sm": 12,
+              "md": 6
+            },
+            "name": {
+              "type": "text",
+              "label": "Page Name",
+              "placeholder": "Hauptmenü",
+              "help": "Display name for this page",
+              "sm": 12,
+              "md": 6
+            },
+            "parent": {
+              "type": "autocompleteSendTo",
+              "label": "Parent Page",
+              "command": "getPageList",
+              "allowNonListValues": true,
+              "help": "Leave empty for root page",
+              "sm": 12,
+              "md": 6
+            },
+            "icon": {
+              "type": "text",
+              "label": "Icon",
+              "placeholder": "home",
+              "help": "Optional icon name (Material Icons)",
+              "sm": 12,
+              "md": 6
+            },
+            "_dividerLines": {
+              "type": "divider",
+              "text": "Lines Configuration"
+            },
+            "lines": {
+              "type": "table",
+              "label": "Lines Configuration",
+              "maxRows": 14,
+              "items": [
+                {
+                  "type": "number",
+                  "attr": "row",
+                  "title": "Row",
+                  "width": "60px",
+                  "min": 1,
+                  "max": 14,
+                  "default": 1
+                },
+                {
+                  "type": "panel",
+                  "attr": "leftButton",
+                  "title": "Left Button",
+                  "width": "300px",
+                  "items": {
+                    "type": {
+                      "type": "select",
+                      "label": "Type",
+                      "options": [
+                        {"label": "Empty", "value": "empty"},
+                        {"label": "Navigation", "value": "navigation"},
+                        {"label": "Data Point", "value": "datapoint"}
+                      ],
+                      "default": "empty"
+                    },
+                    "label": {
+                      "type": "text",
+                      "label": "Label",
+                      "maxLength": 10,
+                      "placeholder": "LIGHTS",
+                      "hidden": "${data.leftButton.type === 'empty'}"
+                    },
+                    "action": {
+                      "type": "select",
+                      "label": "Action",
+                      "options": [
+                        {"label": "Go To", "value": "goto"},
+                        {"label": "Toggle", "value": "toggle"},
+                        {"label": "Increment", "value": "increment"},
+                        {"label": "Decrement", "value": "decrement"}
+                      ],
+                      "default": "goto",
+                      "hidden": "${data.leftButton.type === 'empty'}"
+                    },
+                    "target": {
+                      "type": "text",
+                      "label": "Target",
+                      "placeholder": "page-id or state-id",
+                      "help": "Page ID for navigation, State ID for datapoint actions",
+                      "hidden": "${data.leftButton.type === 'empty'}"
+                    }
+                  }
+                },
+                {
+                  "type": "panel",
+                  "attr": "display",
+                  "title": "Display",
+                  "width": "400px",
+                  "items": {
+                    "type": {
+                      "type": "select",
+                      "label": "Type",
+                      "options": [
+                        {"label": "Empty", "value": "empty"},
+                        {"label": "Label (Static)", "value": "label"},
+                        {"label": "Data Point", "value": "datapoint"}
+                      ],
+                      "default": "empty"
+                    },
+                    "label": {
+                      "type": "text",
+                      "label": "Label",
+                      "maxLength": 15,
+                      "placeholder": "Living Room",
+                      "hidden": "${data.display.type === 'empty'}"
+                    },
+                    "source": {
+                      "type": "objectId",
+                      "label": "Data Source",
+                      "types": ["state"],
+                      "help": "ioBroker state to display",
+                      "hidden": "${data.display.type !== 'datapoint'}"
+                    },
+                    "format": {
+                      "type": "text",
+                      "label": "Format",
+                      "placeholder": "%.1f",
+                      "help": "sprintf-style: %.2f (float), %d (int), %s (string)",
+                      "hidden": "${data.display.type !== 'datapoint'}"
+                    },
+                    "unit": {
+                      "type": "text",
+                      "label": "Unit",
+                      "placeholder": "°C",
+                      "maxLength": 5,
+                      "help": "Unit suffix (e.g., °C, km/h, %)",
+                      "hidden": "${data.display.type !== 'datapoint'}"
+                    },
+                    "color": {
+                      "type": "select",
+                      "label": "Color",
+                      "options": [
+                        {"label": "White", "value": "white"},
+                        {"label": "Green", "value": "green"},
+                        {"label": "Blue", "value": "blue"},
+                        {"label": "Amber", "value": "amber"},
+                        {"label": "Red", "value": "red"},
+                        {"label": "Magenta", "value": "magenta"},
+                        {"label": "Cyan", "value": "cyan"},
+                        {"label": "Yellow", "value": "yellow"}
+                      ],
+                      "default": "white",
+                      "hidden": "${data.display.type === 'empty'}"
+                    },
+                    "align": {
+                      "type": "select",
+                      "label": "Alignment",
+                      "options": [
+                        {"label": "Left", "value": "left"},
+                        {"label": "Center", "value": "center"},
+                        {"label": "Right", "value": "right"}
+                      ],
+                      "default": "left",
+                      "hidden": "${data.display.type === 'empty'}"
+                    },
+                    "editable": {
+                      "type": "checkbox",
+                      "label": "Editable",
+                      "default": false,
+                      "help": "Allow user to edit this value via scratchpad",
+                      "hidden": "${data.display.type !== 'datapoint'}"
+                    },
+                    "inputType": {
+                      "type": "select",
+                      "label": "Input Type",
+                      "options": [
+                        {"label": "Numeric", "value": "numeric"},
+                        {"label": "Text", "value": "text"},
+                        {"label": "Time", "value": "time"},
+                        {"label": "Date", "value": "date"}
+                      ],
+                      "default": "numeric",
+                      "hidden": "${!data.display.editable}"
+                    },
+                    "validation": {
+                      "type": "panel",
+                      "label": "Validation Rules",
+                      "hidden": "${!data.display.editable}",
+                      "items": {
+                        "min": {
+                          "type": "number",
+                          "label": "Min Value",
+                          "help": "Minimum allowed value (numeric only)",
+                          "hidden": "${data.display.inputType !== 'numeric'}"
+                        },
+                        "max": {
+                          "type": "number",
+                          "label": "Max Value",
+                          "help": "Maximum allowed value (numeric only)",
+                          "hidden": "${data.display.inputType !== 'numeric'}"
+                        },
+                        "step": {
+                          "type": "number",
+                          "label": "Step",
+                          "default": 0.5,
+                          "help": "Increment/decrement step size",
+                          "hidden": "${data.display.inputType !== 'numeric'}"
+                        },
+                        "maxLength": {
+                          "type": "number",
+                          "label": "Max Length",
+                          "default": 20,
+                          "help": "Maximum character length",
+                          "hidden": "${data.display.inputType !== 'text'}"
+                        },
+                        "pattern": {
+                          "type": "text",
+                          "label": "Pattern (Regex)",
+                          "placeholder": "^[A-Z0-9]+$",
+                          "help": "Regular expression for validation",
+                          "hidden": "${data.display.inputType !== 'text'}"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "panel",
+                  "attr": "rightButton",
+                  "title": "Right Button",
+                  "width": "300px",
+                  "items": {
+                    "type": {
+                      "type": "select",
+                      "label": "Type",
+                      "options": [
+                        {"label": "Empty", "value": "empty"},
+                        {"label": "Navigation", "value": "navigation"},
+                        {"label": "Data Point", "value": "datapoint"}
+                      ],
+                      "default": "empty"
+                    },
+                    "label": {
+                      "type": "text",
+                      "label": "Label",
+                      "maxLength": 10,
+                      "placeholder": "BACK",
+                      "hidden": "${data.rightButton.type === 'empty'}"
+                    },
+                    "action": {
+                      "type": "select",
+                      "label": "Action",
+                      "options": [
+                        {"label": "Go To", "value": "goto"},
+                        {"label": "Toggle", "value": "toggle"},
+                        {"label": "Increment", "value": "increment"},
+                        {"label": "Decrement", "value": "decrement"}
+                      ],
+                      "default": "goto",
+                      "hidden": "${data.rightButton.type === 'empty'}"
+                    },
+                    "target": {
+                      "type": "text",
+                      "label": "Target",
+                      "placeholder": "page-id or state-id",
+                      "help": "Page ID for navigation, State ID for datapoint actions",
+                      "hidden": "${data.rightButton.type === 'empty'}"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "templatesTab": {
+      "type": "panel",
+      "label": "Templates",
+      "icon": "library_books",
+      "items": {
+        "templatesInfo": {
+          "type": "staticText",
+          "text": "Load pre-built page configurations to get started quickly. This will add pages to your configuration without removing existing ones."
+        },
+        "_dividerTemplates": {
+          "type": "divider"
+        },
+        "selectedTemplate": {
+          "type": "select",
+          "label": "Load Template",
+          "options": [
+            {"label": "-- Select Template --", "value": ""},
+            {"label": "Home Automation", "value": "home"},
+            {"label": "Climate Control", "value": "climate"},
+            {"label": "Lighting Control", "value": "lights"}
+          ],
+          "sm": 12,
+          "md": 6
+        },
+        "loadTemplateButton": {
+          "type": "sendTo",
+          "command": "loadTemplate",
+          "jsonData": "{\"templateId\": \"${data.selectedTemplate}\"}",
+          "variant": "contained",
+          "label": "Load Template",
+          "useNative": true,
+          "disabled": "${data.selectedTemplate === ''}",
+          "sm": 12,
+          "md": 6
+        },
+        "_dividerPreview": {
+          "type": "divider",
+          "text": "Template Descriptions"
+        },
+        "templateDescriptions": {
+          "type": "staticText",
+          "text": "**Home Automation:** Basic smart home control with lights, climate, and security pages.\n\n**Climate Control:** Multi-room temperature monitoring and control with editable setpoints.\n\n**Lighting Control:** Room-by-room light switches with status display."
+        }
+      }
+    },
+    "devicesTab": {
+      "type": "panel",
+      "label": "Devices",
+      "icon": "devices",
+      "items": {
+        "devicesInfo": {
+          "type": "staticText",
+          "text": "Connected MCDU devices will appear here automatically when they announce themselves via MQTT."
+        },
+        "_dividerDevices": {
+          "type": "divider"
+        },
+        "devicesTable": {
+          "type": "table",
+          "label": "Connected MCDU Devices",
+          "noAdd": true,
+          "noDelete": true,
+          "items": [
+            {"type": "text", "attr": "deviceId", "title": "Device ID", "width": "200px"},
+            {"type": "text", "attr": "hostname", "title": "Hostname", "width": "150px"},
+            {"type": "text", "attr": "ipAddress", "title": "IP Address", "width": "150px"},
+            {"type": "text", "attr": "status", "title": "Status", "width": "100px"},
+            {"type": "text", "attr": "lastSeen", "title": "Last Seen", "width": "200px"}
+          ]
+        }
+      }
+    },
+    "advancedTab": {
+      "type": "panel",
+      "label": "Advanced",
+      "icon": "build",
+      "items": {
+        "debugSettings": {
+          "type": "panel",
+          "label": "Debug Settings",
+          "items": {
+            "debug.enabled": {
+              "type": "checkbox",
+              "label": "Enable Debug Logging",
+              "default": false,
+              "help": "Enable detailed debug logs (affects performance)",
+              "sm": 12,
+              "md": 6
+            },
+            "debug.logMqtt": {
+              "type": "checkbox",
+              "label": "Log MQTT Messages",
+              "default": false,
+              "help": "Log all MQTT publish/subscribe messages",
+              "sm": 12,
+              "md": 6
+            }
+          }
+        },
+        "_dividerExport": {
+          "type": "divider",
+          "text": "Configuration Export/Import"
+        },
+        "exportInfo": {
+          "type": "staticText",
+          "text": "Use the standard ioBroker config export/import functionality to backup and restore your MCDU configuration."
+        }
+      }
+    }
+  }
+}
