@@ -569,11 +569,30 @@ class McduAdapter extends utils.Adapter {
      * @param {boolean|number} value - New value
      */
     async handleLEDChange(ledName, value) {
-        // Convert boolean to number
+        // Convert value to number
         let brightness = value;
+        
+        // Handle booleans
         if (typeof value === 'boolean') {
             brightness = value ? 255 : 0;
         }
+        // Handle strings (from UI)
+        else if (typeof value === 'string') {
+            if (value === 'true' || value === '1') {
+                brightness = 255;
+            } else if (value === 'false' || value === '0') {
+                brightness = 0;
+            } else {
+                brightness = parseInt(value, 10) || 0;
+            }
+        }
+        // Ensure it's a number
+        else {
+            brightness = parseInt(value, 10) || 0;
+        }
+        
+        // Clamp to 0-255
+        brightness = Math.max(0, Math.min(255, brightness));
         
         // Publish to MQTT
         const topic = `${this.config.mqtt.topicPrefix}/leds/single`;
