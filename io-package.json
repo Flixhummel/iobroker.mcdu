@@ -92,10 +92,7 @@
           {
             "row": 1,
             "leftButton": {
-              "type": "navigation",
-              "action": "goto",
-              "target": "lights-main",
-              "label": "LIGHTS"
+              "type": "empty"
             },
             "display": {
               "type": "label",
@@ -122,10 +119,7 @@
           {
             "row": 3,
             "leftButton": {
-              "type": "navigation",
-              "action": "goto",
-              "target": "climate-main",
-              "label": "CLIMATE"
+              "type": "empty"
             },
             "display": {
               "type": "label",
@@ -152,10 +146,7 @@
           {
             "row": 5,
             "leftButton": {
-              "type": "navigation",
-              "action": "goto",
-              "target": "status-main",
-              "label": "STATUS"
+              "type": "empty"
             },
             "display": {
               "type": "label",
