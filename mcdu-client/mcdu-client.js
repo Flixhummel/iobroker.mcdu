@@ -241,7 +241,10 @@ function handleMQTTMessage(topicStr, message) {
   }
   
   // Route to handler
-  const suffix = topicStr.replace(CONFIG.mqtt.topicPrefix + '/', '');
+  // Topic format: mcdu/{deviceId}/{command}
+  // Extract command part (everything after deviceId)
+  const parts = topicStr.split('/');
+  const suffix = parts.slice(2).join('/'); // Skip prefix and deviceId
   
   switch (suffix) {
     case 'display/set':
