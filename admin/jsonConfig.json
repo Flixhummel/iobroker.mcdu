@@ -61,14 +61,14 @@
           "sm": 12
         },
         "_deviceSelector": {
-          "type": "select",
+          "type": "autocompleteSendTo",
           "label": "Select Device",
           "sm": 12,
           "md": 6,
           "help": "Choose a device to configure its pages",
-          "options": [
-            {"label": "mcdu-client-mcdu-pi (mcdu-pi)", "value": "mcdu-client-mcdu-pi"}
-          ]
+          "command": "browseDevices",
+          "freeSolo": false,
+          "alsoDependsOn": []
         },
         "_deviceDetails": {
           "type": "staticText",
