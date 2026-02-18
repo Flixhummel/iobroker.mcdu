@@ -1,0 +1,39 @@
+{
+  "MQTT Connection": "MQTT Verbindung",
+  "Broker Address": "Broker Adresse",
+  "Port": "Port",
+  "Username": "Benutzername",
+  "Password": "Passwort",
+  "Topic Prefix": "Topic-Präfix",
+  
+  "Pages": "Seiten",
+  "Define your MCDU pages here. Each page can have up to 13 content lines (line 14 is the scratchpad).": "Definiere deine MCDU-Seiten hier. Jede Seite kann bis zu 13 Inhaltszeilen haben (Zeile 14 ist das Scratchpad).",
+  "Pages Configuration": "Seiten-Konfiguration",
+  "Page ID": "Seiten-ID",
+  "Page Name": "Seitenname",
+  "Parent Page": "Übergeordnete Seite",
+  "Enabled": "Aktiviert",
+  "Lines (JSON)": "Zeilen (JSON)",
+  "Edit Lines": "Zeilen bearbeiten",
+  "Only lowercase letters, numbers, and hyphens allowed": "Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt",
+  
+  "Display": "Anzeige",
+  "Default Text Color": "Standard-Textfarbe",
+  "White": "Weiß",
+  "Green": "Grün",
+  "Blue": "Blau",
+  "Amber": "Bernstein",
+  "Red": "Rot",
+  "Columns": "Spalten",
+  "Rows": "Zeilen",
+  
+  "Performance": "Leistung",
+  "Render Throttle (ms)": "Render-Drosselung (ms)",
+  "Minimum time between display updates": "Minimale Zeit zwischen Anzeige-Updates",
+  "Max Queue Size": "Maximale Warteschlangengröße",
+  "Maximum number of pending render requests": "Maximale Anzahl ausstehender Render-Anfragen",
+  
+  "Advanced": "Erweitert",
+  "Enable Debug Logging": "Debug-Protokollierung aktivieren",
+  "Log MQTT Messages": "MQTT-Nachrichten protokollieren"
+}

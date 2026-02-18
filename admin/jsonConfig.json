@@ -1,10 +1,11 @@
 {
   "i18n": true,
-  "type": "panel",
+  "type": "tabs",
   "items": {
-    "mqttSettings": {
+    "mqtt": {
       "type": "panel",
       "label": "MQTT Connection",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjMuMTE5IDE5LjExOWwtMy41MTgtMy41MThhMS41IDEuNSAwIDAgMS0uNDEzLS44MTZ2LTQuMjY2YTEuNDk4IDEuNDk4IDAgMCAxIC40NC0xLjA2bDMuNDkxLTMuNDkxYTEuNSAxLjUgMCAwIDAgMC0yLjEyMWwtMy41MTgtMy41MThhMS41IDEuNSAwIDAgMC0yLjEyMSAwbC0zLjQ5MSAzLjQ5MWExLjQ5OCAxLjQ5OCAwIDAgMS0xLjA2LjQ0aC00LjI2NmExLjUgMS41IDAgMCAxLS44MTYtLjQxM0w0LjMyOS44ODFhMS41IDEuNSAwIDAgMC0yLjEyMSAwTDEuMjkgMS43OThhMS41IDEuNSAwIDAgMCAwIDIuMTIxbDEuMDYgMS4wNnYzLjU4MmExLjUgMS41IDAgMCAwIDEuNSAxLjVoMy41ODJsMS4wNiAxLjA2YTEuNSAxLjUgMCAwIDAgMi4xMjEgMGwxLjkxOC0xLjkxOGExLjUgMS41IDAgMCAxIDIuMTIxIDBsMS45MTggMS45MThhMS41IDEuNSAwIDAgMCAyLjEyMSAwbDEuMDYtMS4wNmgzLjU4MmExLjUgMS41IDAgMCAwIDEuNS0xLjV2LTMuNTgybDEuMDYtMS4wNmExLjUgMS41IDAgMCAwIDAtMi4xMjF6Ii8+PC9zdmc+",
       "items": {
         "mqtt.broker": {
           "type": "text",
@@ -16,7 +17,6 @@
         "mqtt.port": {
           "type": "number",
           "label": "Port",
-          "default": 1883,
           "min": 1,
           "max": 65535,
           "sm": 12,
@@ -25,7 +25,6 @@
         "mqtt.username": {
           "type": "text",
           "label": "Username",
-          "default": "iobroker",
           "sm": 12,
           "md": 6
         },
@@ -38,22 +37,89 @@
         "mqtt.topicPrefix": {
           "type": "text",
           "label": "Topic Prefix",
-          "default": "mcdu",
+          "placeholder": "mcdu",
           "sm": 12,
           "md": 6
         }
       }
     },
-    "_divider1": {
-      "type": "divider"
-    },
-    "displaySettings": {
+    "pages": {
       "type": "panel",
-      "label": "Display Settings",
+      "label": "Pages",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTkgM0g1Yy0xLjEgMC0yIC45LTIgMnYxNGMwIDEuMS45IDIgMiAyaDE0YzEuMSAwIDItLjkgMi0yVjVjMC0xLjEtLjktMi0yLTJ6bS04LjUgMTZINlYxMWg0LjV2OHptNy41IDBIMTNWMTFoNXY4ek01IDE5VjVoMTR2NGgtNXYxMGg1djBINXoiLz48L3N2Zz4=",
+      "items": {
+        "_pagesHelp": {
+          "type": "staticText",
+          "text": "Define your MCDU pages here. Each page can have up to 13 content lines (line 14 is the scratchpad).",
+          "style": {
+            "fontSize": "0.9em",
+            "color": "#666",
+            "marginBottom": "16px"
+          }
+        },
+        "pages": {
+          "type": "table",
+          "label": "Pages Configuration",
+          "sm": 12,
+          "clone": true,
+          "noDelete": false,
+          "showSecondAddAt": 3,
+          "items": [
+            {
+              "type": "text",
+              "title": "Page ID",
+              "attr": "id",
+              "width": "15%",
+              "filter": true,
+              "sort": true,
+              "validator": "data.id && data.id.match(/^[a-z0-9-]+$/)",
+              "validatorErrorText": "Only lowercase letters, numbers, and hyphens allowed"
+            },
+            {
+              "type": "text",
+              "title": "Page Name",
+              "attr": "name",
+              "width": "20%",
+              "filter": true,
+              "sort": true
+            },
+            {
+              "type": "select",
+              "title": "Parent Page",
+              "attr": "parent",
+              "width": "15%",
+              "options": [],
+              "default": null
+            },
+            {
+              "type": "checkbox",
+              "title": "Enabled",
+              "attr": "enabled",
+              "width": "8%",
+              "default": true
+            },
+            {
+              "type": "jsonEditor",
+              "title": "Lines (JSON)",
+              "attr": "lines",
+              "width": "30%",
+              "default": [],
+              "validateJson": true,
+              "button": true,
+              "label": "Edit Lines"
+            }
+          ]
+        }
+      }
+    },
+    "display": {
+      "type": "panel",
+      "label": "Display",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjEgMkg0Yy0xLjEgMC0yIC45LTIgMnYxMmMwIDEuMS45IDIgMiAyaDZ2Mmg4di0yaDF2LTJINFY0aDE2djEyaC0xdjJoMWMxLjEgMCAyLS45IDItMlY0YzAtMS4xLS45LTItMi0yeiIvPjwvc3ZnPg==",
       "items": {
         "display.defaultColor": {
           "type": "select",
-          "label": "Default Color",
+          "label": "Default Text Color",
           "options": [
             {"label": "White", "value": "white"},
             {"label": "Green", "value": "green"},
@@ -61,32 +127,48 @@
             {"label": "Amber", "value": "amber"},
             {"label": "Red", "value": "red"}
           ],
-          "default": "white",
           "sm": 12,
           "md": 6
+        },
+        "display.columns": {
+          "type": "number",
+          "label": "Columns",
+          "min": 1,
+          "max": 48,
+          "readOnly": true,
+          "sm": 12,
+          "md": 3
+        },
+        "display.rows": {
+          "type": "number",
+          "label": "Rows",
+          "min": 1,
+          "max": 20,
+          "readOnly": true,
+          "sm": 12,
+          "md": 3
         }
       }
     },
-    "_divider2": {
-      "type": "divider"
-    },
-    "performanceSettings": {
+    "performance": {
       "type": "panel",
       "label": "Performance",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMjAuMzggNS40MUwxOC42NiAzLjdsLTEuMDUgMS4wNWMtMi42Ny0yLjAxLTYuMzgtMS43OS04Ljc5LjYyLTIuNTYgMi41Ni0yLjc4IDYuNTgtLjUzIDkuMzdMNSA4djEwaDEwbC02LjU2LTMuMzFjMi40LTEuODggNS43LTEuOTIgOC4yLS41Mmw0Ljc0LTQuNzR6TTcgMThsNS0yLjUtNSAyLjV6Ii8+PC9zdmc+",
       "items": {
         "performance.renderThrottle": {
           "type": "number",
           "label": "Render Throttle (ms)",
-          "default": 100,
+          "help": "Minimum time between display updates",
           "min": 10,
           "max": 1000,
+          "unit": "ms",
           "sm": 12,
           "md": 6
         },
         "performance.maxQueueSize": {
           "type": "number",
           "label": "Max Queue Size",
-          "default": 100,
+          "help": "Maximum number of pending render requests",
           "min": 10,
           "max": 1000,
           "sm": 12,
@@ -94,26 +176,22 @@
         }
       }
     },
-    "_divider3": {
-      "type": "divider"
-    },
-    "debugSettings": {
+    "advanced": {
       "type": "panel",
-      "label": "Debug",
+      "label": "Advanced",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTkuNDMgMTIuOThsLjctMi42N2MuMDgtLjMuMDUtLjYzLS4wOS0uOTFsLTMuNDctNi04Ljc0LTEuNTVjLjI4LjE5LjU3LjM3Ljg3LjU0bDkuODkgNS42M2MuMzkuMjIuNTYuNzIuMzQgMS4xMWwtMy4zMSA1Ljc1em0tMTQuMzYtLjI0Yy0uMDktLjI3LS4xMi0uNTctLjA5LS44N2wuNy0yLjY3Yy4xMi0uNDYuNDUtLjgzLjkxLS45OWw4LjctMS41NSAxLjctOC43M2MuMDQtLjIxLjEzLS40LjI2LS41Nkg1LjYzYy0uNTUgMC0xIC40NS0xIDF2MTguNzZjMCAuNTUuNDUgMSAxIDFoMTIuNzRjLjU1IDAgMS0uNDUgMS0xVjcuNjNsLTguNzQtMS41NS0zLjIgNi42NnoiLz48L3N2Zz4=",
       "items": {
         "debug.enabled": {
           "type": "checkbox",
-          "label": "Enable Debug Logging"
+          "label": "Enable Debug Logging",
+          "sm": 12
+        },
+        "debug.logMqtt": {
+          "type": "checkbox",
+          "label": "Log MQTT Messages",
+          "hidden": "!data.debug || !data.debug.enabled",
+          "sm": 12
         }
-      }
-    },
-    "_note": {
-      "type": "staticText",
-      "text": "Note: Page configuration is coming in a future update. For now, use the predefined MENU page.",
-      "style": {
-        "fontSize": "0.9em",
-        "color": "#666",
-        "fontStyle": "italic"
       }
     }
   }

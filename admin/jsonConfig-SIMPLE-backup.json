@@ -1,0 +1,120 @@
+{
+  "i18n": true,
+  "type": "panel",
+  "items": {
+    "mqttSettings": {
+      "type": "panel",
+      "label": "MQTT Connection",
+      "items": {
+        "mqtt.broker": {
+          "type": "text",
+          "label": "Broker Address",
+          "placeholder": "10.10.5.149",
+          "sm": 12,
+          "md": 6
+        },
+        "mqtt.port": {
+          "type": "number",
+          "label": "Port",
+          "default": 1883,
+          "min": 1,
+          "max": 65535,
+          "sm": 12,
+          "md": 6
+        },
+        "mqtt.username": {
+          "type": "text",
+          "label": "Username",
+          "default": "iobroker",
+          "sm": 12,
+          "md": 6
+        },
+        "mqtt.password": {
+          "type": "password",
+          "label": "Password",
+          "sm": 12,
+          "md": 6
+        },
+        "mqtt.topicPrefix": {
+          "type": "text",
+          "label": "Topic Prefix",
+          "default": "mcdu",
+          "sm": 12,
+          "md": 6
+        }
+      }
+    },
+    "_divider1": {
+      "type": "divider"
+    },
+    "displaySettings": {
+      "type": "panel",
+      "label": "Display Settings",
+      "items": {
+        "display.defaultColor": {
+          "type": "select",
+          "label": "Default Color",
+          "options": [
+            {"label": "White", "value": "white"},
+            {"label": "Green", "value": "green"},
+            {"label": "Blue", "value": "blue"},
+            {"label": "Amber", "value": "amber"},
+            {"label": "Red", "value": "red"}
+          ],
+          "default": "white",
+          "sm": 12,
+          "md": 6
+        }
+      }
+    },
+    "_divider2": {
+      "type": "divider"
+    },
+    "performanceSettings": {
+      "type": "panel",
+      "label": "Performance",
+      "items": {
+        "performance.renderThrottle": {
+          "type": "number",
+          "label": "Render Throttle (ms)",
+          "default": 100,
+          "min": 10,
+          "max": 1000,
+          "sm": 12,
+          "md": 6
+        },
+        "performance.maxQueueSize": {
+          "type": "number",
+          "label": "Max Queue Size",
+          "default": 100,
+          "min": 10,
+          "max": 1000,
+          "sm": 12,
+          "md": 6
+        }
+      }
+    },
+    "_divider3": {
+      "type": "divider"
+    },
+    "debugSettings": {
+      "type": "panel",
+      "label": "Debug",
+      "items": {
+        "debug.enabled": {
+          "type": "checkbox",
+          "label": "Enable Debug Logging"
+        }
+      }
+    },
+    "_note": {
+      "type": "staticText",
+      "text": "Note: Page configuration is coming in a future update. For now, use the predefined MENU page.",
+      "style": {
+        "fontSize": "0.9em",
+        "color": "#666",
+        "fontStyle": "italic"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "MQTT Connection": "MQTT Connection",
+  "Broker Address": "Broker Address",
+  "Port": "Port",
+  "Username": "Username",
+  "Password": "Password",
+  "Topic Prefix": "Topic Prefix",
+  
+  "Pages": "Pages",
+  "Define your MCDU pages here. Each page can have up to 13 content lines (line 14 is the scratchpad).": "Define your MCDU pages here. Each page can have up to 13 content lines (line 14 is the scratchpad).",
+  "Pages Configuration": "Pages Configuration",
+  "Page ID": "Page ID",
+  "Page Name": "Page Name",
+  "Parent Page": "Parent Page",
+  "Enabled": "Enabled",
+  "Lines (JSON)": "Lines (JSON)",
+  "Edit Lines": "Edit Lines",
+  "Only lowercase letters, numbers, and hyphens allowed": "Only lowercase letters, numbers, and hyphens allowed",
+  
+  "Display": "Display",
+  "Default Text Color": "Default Text Color",
+  "White": "White",
+  "Green": "Green",
+  "Blue": "Blue",
+  "Amber": "Amber",
+  "Red": "Red",
+  "Columns": "Columns",
+  "Rows": "Rows",
+  
+  "Performance": "Performance",
+  "Render Throttle (ms)": "Render Throttle (ms)",
+  "Minimum time between display updates": "Minimum time between display updates",
+  "Max Queue Size": "Max Queue Size",
+  "Maximum number of pending render requests": "Maximum number of pending render requests",
+  
+  "Advanced": "Advanced",
+  "Enable Debug Logging": "Enable Debug Logging",
+  "Log MQTT Messages": "Log MQTT Messages"
+}
