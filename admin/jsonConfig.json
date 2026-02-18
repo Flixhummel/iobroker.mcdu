@@ -2,18 +2,19 @@
   "i18n": true,
   "type": "tabs",
   "items": {
-    "connection": {
+    "mqtt": {
       "type": "panel",
-      "label": "Connection",
+      "label": "MQTT Connection",
+      "icon": "settings_input_antenna",
       "items": {
         "_mqttInfo": {
           "type": "staticText",
-          "text": "Configure MQTT broker connection for MCDU client communication.",
+          "text": "Configure MQTT broker connection. All MCDU devices communicate via MQTT.",
           "sm": 12
         },
         "mqtt.broker": {
           "type": "text",
-          "label": "MQTT Broker",
+          "label": "MQTT Broker Address",
           "placeholder": "10.10.5.149",
           "sm": 12,
           "md": 6
@@ -39,147 +40,13 @@
           "label": "Password",
           "sm": 12,
           "md": 6
-        }
-      }
-    },
-    "pages": {
-      "type": "panel",
-      "label": "Pages",
-      "items": {
-        "_pagesInfo": {
-          "type": "staticText",
-          "text": "Configure MCDU pages. Each page can have up to 14 lines with buttons, displays, and datapoints.",
-          "sm": 12
         },
-        "pages": {
-          "type": "table",
-          "label": "MCDU Pages",
-          "sm": 12,
-          "items": [
-            {
-              "type": "text",
-              "attr": "id",
-              "title": "Page ID",
-              "width": "150px",
-              "default": "",
-              "placeholder": "home-main"
-            },
-            {
-              "type": "text",
-              "attr": "name",
-              "title": "Name",
-              "width": "200px",
-              "default": "",
-              "placeholder": "Main Menu"
-            },
-            {
-              "type": "autocompleteSendTo",
-              "attr": "parent",
-              "title": "Parent",
-              "width": "150px",
-              "command": "getPageList",
-              "allowNonListValues": true,
-              "placeholder": "(root)"
-            },
-            {
-              "type": "checkbox",
-              "attr": "enabled",
-              "title": "Enabled",
-              "width": "80px",
-              "default": true
-            }
-          ]
-        },
-        "_divider1": {
-          "type": "divider"
-        },
-        "_lineConfigInfo": {
-          "type": "staticText",
-          "text": "**Line Configuration:** To configure page content (buttons, displays, datapoints), edit the 'lines' property below. Each line can have left button, display content, and right button.",
-          "sm": 12
-        },
-        "_lineSchema": {
-          "type": "staticText",
-          "text": "**Line Schema Example:**\n```json\n[\n  {\n    \"row\": 1,\n    \"leftButton\": {\n      \"type\": \"navigation\",\n      \"target\": \"target-page-id\",\n      \"label\": \"LIGHTS\"\n    },\n    \"display\": {\n      \"type\": \"label\",\n      \"label\": \"Living Room\",\n      \"color\": \"white\"\n    },\n    \"rightButton\": {\n      \"type\": \"empty\"\n    }\n  }\n]\n```",
-          "sm": 12
-        },
-        "selectedPageForEdit": {
-          "type": "select",
-          "label": "Select Page to Edit Lines",
-          "options": [],
-          "noTranslation": true,
-          "sm": 12,
-          "md": 6
-        },
-        "pageLines": {
-          "type": "jsonEditor",
-          "label": "Page Lines (JSON)",
-          "help": "Configure lines for the selected page. Use the schema example above.",
-          "validateJson": true,
-          "sm": 12
-        }
-      }
-    },
-    "states": {
-      "type": "panel",
-      "label": "State Browser",
-      "items": {
-        "_statesInfo": {
-          "type": "staticText",
-          "text": "Browse ioBroker states to use in page displays and buttons.",
-          "sm": 12
-        },
-        "stateFilter": {
+        "mqtt.topicPrefix": {
           "type": "text",
-          "label": "Filter States",
-          "placeholder": "Type to search...",
-          "sm": 12,
-          "md": 6
-        },
-        "stateTypeFilter": {
-          "type": "select",
-          "label": "Type Filter",
-          "options": [
-            {"label": "All", "value": ""},
-            {"label": "Boolean", "value": "boolean"},
-            {"label": "Number", "value": "number"},
-            {"label": "String", "value": "string"}
-          ],
-          "default": "",
-          "sm": 12,
-          "md": 3
-        },
-        "refreshStates": {
-          "type": "sendTo",
-          "command": "browseStates",
-          "jsonData": "{\"filter\": \"${data.stateFilter}\", \"type\": \"${data.stateTypeFilter}\"}",
-          "variant": "contained",
-          "label": "Search States",
-          "sm": 12,
-          "md": 3
-        },
-        "_statesHelp": {
-          "type": "staticText",
-          "text": "Click 'Search States' to browse available states. Results will be logged to console (for now - full UI selector coming in next update).",
-          "sm": 12
-        }
-      }
-    },
-    "display": {
-      "type": "panel",
-      "label": "Display",
-      "items": {
-        "display.defaultColor": {
-          "type": "select",
-          "label": "Default Color",
-          "options": [
-            {"label": "White", "value": "white"},
-            {"label": "Green", "value": "green"},
-            {"label": "Amber", "value": "amber"},
-            {"label": "Cyan", "value": "cyan"},
-            {"label": "Red", "value": "red"}
-          ],
-          "default": "white",
+          "label": "Topic Prefix",
+          "default": "mcdu",
+          "placeholder": "mcdu",
+          "help": "MQTT topic structure: {prefix}/{deviceId}/...",
           "sm": 12,
           "md": 6
         }
@@ -187,28 +54,192 @@
     },
     "devices": {
       "type": "panel",
-      "label": "Devices",
+      "label": "Device Management",
+      "icon": "devices",
       "items": {
-        "_devicesInfo": {
+        "_deviceInfo": {
           "type": "staticText",
-          "text": "Connected MCDU devices. Devices auto-register when they connect via MQTT.",
+          "text": "MCDU devices auto-register when they connect via MQTT. Each device has its own state tree under devices.{deviceId}.*",
           "sm": 12
         },
-        "_devicesNote": {
+        "_deviceSelector": {
+          "type": "autocompleteSendTo",
+          "label": "Select Device",
+          "command": "browseDevices",
+          "sm": 12,
+          "md": 6,
+          "help": "Choose a device to configure its pages"
+        },
+        "_deviceDetails": {
           "type": "staticText",
-          "text": "Check the Objects tab (mcdu.0 → devices) to see registered devices and their status.",
-          "sm": 12
+          "text": "Device details will appear here when a device is selected",
+          "sm": 12,
+          "hidden": "!data._deviceSelector"
         }
       }
     },
-    "advanced": {
+    "pages": {
       "type": "panel",
-      "label": "Advanced",
+      "label": "Page Configuration",
+      "icon": "view_list",
       "items": {
-        "debug.enabled": {
-          "type": "checkbox",
-          "label": "Enable Debug Logging",
-          "default": false,
+        "_pagesInfo": {
+          "type": "staticText",
+          "text": "Configure pages for the selected device. Each device can have its own page hierarchy.",
+          "sm": 12
+        },
+        "_noDeviceWarning": {
+          "type": "staticText",
+          "text": "⚠️ Please select a device in the 'Device Management' tab first",
+          "sm": 12,
+          "style": {
+            "color": "orange",
+            "fontWeight": "bold"
+          },
+          "hidden": "!!data._deviceSelector"
+        },
+        "pages": {
+          "type": "table",
+          "label": "MCDU Pages",
+          "sm": 12,
+          "hidden": "!data._deviceSelector",
+          "items": [
+            {
+              "type": "text",
+              "attr": "id",
+              "title": "Page ID",
+              "width": "150px",
+              "filter": true,
+              "sort": true,
+              "placeholder": "home-main"
+            },
+            {
+              "type": "text",
+              "attr": "title",
+              "title": "Title",
+              "width": "200px",
+              "filter": true,
+              "sort": true,
+              "placeholder": "Main Menu"
+            },
+            {
+              "type": "autocompleteSendTo",
+              "attr": "parent",
+              "title": "Parent Page",
+              "width": "150px",
+              "command": "browsePages",
+              "alsoDependsOn": ["_deviceSelector"]
+            },
+            {
+              "type": "checkbox",
+              "attr": "enabled",
+              "title": "Enabled",
+              "width": "80px",
+              "default": true
+            },
+            {
+              "type": "text",
+              "attr": "description",
+              "title": "Description",
+              "width": "250px"
+            }
+          ]
+        },
+        "_pageEditor": {
+          "type": "accordion",
+          "label": "Line Configuration",
+          "sm": 12,
+          "hidden": "!data._deviceSelector || !data.pages || data.pages.length === 0",
+          "items": {
+            "_editorInfo": {
+              "type": "staticText",
+              "text": "Configure the 13 lines for each page. Each line has: left button, display field, right button.",
+              "sm": 12
+            },
+            "_selectedPage": {
+              "type": "autocompleteSendTo",
+              "label": "Edit Page",
+              "command": "browsePages",
+              "alsoDependsOn": ["_deviceSelector", "pages"],
+              "sm": 12,
+              "md": 6
+            },
+            "_linesConfig": {
+              "type": "jsonEditor",
+              "label": "Lines Configuration (JSON)",
+              "sm": 12,
+              "hidden": "!data._selectedPage",
+              "help": "Configure 13 lines (rows 1-13). Line 14 is the scratchpad (auto-generated). Example: [{\"row\":1,\"leftButton\":{\"type\":\"navigation\",\"label\":\"HOME\",\"target\":\"home-main\"},\"display\":{\"type\":\"datapoint\",\"source\":\"0_userdata.0.temperature\",\"format\":\"%.1f°C\"},\"rightButton\":{\"type\":\"empty\"}}]"
+            }
+          }
+        },
+        "_stateSelector": {
+          "type": "accordion",
+          "label": "State Browser",
+          "sm": 12,
+          "hidden": "!data._deviceSelector",
+          "items": {
+            "_stateBrowserInfo": {
+              "type": "staticText",
+              "text": "Browse available ioBroker states for use in display fields and button actions.",
+              "sm": 12
+            },
+            "_stateFilter": {
+              "type": "text",
+              "label": "Filter States",
+              "placeholder": "thermostat",
+              "sm": 12,
+              "md": 6
+            },
+            "_stateType": {
+              "type": "select",
+              "label": "State Type",
+              "sm": 12,
+              "md": 6,
+              "options": [
+                {"value": "", "label": "All Types"},
+                {"value": "number", "label": "Number"},
+                {"value": "string", "label": "String"},
+                {"value": "boolean", "label": "Boolean"}
+              ]
+            },
+            "_stateList": {
+              "type": "autocompleteSendTo",
+              "label": "Available States",
+              "command": "browseStates",
+              "alsoDependsOn": ["_stateFilter", "_stateType"],
+              "sm": 12,
+              "help": "Copy the state ID and use it in your line configuration"
+            }
+          }
+        }
+      }
+    },
+    "about": {
+      "type": "panel",
+      "label": "About",
+      "icon": "info",
+      "items": {
+        "_description": {
+          "type": "staticText",
+          "text": "<h2>ioBroker MCDU Adapter</h2><p>Aviation-inspired smart home controller using authentic MCDU (Multipurpose Control and Display Unit) interface patterns.</p><h3>Features</h3><ul><li>✈️ Authentic cockpit UX (scratchpad, LSK buttons, keypad input)</li><li>🎛️ Multi-device support (each RasPi = independent device)</li><li>📡 MQTT-based communication</li><li>🏠 Smart home integration (thermostats, lights, scenes)</li><li>📄 Per-device page configuration</li><li>🔔 Device-specific notifications</li></ul><h3>Architecture</h3><p>Each MCDU device has its own state tree under <code>devices.{deviceId}.*</code> with channels for:</p><ul><li><strong>info</strong> - Device status (online, hostname, IP, version)</li><li><strong>display</strong> - Screen content and rendering</li><li><strong>leds</strong> - LED states (FAIL, FM, MCDU, MENU, etc.)</li><li><strong>scratchpad</strong> - Line 14 input buffer</li><li><strong>navigation</strong> - Page navigation state</li><li><strong>notifications</strong> - Device notifications</li><li><strong>actions</strong> - Control commands</li><li><strong>control</strong> - Device control (page switching, refresh)</li></ul>",
+          "sm": 12
+        },
+        "_version": {
+          "type": "staticText",
+          "text": "Version: 1.1.0",
+          "sm": 12
+        },
+        "_github": {
+          "type": "staticLink",
+          "text": "GitHub Repository →",
+          "href": "https://github.com/Flixhummel/mcdu",
+          "sm": 12
+        },
+        "_docs": {
+          "type": "staticLink",
+          "text": "Documentation →",
+          "href": "https://github.com/Flixhummel/mcdu/blob/main/README.md",
           "sm": 12
         }
       }
