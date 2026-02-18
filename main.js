@@ -189,12 +189,13 @@ class McduAdapter extends utils.Adapter {
             this.log.info('Rendering initial display...');
             await this.renderCurrentPage();
             
-            // Phase 4.1: Subscribe to automation states
-            this.log.debug('Subscribing to automation states...');
-            this.subscribeStates('leds.*');
-            this.subscribeStates('scratchpad.*');
-            this.subscribeStates('notifications.*');
-            this.subscribeStates('actions.*');
+            // Phase 4.1: Subscribe to automation states (per-device)
+            this.log.debug('Subscribing to automation states (all devices)...');
+            this.subscribeStates('devices.*.leds.*');
+            this.subscribeStates('devices.*.scratchpad.*');
+            this.subscribeStates('devices.*.notifications.*');
+            this.subscribeStates('devices.*.actions.*');
+            this.subscribeStates('devices.*.control.*');
             
             // Phase 4.1: Start uptime counter
             this.startTime = Date.now();
@@ -466,11 +467,16 @@ class McduAdapter extends utils.Adapter {
                 }
             }
             
-            // Phase 4.1: LED changes
-            else if (id.startsWith(`${this.namespace}.leds.`)) {
-                const ledName = id.split('.').pop();
-                await this.handleLEDChange(ledName, state.val);
-                await this.setStateAsync(id, state.val, true);
+            // Phase 4.1: LED changes (per-device)
+            else if (id.includes('.devices.') && id.includes('.leds.')) {
+                // Extract: mcdu.0.devices.mcdu-client-mcdu-pi.leds.FAIL
+                const parts = id.split('.');
+                const deviceIdIndex = parts.indexOf('devices') + 1;
+                const deviceId = parts[deviceIdIndex];
+                const ledName = parts[parts.length - 1];
+                
+                await this.handleLEDChange(deviceId, ledName, state.val);
+                await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
             }
             
             // Phase 4.1: Scratchpad changes
@@ -578,7 +584,7 @@ class McduAdapter extends utils.Adapter {
      * @param {string} ledName - LED name
      * @param {boolean|number} value - New value
      */
-    async handleLEDChange(ledName, value) {
+    async handleLEDChange(deviceId, ledName, value) {
         // Convert value to number
         let brightness = value;
         
@@ -604,8 +610,8 @@ class McduAdapter extends utils.Adapter {
         // Clamp to 0-255
         brightness = Math.max(0, Math.min(255, brightness));
         
-        // Publish to MQTT
-        const topic = `${this.config.mqtt.topicPrefix}/leds/single`;
+        // Publish to MQTT (device-specific topic)
+        const topic = `${this.config.mqtt.topicPrefix}/${deviceId}/leds/single`;
         const payload = {
             name: ledName,
             brightness: brightness,
@@ -613,7 +619,7 @@ class McduAdapter extends utils.Adapter {
         };
         
         this.mqttClient.publish(topic, JSON.stringify(payload), { qos: 1 });
-        this.log.debug(`LED ${ledName} set to ${brightness}`);
+        this.log.info(`LED ${ledName} on device ${deviceId} set to ${brightness}`);
     }
     
     /**
