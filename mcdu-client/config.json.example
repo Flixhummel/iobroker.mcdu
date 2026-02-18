@@ -1,0 +1,19 @@
+{
+  "mqtt": {
+    "broker": "mqtt://localhost:1883",
+    "username": "",
+    "password": "",
+    "clientId": "mcdu-client-raspi-kitchen"
+  },
+  "device": {
+    "id": "raspi-kitchen",
+    "name": "Kitchen MCDU"
+  },
+  "hardware": {
+    "vendorId": "0x4098",
+    "productId": "0xbb36"
+  },
+  "heartbeat": {
+    "interval": 30000
+  }
+}
