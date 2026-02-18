@@ -1,0 +1,8 @@
+{
+  "githubUrl": "https://github.com/kiraholt/iobroker.mcdu",
+  "githubReleaseName": "v{version}",
+  "commitMessageFormat": "chore: release v{version}",
+  "plugins": [
+    "iobroker"
+  ]
+}
