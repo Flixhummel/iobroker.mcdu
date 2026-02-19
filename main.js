@@ -106,6 +106,17 @@ class McduAdapter extends utils.Adapter {
         }
         
         try {
+            // Restore function keys from io-package.json defaults if adapter config has none
+            // (can happen when Admin UI previously saved empty function keys via useNative)
+            if (!this.config.functionKeys || this.config.functionKeys.length === 0) {
+                const ioPackage = require('./io-package.json');
+                const defaultFks = ioPackage.native?.functionKeys;
+                if (Array.isArray(defaultFks) && defaultFks.length > 0) {
+                    this.config.functionKeys = defaultFks;
+                    this.log.info(`Restored ${defaultFks.length} default function keys from io-package.json`);
+                }
+            }
+
             // Phase 1: Setup object tree
             this.log.debug('Setting up object tree...');
             this.stateManager = new StateTreeManager(this);
