@@ -244,214 +244,52 @@
                   "type": "number",
                   "attr": "row",
                   "title": "Row",
-                  "width": "60px",
+                  "width": "50px",
                   "min": 1,
                   "max": 13,
                   "default": 1
                 },
                 {
-                  "type": "panel",
-                  "attr": "left",
-                  "title": "Left Side",
-                  "width": "500px",
-                  "items": {
-                    "label": {
-                      "type": "text",
-                      "label": "Sub-Label",
-                      "maxLength": 12,
-                      "placeholder": "WOHNZIMMER",
-                      "help": "Cyan sub-label on even row above (left-aligned)"
-                    },
-                    "_dividerLeftDisplay": {
-                      "type": "divider",
-                      "text": "Display"
-                    },
-                    "display.type": {
-                      "type": "select",
-                      "label": "Type",
-                      "options": [
-                        {"label": "Empty", "value": "empty"},
-                        {"label": "Label (Static)", "value": "label"},
-                        {"label": "Data Point", "value": "datapoint"}
-                      ],
-                      "default": "empty"
-                    },
-                    "display.text": {
-                      "type": "text",
-                      "label": "Text",
-                      "maxLength": 12,
-                      "placeholder": "Deckenleuchte"
-                    },
-                    "display.source": {
-                      "type": "text",
-                      "label": "Data Source (State ID)",
-                      "placeholder": "hm-rpc.0.DEVICE.STATE"
-                    },
-                    "display.format": {
-                      "type": "text",
-                      "label": "Format",
-                      "placeholder": "%.1f"
-                    },
-                    "display.unit": {
-                      "type": "text",
-                      "label": "Unit",
-                      "placeholder": "C",
-                      "maxLength": 5
-                    },
-                    "display.color": {
-                      "type": "select",
-                      "label": "Color",
-                      "options": [
-                        {"label": "White", "value": "white"},
-                        {"label": "Green", "value": "green"},
-                        {"label": "Blue", "value": "blue"},
-                        {"label": "Amber", "value": "amber"},
-                        {"label": "Red", "value": "red"},
-                        {"label": "Magenta", "value": "magenta"},
-                        {"label": "Cyan", "value": "cyan"},
-                        {"label": "Yellow", "value": "yellow"}
-                      ],
-                      "default": "white"
-                    },
-                    "display.editable": {
-                      "type": "checkbox",
-                      "label": "Editable",
-                      "default": false
-                    },
-                    "_dividerLeftButton": {
-                      "type": "divider",
-                      "text": "LSK Button"
-                    },
-                    "button.type": {
-                      "type": "select",
-                      "label": "Type",
-                      "options": [
-                        {"label": "Empty", "value": "empty"},
-                        {"label": "Navigation", "value": "navigation"},
-                        {"label": "Data Point", "value": "datapoint"}
-                      ],
-                      "default": "empty"
-                    },
-                    "button.action": {
-                      "type": "select",
-                      "label": "Action",
-                      "options": [
-                        {"label": "Go To", "value": "goto"},
-                        {"label": "Toggle", "value": "toggle"},
-                        {"label": "Increment", "value": "increment"},
-                        {"label": "Decrement", "value": "decrement"}
-                      ],
-                      "default": "goto"
-                    },
-                    "button.target": {
-                      "type": "text",
-                      "label": "Target",
-                      "placeholder": "page-id or state-id",
-                      "help": "Page ID for navigation, State ID for datapoint actions"
-                    }
-                  }
+                  "type": "text",
+                  "attr": "left.label",
+                  "title": "L-Label",
+                  "width": "90px",
+                  "default": ""
                 },
                 {
-                  "type": "panel",
-                  "attr": "right",
-                  "title": "Right Side",
-                  "width": "500px",
-                  "items": {
-                    "label": {
-                      "type": "text",
-                      "label": "Sub-Label",
-                      "maxLength": 12,
-                      "placeholder": "",
-                      "help": "Cyan sub-label on even row above (right-aligned)"
-                    },
-                    "_dividerRightDisplay": {
-                      "type": "divider",
-                      "text": "Display"
-                    },
-                    "display.type": {
-                      "type": "select",
-                      "label": "Type",
-                      "options": [
-                        {"label": "Empty", "value": "empty"},
-                        {"label": "Label (Static)", "value": "label"},
-                        {"label": "Data Point", "value": "datapoint"}
-                      ],
-                      "default": "empty"
-                    },
-                    "display.text": {
-                      "type": "text",
-                      "label": "Text",
-                      "maxLength": 12,
-                      "placeholder": "AN/AUS"
-                    },
-                    "display.source": {
-                      "type": "text",
-                      "label": "Data Source (State ID)",
-                      "placeholder": "hm-rpc.0.DEVICE.STATE"
-                    },
-                    "display.format": {
-                      "type": "text",
-                      "label": "Format",
-                      "placeholder": "%s"
-                    },
-                    "display.unit": {
-                      "type": "text",
-                      "label": "Unit",
-                      "placeholder": "",
-                      "maxLength": 5
-                    },
-                    "display.color": {
-                      "type": "select",
-                      "label": "Color",
-                      "options": [
-                        {"label": "White", "value": "white"},
-                        {"label": "Green", "value": "green"},
-                        {"label": "Blue", "value": "blue"},
-                        {"label": "Amber", "value": "amber"},
-                        {"label": "Red", "value": "red"},
-                        {"label": "Magenta", "value": "magenta"},
-                        {"label": "Cyan", "value": "cyan"},
-                        {"label": "Yellow", "value": "yellow"}
-                      ],
-                      "default": "white"
-                    },
-                    "display.editable": {
-                      "type": "checkbox",
-                      "label": "Editable",
-                      "default": false
-                    },
-                    "_dividerRightButton": {
-                      "type": "divider",
-                      "text": "LSK Button"
-                    },
-                    "button.type": {
-                      "type": "select",
-                      "label": "Type",
-                      "options": [
-                        {"label": "Empty", "value": "empty"},
-                        {"label": "Navigation", "value": "navigation"},
-                        {"label": "Data Point", "value": "datapoint"}
-                      ],
-                      "default": "empty"
-                    },
-                    "button.action": {
-                      "type": "select",
-                      "label": "Action",
-                      "options": [
-                        {"label": "Go To", "value": "goto"},
-                        {"label": "Toggle", "value": "toggle"},
-                        {"label": "Increment", "value": "increment"},
-                        {"label": "Decrement", "value": "decrement"}
-                      ],
-                      "default": "goto"
-                    },
-                    "button.target": {
-                      "type": "text",
-                      "label": "Target",
-                      "placeholder": "page-id or state-id",
-                      "help": "Page ID for navigation, State ID for datapoint actions"
-                    }
-                  }
+                  "type": "text",
+                  "attr": "left.display.text",
+                  "title": "L-Text",
+                  "width": "110px",
+                  "default": ""
+                },
+                {
+                  "type": "text",
+                  "attr": "left.button.target",
+                  "title": "L-Target",
+                  "width": "110px",
+                  "default": ""
+                },
+                {
+                  "type": "text",
+                  "attr": "right.label",
+                  "title": "R-Label",
+                  "width": "90px",
+                  "default": ""
+                },
+                {
+                  "type": "text",
+                  "attr": "right.display.text",
+                  "title": "R-Text",
+                  "width": "110px",
+                  "default": ""
+                },
+                {
+                  "type": "text",
+                  "attr": "right.button.target",
+                  "title": "R-Target",
+                  "width": "110px",
+                  "default": ""
                 }
               ]
             }
