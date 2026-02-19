@@ -155,6 +155,9 @@ class McduAdapter extends utils.Adapter {
             
             this.log.debug('Timeout check interval started');
             
+            // Recover known devices from ioBroker object tree (survives adapter restarts)
+            await this.recoverKnownDevices();
+
             // Phase 3.7: Subscribe to device announcements (all devices)
             this.log.debug('Subscribing to device announcements...');
             // Wildcard pattern: mcdu/+/status/announce
@@ -885,10 +888,10 @@ class McduAdapter extends utils.Adapter {
      */
     async handleBrowseDevices(obj) {
         try {
-            // Get all device objects from ioBroker (more reliable than in-memory registry)
+            // Get all channel objects under devices (startkey without trailing dot to include direct children)
             const devices = await this.getObjectViewAsync('system', 'channel', {
-                startkey: `${this.namespace}.devices.`,
-                endkey: `${this.namespace}.devices.\u9999`
+                startkey: `${this.namespace}.devices`,
+                endkey: `${this.namespace}.devices\u9999`
             });
 
             const deviceList = [];
@@ -1083,6 +1086,56 @@ class McduAdapter extends utils.Adapter {
         }
     }
     
+    /**
+     * Recover known devices from ioBroker object tree on adapter startup.
+     * This ensures the adapter works without requiring the mcdu-client to re-announce.
+     */
+    async recoverKnownDevices() {
+        try {
+            const devices = await this.getObjectViewAsync('system', 'channel', {
+                startkey: `${this.namespace}.devices`,
+                endkey: `${this.namespace}.devices\u9999`
+            });
+
+            if (!devices || !devices.rows) {
+                return;
+            }
+
+            for (const row of devices.rows) {
+                const parts = row.id.split('.');
+                // Direct device children: mcdu.0.devices.{deviceId} = 4 parts
+                if (parts.length !== 4 || parts[2] !== 'devices') {
+                    continue;
+                }
+                const deviceId = parts[3];
+                const native = row.value?.native || {};
+
+                this.deviceRegistry.set(deviceId, {
+                    deviceId,
+                    hostname: native.hostname || 'unknown',
+                    ipAddress: native.ipAddress || 'unknown',
+                    version: native.version || 'unknown',
+                    firstSeen: native.firstSeen || Date.now(),
+                    lastSeen: Date.now()
+                });
+
+                // Load device pages into active config
+                await this.loadDevicePagesIntoConfig(deviceId);
+
+                // Set device for display publishing
+                this.displayPublisher.setDevice(deviceId);
+
+                this.log.info(`♻️ Recovered device: ${deviceId} (${native.hostname || 'unknown'})`);
+            }
+
+            if (this.deviceRegistry.size > 0) {
+                this.log.info(`✅ Recovered ${this.deviceRegistry.size} device(s) from object tree`);
+            }
+        } catch (error) {
+            this.log.warn(`Could not recover devices: ${error.message}`);
+        }
+    }
+
     /**
      * Handle device announcement from MCDU client
      * @param {Buffer} message - MQTT message buffer
