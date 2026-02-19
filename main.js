@@ -283,14 +283,18 @@ class McduAdapter extends utils.Adapter {
      * Initialize runtime state
      */
     async initializeRuntime() {
-        // Set first page as current if not already set
+        // Set first page as current if not set or if current page no longer exists
         const currentPageState = await this.getStateAsync('runtime.currentPage');
-        if (!currentPageState || !currentPageState.val) {
-            const firstPage = this.config.pages?.[0];
+        const currentPageId = currentPageState?.val;
+        const pages = this.config.pages || [];
+        const currentPageExists = currentPageId && pages.some(p => p.id === currentPageId);
+
+        if (!currentPageExists) {
+            const firstPage = pages[0];
             if (firstPage) {
                 await this.setStateAsync('runtime.currentPage', firstPage.id, true);
                 await this.setStateAsync(`pages.${firstPage.id}.active`, true, true);
-                this.log.debug(`Set initial page: ${firstPage.id}`);
+                this.log.info(`Reset current page to ${firstPage.id} (previous "${currentPageId || ''}" not found in ${pages.length} pages)`);
             }
         }
         
