@@ -966,9 +966,18 @@ class McduAdapter extends utils.Adapter {
      */
     async handleSaveDevicePages(obj) {
         try {
-            const { deviceId, pages } = obj.message || {};
+            // Support both direct {deviceId, pages} and useNative (entire native config)
+            let deviceId, pages;
+            if (obj.message?.deviceId) {
+                deviceId = obj.message.deviceId;
+                pages = obj.message.pages;
+            } else {
+                // useNative sends the full native config
+                deviceId = obj.message?.selectedDevice;
+                pages = obj.message?.pages;
+            }
             if (!deviceId) {
-                this.sendTo(obj.from, obj.command, { error: 'No deviceId provided' }, obj.callback);
+                this.sendTo(obj.from, obj.command, { error: 'No device selected' }, obj.callback);
                 return;
             }
             if (!Array.isArray(pages)) {

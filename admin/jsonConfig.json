@@ -44,7 +44,6 @@
               "type": "text",
               "label": "Topic Prefix",
               "default": "mcdu",
-              "pattern": "^[a-z0-9/-]+$",
               "help": "MQTT topic prefix (lowercase, numbers, dashes, slashes only)",
               "sm": 12,
               "md": 6
@@ -152,17 +151,15 @@
               "jsonData": "{\"deviceId\": \"${data.selectedDevice}\"}",
               "variant": "contained",
               "label": "Load Config",
-              "disabled": "${!data.selectedDevice}",
               "sm": 6,
               "md": 3
             },
             "saveDevicePagesBtn": {
               "type": "sendTo",
               "command": "saveDevicePages",
-              "jsonData": "{\"deviceId\": \"${data.selectedDevice}\", \"pages\": ${JSON.stringify(data.pages)}}",
               "variant": "contained",
               "label": "Save Config",
-              "disabled": "${!data.selectedDevice}",
+              "useNative": true,
               "sm": 6,
               "md": 3
             }
@@ -194,7 +191,6 @@
               "variant": "contained",
               "label": "Apply Template",
               "useNative": true,
-              "disabled": "${data.selectedTemplate === ''}",
               "sm": 12,
               "md": 6
             }
@@ -216,7 +212,6 @@
               "sm": 12,
               "md": 4,
               "label": "Page ID",
-              "pattern": "^[a-z0-9-]+$",
               "placeholder": "home-main",
               "help": "Unique page identifier (lowercase, numbers, dashes only)"
             },
@@ -285,27 +280,23 @@
                       "type": "text",
                       "label": "Text",
                       "maxLength": 12,
-                      "placeholder": "Deckenleuchte",
-                      "hidden": "${data.left.display.type === 'empty'}"
+                      "placeholder": "Deckenleuchte"
                     },
                     "display.source": {
-                      "type": "objectId",
-                      "label": "Data Source",
-                      "types": ["state"],
-                      "hidden": "${data.left.display.type !== 'datapoint'}"
+                      "type": "text",
+                      "label": "Data Source (State ID)",
+                      "placeholder": "hm-rpc.0.DEVICE.STATE"
                     },
                     "display.format": {
                       "type": "text",
                       "label": "Format",
-                      "placeholder": "%.1f",
-                      "hidden": "${data.left.display.type !== 'datapoint'}"
+                      "placeholder": "%.1f"
                     },
                     "display.unit": {
                       "type": "text",
                       "label": "Unit",
                       "placeholder": "C",
-                      "maxLength": 5,
-                      "hidden": "${data.left.display.type !== 'datapoint'}"
+                      "maxLength": 5
                     },
                     "display.color": {
                       "type": "select",
@@ -320,14 +311,12 @@
                         {"label": "Cyan", "value": "cyan"},
                         {"label": "Yellow", "value": "yellow"}
                       ],
-                      "default": "white",
-                      "hidden": "${data.left.display.type === 'empty'}"
+                      "default": "white"
                     },
                     "display.editable": {
                       "type": "checkbox",
                       "label": "Editable",
-                      "default": false,
-                      "hidden": "${data.left.display.type !== 'datapoint'}"
+                      "default": false
                     },
                     "_dividerLeftButton": {
                       "type": "divider",
@@ -352,15 +341,13 @@
                         {"label": "Increment", "value": "increment"},
                         {"label": "Decrement", "value": "decrement"}
                       ],
-                      "default": "goto",
-                      "hidden": "${data.left.button.type === 'empty'}"
+                      "default": "goto"
                     },
                     "button.target": {
                       "type": "text",
                       "label": "Target",
                       "placeholder": "page-id or state-id",
-                      "help": "Page ID for navigation, State ID for datapoint actions",
-                      "hidden": "${data.left.button.type === 'empty'}"
+                      "help": "Page ID for navigation, State ID for datapoint actions"
                     }
                   }
                 },
@@ -395,27 +382,23 @@
                       "type": "text",
                       "label": "Text",
                       "maxLength": 12,
-                      "placeholder": "AN/AUS",
-                      "hidden": "${data.right.display.type === 'empty'}"
+                      "placeholder": "AN/AUS"
                     },
                     "display.source": {
-                      "type": "objectId",
-                      "label": "Data Source",
-                      "types": ["state"],
-                      "hidden": "${data.right.display.type !== 'datapoint'}"
+                      "type": "text",
+                      "label": "Data Source (State ID)",
+                      "placeholder": "hm-rpc.0.DEVICE.STATE"
                     },
                     "display.format": {
                       "type": "text",
                       "label": "Format",
-                      "placeholder": "%s",
-                      "hidden": "${data.right.display.type !== 'datapoint'}"
+                      "placeholder": "%s"
                     },
                     "display.unit": {
                       "type": "text",
                       "label": "Unit",
                       "placeholder": "",
-                      "maxLength": 5,
-                      "hidden": "${data.right.display.type !== 'datapoint'}"
+                      "maxLength": 5
                     },
                     "display.color": {
                       "type": "select",
@@ -430,14 +413,12 @@
                         {"label": "Cyan", "value": "cyan"},
                         {"label": "Yellow", "value": "yellow"}
                       ],
-                      "default": "white",
-                      "hidden": "${data.right.display.type === 'empty'}"
+                      "default": "white"
                     },
                     "display.editable": {
                       "type": "checkbox",
                       "label": "Editable",
-                      "default": false,
-                      "hidden": "${data.right.display.type !== 'datapoint'}"
+                      "default": false
                     },
                     "_dividerRightButton": {
                       "type": "divider",
@@ -462,15 +443,13 @@
                         {"label": "Increment", "value": "increment"},
                         {"label": "Decrement", "value": "decrement"}
                       ],
-                      "default": "goto",
-                      "hidden": "${data.right.button.type === 'empty'}"
+                      "default": "goto"
                     },
                     "button.target": {
                       "type": "text",
                       "label": "Target",
                       "placeholder": "page-id or state-id",
-                      "help": "Page ID for navigation, State ID for datapoint actions",
-                      "hidden": "${data.right.button.type === 'empty'}"
+                      "help": "Page ID for navigation, State ID for datapoint actions"
                     }
                   }
                 }
