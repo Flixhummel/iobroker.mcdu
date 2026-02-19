@@ -657,20 +657,8 @@ class McduAdapter extends utils.Adapter {
         const lineNum = line?.val || 13;
         const durationMs = duration?.val || 3000;
         
-        // Publish notification line
-        const topicPrefix = this.config.mqtt?.topicPrefix || 'mcdu';
-        const payload = {
-            line: lineNum,
-            content: message.val,
-            color: color,
-            duration: durationMs
-        };
-        
-        this.mqttClient.publish(
-            `${topicPrefix}/display/line`,
-            JSON.stringify(payload),
-            { qos: 1 }
-        );
+        // Publish notification line via DisplayPublisher (device-scoped topic)
+        await this.displayPublisher.publishLine(lineNum, message.val, color);
         
         this.log.info(`Notification shown: ${message.val} (${type?.val})`);
         
@@ -703,7 +691,8 @@ class McduAdapter extends utils.Adapter {
         
         // Convert to MQTT message format
         const message = Buffer.from(JSON.stringify(event));
-        const topic = `${this.config.mqtt.topicPrefix}/buttons/event`;
+        const activeDeviceId = this.displayPublisher.deviceId || 'script-trigger';
+        const topic = `${this.config.mqtt?.topicPrefix || 'mcdu'}/${activeDeviceId}/buttons/event`;
         
         await this.buttonSubscriber.handleButtonEvent(topic, message);
         this.log.debug(`Button triggered: ${buttonName}`);
@@ -977,7 +966,12 @@ class McduAdapter extends utils.Adapter {
                 existingDevice.version = version || existingDevice.version;
                 
                 this.log.debug(`Updated existing device: ${deviceId}`);
-                
+
+                // Set device for display publishing and force re-render
+                this.displayPublisher.setDevice(deviceId);
+                this.displayPublisher.lastContent = null;
+                await this.renderCurrentPage();
+
                 // Update lastSeen state
                 await this.setStateAsync(`devices.${deviceId}.lastSeen`, Date.now(), true);
                 
@@ -1002,6 +996,11 @@ class McduAdapter extends utils.Adapter {
                 });
                 
                 this.log.debug(`Created ioBroker objects for device ${deviceId}`);
+
+                // Set device for display publishing and force initial render
+                this.displayPublisher.setDevice(deviceId);
+                this.displayPublisher.lastContent = null;
+                await this.renderCurrentPage();
             }
             
             // Update devices online count
