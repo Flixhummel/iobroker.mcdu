@@ -86,10 +86,24 @@
     },
     "selectedDevice": "",
     "selectedTemplate": "",
+    "functionKeys": [
+      { "key": "MENU", "enabled": true, "action": "navigateHome", "targetPageId": "" },
+      { "key": "DIR", "enabled": true, "action": "directAccess", "targetPageId": "" },
+      { "key": "PROG", "enabled": true, "action": "gotoPage", "targetPageId": "status-main" },
+      { "key": "PERF", "enabled": true, "action": "gotoPage", "targetPageId": "szenen-main" },
+      { "key": "INIT", "enabled": true, "action": "gotoPage", "targetPageId": "einstellungen-main" },
+      { "key": "FPLN", "enabled": true, "action": "gotoPage", "targetPageId": "zeitplan-main" },
+      { "key": "FUEL", "enabled": true, "action": "gotoPage", "targetPageId": "energie-main" },
+      { "key": "RAD", "enabled": true, "action": "gotoPage", "targetPageId": "klima-main" },
+      { "key": "SEC", "enabled": true, "action": "gotoPage", "targetPageId": "sicherheit-main" },
+      { "key": "ATC", "enabled": true, "action": "gotoPage", "targetPageId": "meldungen-main" },
+      { "key": "AIRPORT", "enabled": true, "action": "gotoPage", "targetPageId": "raeume-main" }
+    ],
     "pages": [
       {
         "id": "home-main",
         "name": "Hauptmenue",
+        "layoutType": "menu",
         "parent": null,
         "lines": [
           {

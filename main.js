@@ -76,7 +76,10 @@ class McduAdapter extends utils.Adapter {
         
         /** @type {Map<string, object>} Device registry */
         this.deviceRegistry = new Map();
-        
+
+        /** @type {Array<{id: string, name: string}>} Current breadcrumb path */
+        this.breadcrumb = [];
+
         /** @type {NodeJS.Timeout|null} Timeout check interval */
         this.timeoutCheckInterval = null;
         
@@ -366,7 +369,10 @@ class McduAdapter extends utils.Adapter {
             // Set new page
             await this.setStateAsync('runtime.currentPage', pageId, true);
             await this.setStateAsync(`pages.${pageId}.active`, true, true);
-            
+
+            // Build and store breadcrumb
+            this.breadcrumb = this.buildBreadcrumb(pageId);
+
             // Clear page cache to force re-render
             this.pageCache.delete(pageId);
             
@@ -564,26 +570,44 @@ class McduAdapter extends utils.Adapter {
     async navigateNext() {
         const pages = this.config.pages || [];
         const currentPageState = await this.getStateAsync('runtime.currentPage');
-        const currentIndex = pages.findIndex(p => p.id === currentPageState?.val);
-        
-        if (currentIndex >= 0 && currentIndex < pages.length - 1) {
-            const nextPage = pages[currentIndex + 1];
-            await this.switchToPage(nextPage.id);
-        }
+        const currentPageId = currentPageState?.val;
+        const currentPage = pages.find(p => p.id === currentPageId);
+
+        if (!currentPage) return;
+
+        // Find siblings (pages with same parent)
+        const parentId = currentPage.parent || null;
+        const siblings = pages.filter(p => (p.parent || null) === parentId);
+
+        if (siblings.length <= 1) return; // No siblings to navigate to
+
+        const currentIndex = siblings.findIndex(p => p.id === currentPageId);
+        // Circular: wrap from last to first
+        const nextIndex = (currentIndex + 1) % siblings.length;
+        await this.switchToPage(siblings[nextIndex].id);
     }
-    
+
     /**
-     * Navigate to previous page in sequence
+     * Navigate to previous page in sequence (circular within siblings)
      */
     async navigatePrevious() {
         const pages = this.config.pages || [];
         const currentPageState = await this.getStateAsync('runtime.currentPage');
-        const currentIndex = pages.findIndex(p => p.id === currentPageState?.val);
-        
-        if (currentIndex > 0) {
-            const prevPage = pages[currentIndex - 1];
-            await this.switchToPage(prevPage.id);
-        }
+        const currentPageId = currentPageState?.val;
+        const currentPage = pages.find(p => p.id === currentPageId);
+
+        if (!currentPage) return;
+
+        // Find siblings (pages with same parent)
+        const parentId = currentPage.parent || null;
+        const siblings = pages.filter(p => (p.parent || null) === parentId);
+
+        if (siblings.length <= 1) return; // No siblings
+
+        const currentIndex = siblings.findIndex(p => p.id === currentPageId);
+        // Circular: wrap from first to last
+        const prevIndex = (currentIndex - 1 + siblings.length) % siblings.length;
+        await this.switchToPage(siblings[prevIndex].id);
     }
     
     /**
@@ -595,7 +619,29 @@ class McduAdapter extends utils.Adapter {
             await this.switchToPage(pages[0].id);
         }
     }
-    
+
+    /**
+     * Build breadcrumb path for a page by walking parent chain
+     * @param {string} pageId - Current page ID
+     * @returns {Array<{id: string, name: string}>} Breadcrumb path from root to current
+     */
+    buildBreadcrumb(pageId) {
+        const pages = this.config.pages || [];
+        const breadcrumb = [];
+        let currentId = pageId;
+        const visited = new Set(); // Prevent infinite loops
+
+        while (currentId && !visited.has(currentId)) {
+            visited.add(currentId);
+            const page = pages.find(p => p.id === currentId);
+            if (!page) break;
+            breadcrumb.unshift({ id: page.id, name: page.name || page.id });
+            currentId = page.parent || null;
+        }
+
+        return breadcrumb;
+    }
+
     /**
      * Show startup splash screen on device connect
      * Displays for 3 seconds, then navigates to home page
@@ -812,7 +858,14 @@ class McduAdapter extends utils.Adapter {
                 case 'saveDevicePages':
                     this.handleSaveDevicePages(obj);
                     break;
-                    
+
+                case 'loadFunctionKeys':
+                    this.handleLoadFunctionKeys(obj);
+                    break;
+                case 'saveFunctionKeys':
+                    this.handleSaveFunctionKeys(obj);
+                    break;
+
                 case 'browseStates':
                     this.handleBrowseStates(obj);
                     break;
@@ -996,6 +1049,70 @@ class McduAdapter extends utils.Adapter {
             this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
         } catch (error) {
             this.log.error(`Error in saveDevicePages: ${error.message}`);
+            this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
+        }
+    }
+
+    /**
+     * Handle loadFunctionKeys command from admin UI
+     * @param {object} obj - Message object with deviceId
+     */
+    async handleLoadFunctionKeys(obj) {
+        try {
+            const deviceId = obj.message?.deviceId;
+            if (!deviceId) {
+                this.sendTo(obj.from, obj.command, { error: 'No deviceId provided' }, obj.callback);
+                return;
+            }
+            const stateId = `devices.${deviceId}.config.functionKeys`;
+            const state = await this.getStateAsync(stateId);
+            let functionKeys = [];
+            if (state && state.val) {
+                try {
+                    functionKeys = JSON.parse(state.val);
+                } catch (e) {
+                    this.log.warn(`Invalid JSON in ${stateId}: ${e.message}`);
+                }
+            }
+            this.log.info(`loadFunctionKeys: Loaded ${functionKeys.length} keys for device ${deviceId}`);
+            this.sendTo(obj.from, obj.command, { functionKeys }, obj.callback);
+        } catch (error) {
+            this.log.error(`Error in loadFunctionKeys: ${error.message}`);
+            this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
+        }
+    }
+
+    /**
+     * Handle saveFunctionKeys command from admin UI
+     * @param {object} obj - Message object with deviceId and functionKeys
+     */
+    async handleSaveFunctionKeys(obj) {
+        try {
+            let deviceId, functionKeys;
+            if (obj.message?.deviceId) {
+                deviceId = obj.message.deviceId;
+                functionKeys = obj.message.functionKeys;
+            } else {
+                deviceId = obj.message?.selectedDevice;
+                functionKeys = obj.message?.functionKeys;
+            }
+            if (!deviceId) {
+                this.sendTo(obj.from, obj.command, { error: 'No device selected' }, obj.callback);
+                return;
+            }
+            if (!Array.isArray(functionKeys)) {
+                this.sendTo(obj.from, obj.command, { error: 'functionKeys must be an array' }, obj.callback);
+                return;
+            }
+            const stateId = `devices.${deviceId}.config.functionKeys`;
+            await this.setStateAsync(stateId, JSON.stringify(functionKeys), true);
+            if (this.displayPublisher && this.displayPublisher.deviceId === deviceId) {
+                this.config.functionKeys = functionKeys;
+            }
+            this.log.info(`saveFunctionKeys: Saved ${functionKeys.length} keys for device ${deviceId}`);
+            this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
+        } catch (error) {
+            this.log.error(`Error in saveFunctionKeys: ${error.message}`);
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
         }
     }
@@ -1201,6 +1318,7 @@ class McduAdapter extends utils.Adapter {
 
                 // Migration: if device has no pages yet, copy from native.pages
                 await this.migrateDevicePages(deviceId);
+                await this.migrateDeviceFunctionKeys(deviceId);
 
                 // Load device pages into active config
                 await this.loadDevicePagesIntoConfig(deviceId);
@@ -1245,6 +1363,27 @@ class McduAdapter extends utils.Adapter {
     }
 
     /**
+     * Migrate native.functionKeys to device's config.functionKeys (one-time migration)
+     * @param {string} deviceId - Device ID
+     */
+    async migrateDeviceFunctionKeys(deviceId) {
+        try {
+            const state = await this.getStateAsync(`devices.${deviceId}.config.functionKeys`);
+            const hasDeviceFks = state && state.val && state.val !== '[]';
+            if (!hasDeviceFks && this.config.functionKeys && this.config.functionKeys.length > 0) {
+                this.log.info(`Migrating function keys to device ${deviceId}`);
+                await this.setStateAsync(
+                    `devices.${deviceId}.config.functionKeys`,
+                    JSON.stringify(this.config.functionKeys),
+                    true
+                );
+            }
+        } catch (error) {
+            this.log.error(`Function key migration failed for ${deviceId}: ${error.message}`);
+        }
+    }
+
+    /**
      * Load device's pages into active config
      * @param {string} deviceId - Device ID
      */
@@ -1256,6 +1395,20 @@ class McduAdapter extends utils.Adapter {
                 if (Array.isArray(pages) && pages.length > 0) {
                     this.config.pages = pages;
                     this.log.info(`Loaded ${pages.length} pages from device ${deviceId}`);
+                }
+            }
+
+            // Also load function keys
+            const fkState = await this.getStateAsync(`devices.${deviceId}.config.functionKeys`);
+            if (fkState && fkState.val) {
+                try {
+                    const fks = JSON.parse(fkState.val);
+                    if (Array.isArray(fks) && fks.length > 0) {
+                        this.config.functionKeys = fks;
+                        this.log.info(`Loaded ${fks.length} function keys from device ${deviceId}`);
+                    }
+                } catch (e) {
+                    this.log.warn(`Invalid function keys JSON for device ${deviceId}: ${e.message}`);
                 }
             }
         } catch (error) {

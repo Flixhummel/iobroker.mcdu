@@ -290,6 +290,41 @@ describe('PageRenderer', () => {
         });
     });
 
+    describe('Breadcrumb Status Bar', () => {
+        it('should show breadcrumb chain for nested pages', () => {
+            adapter.breadcrumb = [
+                { id: 'home-main', name: 'Home' },
+                { id: 'klima-main', name: 'Klima' }
+            ];
+            const result = renderer.renderStatusBar('klima-main');
+            expect(result.text).to.include('HOME > KLIMA');
+            expect(result.color).to.equal('cyan');
+        });
+
+        it('should show just page name for root page', () => {
+            adapter.breadcrumb = [{ id: 'home-main', name: 'Home' }];
+            const result = renderer.renderStatusBar('home-main');
+            expect(result.text).to.include('HOME');
+            expect(result.color).to.equal('cyan');
+        });
+
+        it('should truncate long breadcrumbs', () => {
+            adapter.breadcrumb = [
+                { id: 'home', name: 'Hauptmenue' },
+                { id: 'beleuchtung', name: 'Beleuchtung' },
+                { id: 'wohnzimmer', name: 'Wohnzimmer' }
+            ];
+            const result = renderer.renderStatusBar('wohnzimmer');
+            expect(result.text.length).to.equal(24);
+        });
+
+        it('should fall back to page name when no breadcrumb', () => {
+            adapter.breadcrumb = undefined;
+            const result = renderer.renderStatusBar('home-main');
+            expect(result.text).to.include('HOME');
+        });
+    });
+
     describe('Pagination', () => {
         it('should paginate pages with >6 items', async () => {
             await renderer.renderPage('long-page');
@@ -369,6 +404,152 @@ describe('PageRenderer', () => {
         it('should center-align', () => {
             const result = renderer.alignText('hi', 'center', 10);
             expect(result).to.equal('    hi    ');
+        });
+    });
+
+    describe('Layout Types', () => {
+        it('should add < > indicators on menu layout lines with buttons', async () => {
+            const pages = [
+                {
+                    id: 'test-menu',
+                    name: 'Test Menu',
+                    layoutType: 'menu',
+                    lines: [
+                        {
+                            row: 1,
+                            left: {
+                                label: '',
+                                display: { type: 'label', text: 'LIGHTS' },
+                                button: { type: 'navigation', action: 'goto', target: 'lights' }
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                        }
+                    ]
+                }
+            ];
+            adapter.config.pages = pages;
+            adapter.breadcrumb = [{ id: 'test-menu', name: 'Test Menu' }];
+
+            await renderer.renderPage('test-menu');
+            const display = displayPublisher._published[displayPublisher._published.length - 1];
+            expect(display[0].text).to.match(/^</);
+            expect(display[0].text).to.match(/>$/);
+        });
+
+        it('should NOT add < > indicators on lines without buttons', async () => {
+            const pages = [
+                {
+                    id: 'test-menu',
+                    name: 'Test Menu',
+                    layoutType: 'menu',
+                    lines: [
+                        {
+                            row: 1,
+                            left: {
+                                label: '',
+                                display: { type: 'label', text: 'INFO TEXT' },
+                                button: { type: 'empty' }
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                        }
+                    ]
+                }
+            ];
+            adapter.config.pages = pages;
+            adapter.breadcrumb = [{ id: 'test-menu', name: 'Test Menu' }];
+
+            await renderer.renderPage('test-menu');
+            const display = displayPublisher._published[displayPublisher._published.length - 1];
+            expect(display[0].text).to.not.match(/^</);
+        });
+
+        it('should NOT add < > indicators on data layout', async () => {
+            const pages = [
+                {
+                    id: 'test-data',
+                    name: 'Test Data',
+                    layoutType: 'data',
+                    lines: [
+                        {
+                            row: 1,
+                            left: {
+                                label: 'TEMP',
+                                display: { type: 'label', text: '21.5' },
+                                button: { type: 'navigation', action: 'goto', target: 'detail' }
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                        }
+                    ]
+                }
+            ];
+            adapter.config.pages = pages;
+            adapter.breadcrumb = [{ id: 'test-data', name: 'Test Data' }];
+
+            await renderer.renderPage('test-data');
+            const display = displayPublisher._published[displayPublisher._published.length - 1];
+            expect(display[0].text).to.not.match(/^</);
+        });
+
+        it('should default to menu layout when layoutType is not set', async () => {
+            const pages = [
+                {
+                    id: 'test-default',
+                    name: 'Test Default',
+                    lines: [
+                        {
+                            row: 1,
+                            left: {
+                                label: '',
+                                display: { type: 'label', text: 'ITEM' },
+                                button: { type: 'navigation', action: 'goto', target: 'detail' }
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                        }
+                    ]
+                }
+            ];
+            adapter.config.pages = pages;
+            adapter.breadcrumb = [{ id: 'test-default', name: 'Test Default' }];
+
+            await renderer.renderPage('test-default');
+            const display = displayPublisher._published[displayPublisher._published.length - 1];
+            expect(display[0].text).to.match(/^</);
+            expect(display[0].text).to.match(/>$/);
+        });
+
+        it('should add scroll indicators for list layout with pagination', async () => {
+            const lines = [];
+            for (let i = 1; i <= 9; i++) {
+                lines.push({
+                    row: 100 + i,
+                    left: { label: '', display: { type: 'label', text: `ITEM ${i}` }, button: { type: 'empty' } },
+                    right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                });
+            }
+            const pages = [{ id: 'test-list', name: 'Test List', layoutType: 'list', lines }];
+            adapter.config.pages = pages;
+            adapter.breadcrumb = [{ id: 'test-list', name: 'Test List' }];
+
+            // Page 1: should show v indicator at bottom but no ^ at top
+            await renderer.renderPage('test-list');
+            let display = displayPublisher._published[displayPublisher._published.length - 1];
+            expect(display[1].text).to.not.include('^');
+            expect(display[11].text).to.include('v');
+
+            // Page 2: should show ^ at top but no v at bottom
+            renderer.currentPageOffset = 1;
+            await renderer.renderPage('test-list');
+            display = displayPublisher._published[displayPublisher._published.length - 1];
+            expect(display[1].text).to.include('^');
+            expect(display[11].text).to.not.include('v');
+        });
+
+        it('should NOT add scroll indicators for non-list layouts', async () => {
+            // Use the existing long-page (no layoutType = defaults to menu)
+            await renderer.renderPage('long-page');
+            const display = displayPublisher._published[displayPublisher._published.length - 1];
+            // Row 12 (index 11) should not have v indicator
+            expect(display[11].text).to.not.include('v');
         });
     });
 

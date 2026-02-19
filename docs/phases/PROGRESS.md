@@ -1,7 +1,7 @@
 # MCDU Smart Home Controller - Progress Tracker
 
 **Last Updated:** 2026-02-19
-**Status:** Adapter Phase 3 (Business Logic) Complete - 109 tests passing
+**Status:** Adapter Phase 2 (Admin UI Redesign) + Phase 3 (Business Logic) Complete - Bug fixes applied
 
 ---
 
@@ -26,10 +26,80 @@ The project follows two levels of phasing:
 | Phase 1: Foundation (scaffold, MQTT, state tree) | DONE | 2026-02-16 |
 | Phase 2: Input System (scratchpad, validation, confirmation) | DONE | 2026-02-16 |
 | Phase 3: Business Logic (rendering, function keys, pagination) | DONE | 2026-02-19 |
-| Phase 4: Admin UI Redesign | NOT STARTED | -- |
+| Phase 2 (Adapter): Admin UI Redesign + Left/Right Line Model | DONE | 2026-02-19 |
+| Phase 4: Template System Enhancement | NOT STARTED | -- |
 | Phase 5: Testing and Hardware Deployment | NOT STARTED | -- |
 
 **Total Tests:** 109 (all passing)
+
+---
+
+## Bug Fixes (2026-02-19, commit 298ede5)
+
+Three critical bugs were identified and fixed during integration testing.
+
+### Bug Fix 1: MQTT Topic Prefix Check (lib/mqtt/MqttClient.js)
+
+**Root cause:** The `topic.startsWith(this.topicPrefix)` check in `publish()`, `subscribe()`, and `unsubscribe()` could match device IDs that happened to start with the prefix string. For example, a device ID of `mcdu-client-mcdu-pi` starts with `mcdu` (the topicPrefix), so the prefix was not added, resulting in the wrong topic `mcdu-client-mcdu-pi/display/set` instead of the correct `mcdu/mcdu-client-mcdu-pi/display/set`.
+
+**Fix:** Changed all three methods to check `topic.startsWith(\`${this.topicPrefix}/\`)` (with trailing slash). This ensures the prefix check only matches when the topic actually begins with the full prefix segment, not just a partial string match.
+
+**Affected lines:** publish (line 171), subscribe (line 203), unsubscribe (line 243).
+
+### Bug Fix 2: Admin UI jsonConfig Errors (admin/jsonConfig.json)
+
+**Root cause:** Multiple unsupported ioBroker jsonConfig features were used, causing errors in the Admin UI:
+- `"pattern"` property is not valid on `text` type inputs
+- `"disabled": "${!data.selectedDevice}"` -- the `!` negation operator is not supported in jsonConfig expressions
+- `"hidden": "${data.left.display.type === 'empty'}"` -- nested panel paths do not resolve in table context
+- `"jsonData": "...${JSON.stringify(data.pages)}"` -- JavaScript functions are not supported in jsonConfig expressions
+
+**Fix:** Removed all unsupported properties and expressions. Changed `saveDevicePages` to use `useNative: true` instead of embedding JS functions in jsonData expressions.
+
+### Bug Fix 3: main.js handleSaveDevicePages
+
+**Root cause:** The `handleSaveDevicePages` sendTo handler only supported receiving `{deviceId, pages}` directly, but the Admin UI with `useNative: true` sends the entire native config object.
+
+**Fix:** Updated the handler to support both formats -- direct `{deviceId, pages}` and `useNative` format (entire native config with `selectedDevice` and `pages` fields).
+
+---
+
+## What Was Completed in Adapter Phase 2: Admin UI Redesign (2026-02-19)
+
+The Admin UI was completely redesigned with a 3-tab layout and a new left/right line data model.
+
+### Left/Right Line Data Model
+
+- **Old format:** `{ row, subLabel, leftButton, display, rightButton }`
+- **New format:** `{ row, left: { label, display, button }, right: { label, display, button } }`
+- Backward compatibility via `lib/utils/lineNormalizer.js` (converts old to new on-the-fly)
+- Left content: left-aligned chars 1-12 (or full 24 if right side is empty)
+- Right content: right-aligned chars 13-24 (or full 24 if left side is empty)
+
+### Per-Device Page Storage
+
+- Pages stored in `devices.{deviceId}.config.pages` (JSON state in ioBroker)
+- sendTo commands: `loadDevicePages`, `saveDevicePages`
+- Migration: on first device connect, copies `native.pages` to the device state
+- Active device pages loaded into `config.pages` on connect/reconnect
+
+### Admin UI Tabs
+
+1. **General Settings** -- MQTT broker configuration
+2. **Device and Pages** -- device selector, load/save, pages accordion with left/right line editor
+3. **Advanced and About** -- performance settings, adapter info
+
+### Key Files Modified
+
+- `lib/utils/lineNormalizer.js` -- NEW: old/new format conversion
+- `lib/rendering/PageRenderer.js` -- left/right column composition
+- `lib/mqtt/ButtonSubscriber.js` -- getButtonConfig() supports both formats
+- `lib/input/InputModeManager.js` -- handleLSK() supports both formats
+- `main.js` -- loadDevicePages/saveDevicePages handlers, migration logic
+- `lib/state/StateTreeManager.js` -- createDeviceConfig()
+- `admin/jsonConfig.json` -- 3-tab device-centric layout
+- `io-package.json` -- native.pages migrated to new format
+- `lib/templates/*.json` -- all migrated to left/right model
 
 ---
 
@@ -166,11 +236,7 @@ Full aviation-style input system:
 
 ## Remaining Work
 
-### Adapter Phase 4: Admin Configuration UI Redesign
-
-The current `admin/jsonConfig.json` needs restructuring for better usability. This phase is not yet started.
-
-### Adapter Phase 5: Template System Enhancement
+### Adapter Phase 4: Template System Enhancement
 
 - State ID mapping (connecting display fields to real ioBroker state IDs)
 - Template preview functionality
@@ -181,6 +247,32 @@ The current `admin/jsonConfig.json` needs restructuring for better usability. Th
 - Deploy and test on ioBroker dev server (iobroker-dev, 10.10.5.65)
 - Deploy and test on Raspberry Pi (mcdu-pi, 10.10.2.190)
 - End-to-end integration testing with real MCDU hardware
+
+---
+
+## Files Modified in Bug Fix Session (2026-02-19, commit 298ede5)
+
+### Modified
+- `lib/mqtt/MqttClient.js` -- MQTT topic prefix check (trailing slash fix)
+- `admin/jsonConfig.json` -- Removed unsupported jsonConfig properties/expressions
+- `main.js` -- handleSaveDevicePages dual-format support
+
+---
+
+## Files Modified in Phase 2 Admin UI Session (2026-02-19)
+
+### Modified
+- `lib/rendering/PageRenderer.js` -- left/right column composition
+- `lib/mqtt/ButtonSubscriber.js` -- getButtonConfig() both formats
+- `lib/input/InputModeManager.js` -- handleLSK() both formats
+- `main.js` -- loadDevicePages/saveDevicePages, migration
+- `lib/state/StateTreeManager.js` -- createDeviceConfig()
+- `admin/jsonConfig.json` -- 3-tab device-centric layout
+- `io-package.json` -- native.pages new format
+- `lib/templates/*.json` -- all migrated to left/right model
+
+### Created
+- `lib/utils/lineNormalizer.js` -- old/new format conversion
 
 ---
 

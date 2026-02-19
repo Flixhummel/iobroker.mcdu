@@ -192,7 +192,10 @@ describe('ButtonSubscriber', () => {
     });
 
     describe('handleFunctionKey', () => {
-        it('should call navigateHome on MENU', async () => {
+        it('should call navigateHome on MENU when configured', async () => {
+            adapter.config.functionKeys = [
+                { key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }
+            ];
             let called = false;
             adapter.navigateHome = async () => { called = true; };
 
@@ -200,7 +203,10 @@ describe('ButtonSubscriber', () => {
             expect(called).to.be.true;
         });
 
-        it('should navigate to status page on INIT', async () => {
+        it('should navigate to configured target page on INIT', async () => {
+            adapter.config.functionKeys = [
+                { key: 'INIT', enabled: true, action: 'gotoPage', targetPageId: 'status-main' }
+            ];
             let switchedTo = null;
             adapter.switchToPage = async (id) => { switchedTo = id; };
 
@@ -208,12 +214,65 @@ describe('ButtonSubscriber', () => {
             expect(switchedTo).to.equal('status-main');
         });
 
-        it('should navigate to scenes page on FPLN', async () => {
+        it('should not navigate when key is disabled', async () => {
+            adapter.config.functionKeys = [
+                { key: 'FUEL', enabled: false, action: 'gotoPage', targetPageId: 'energie-main' }
+            ];
             let switchedTo = null;
             adapter.switchToPage = async (id) => { switchedTo = id; };
 
-            await subscriber.handleFunctionKey('FPLN');
-            expect(switchedTo).to.equal('scenes-main');
+            await subscriber.handleFunctionKey('FUEL');
+            expect(switchedTo).to.equal(null);
+        });
+
+        it('should handle missing functionKeys config gracefully', async () => {
+            adapter.config.functionKeys = undefined;
+            // Should not throw
+            await subscriber.handleFunctionKey('FUEL');
+        });
+
+        it('should still handle PREV_PAGE for pagination', async () => {
+            adapter.pageRenderer = { currentPageOffset: 1, totalPages: 3 };
+            let rendered = false;
+            adapter.renderCurrentPage = async () => { rendered = true; };
+
+            await subscriber.handleFunctionKey('PREV_PAGE');
+            expect(rendered).to.be.true;
+            expect(adapter.pageRenderer.currentPageOffset).to.equal(0);
+        });
+
+        it('should still handle NEXT_PAGE for pagination', async () => {
+            adapter.pageRenderer = { currentPageOffset: 0, totalPages: 3 };
+            let rendered = false;
+            adapter.renderCurrentPage = async () => { rendered = true; };
+
+            await subscriber.handleFunctionKey('NEXT_PAGE');
+            expect(rendered).to.be.true;
+            expect(adapter.pageRenderer.currentPageOffset).to.equal(1);
+        });
+
+        it('should handle directAccess action with scratchpad content', async () => {
+            adapter.config.functionKeys = [
+                { key: 'DIR', enabled: true, action: 'directAccess', targetPageId: '' }
+            ];
+            let switchedTo = null;
+            adapter.switchToPage = async (id) => { switchedTo = id; };
+
+            let cleared = false;
+            const inputModeManager = {
+                getMode: () => 'normal',
+                setState: async () => {},
+                getScratchpad: () => ({
+                    getContent: () => 'lights-main',
+                    clear: () => { cleared = true; },
+                    renderError: async () => {}
+                })
+            };
+            subscriber.setInputModeManager(inputModeManager);
+
+            await subscriber.handleFunctionKey('DIR');
+            expect(switchedTo).to.equal('lights-main');
+            expect(cleared).to.be.true;
         });
     });
 
@@ -234,6 +293,9 @@ describe('ButtonSubscriber', () => {
         });
 
         it('should extract deviceId from topic', async () => {
+            adapter.config.functionKeys = [
+                { key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }
+            ];
             const topic = 'mcdu/my-device-123/buttons/event';
             const message = Buffer.from(JSON.stringify({
                 button: 'MENU',
@@ -278,6 +340,9 @@ describe('ButtonSubscriber', () => {
 
     describe('Edit Mode Clearing', () => {
         it('should clear edit mode on function keys except PREV/NEXT PAGE', async () => {
+            adapter.config.functionKeys = [
+                { key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }
+            ];
             const inputModeManager = {
                 getMode: () => 'edit',
                 setState: async () => {},

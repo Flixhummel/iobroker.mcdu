@@ -235,6 +235,22 @@
               "help": "Page ID of parent page (leave empty for root page)"
             },
             {
+              "type": "select",
+              "attr": "layoutType",
+              "sm": 12,
+              "md": 4,
+              "label": "Layout Type",
+              "options": [
+                {"label": "Menu", "value": "menu"},
+                {"label": "Data Display", "value": "data"},
+                {"label": "Input Form", "value": "input"},
+                {"label": "Confirmation", "value": "confirmation"},
+                {"label": "List", "value": "list"}
+              ],
+              "default": "menu",
+              "help": "Determines how lines are rendered on the display"
+            },
+            {
               "type": "table",
               "attr": "lines",
               "label": "Lines Configuration",
@@ -292,6 +308,56 @@
                   "default": ""
                 }
               ]
+            }
+          ]
+        }
+      }
+    },
+    "functionKeysTab": {
+      "type": "panel",
+      "label": "Function Keys",
+      "items": {
+        "_fkInfo": {
+          "type": "staticText",
+          "text": "Configure which page each function key navigates to. MENU is always fixed to home page. PREV/NEXT PAGE are hardcoded for pagination.",
+          "sm": 12
+        },
+        "functionKeys": {
+          "type": "table",
+          "label": "Function Key Assignments",
+          "sm": 12,
+          "noDelete": true,
+          "items": [
+            {
+              "type": "text",
+              "attr": "key",
+              "title": "Button",
+              "width": "80px",
+              "readOnly": true
+            },
+            {
+              "type": "checkbox",
+              "attr": "enabled",
+              "title": "Active",
+              "width": "60px"
+            },
+            {
+              "type": "select",
+              "attr": "action",
+              "title": "Action",
+              "width": "140px",
+              "options": [
+                {"label": "Go to Page", "value": "gotoPage"},
+                {"label": "Home (MENU)", "value": "navigateHome"},
+                {"label": "Direct Access", "value": "directAccess"}
+              ]
+            },
+            {
+              "type": "autocompleteSendTo",
+              "attr": "targetPageId",
+              "title": "Target Page",
+              "command": "getPageList",
+              "freeSolo": true
             }
           ]
         }
