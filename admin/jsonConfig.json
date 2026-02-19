@@ -158,6 +158,7 @@
               "jsonData": "{\"deviceId\": \"${data.selectedDevice}\"}",
               "variant": "contained",
               "label": "Load Config",
+              "showProcess": true,
               "sm": 6,
               "md": 3,
               "disabled": "!data.selectedDevice"
@@ -168,6 +169,7 @@
               "variant": "contained",
               "label": "Save Config",
               "useNative": true,
+              "showProcess": true,
               "sm": 6,
               "md": 3,
               "disabled": "!data.selectedDevice"

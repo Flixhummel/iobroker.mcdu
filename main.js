@@ -910,18 +910,9 @@ class McduAdapter extends utils.Adapter {
         // Flatten template pages for Admin UI
         const flatPages = flattenPages(template.pages || []);
 
-        // Push template pages into native config so Admin UI refreshes
-        await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-            native: { pages: flatPages }
-        });
-
+        // Return as native-shaped object so admin can merge it
         this.sendTo(obj.from, obj.command, {
-            success: true,
-            template: {
-                name: template.name,
-                description: template.description,
-                pages: flatPages
-            }
+            native: { pages: flatPages }
         }, obj.callback);
 
         this.log.info(`Template '${template.name}' loaded successfully`);
@@ -1012,7 +1003,7 @@ class McduAdapter extends utils.Adapter {
                 }
             }
 
-            // Flatten lines for Admin UI table (nested dot-paths don't work in jsonConfig tables)
+            // Flatten lines for Admin UI table
             const flatPages = flattenPages(pages);
 
             // Also load function keys for this device
@@ -1027,13 +1018,12 @@ class McduAdapter extends utils.Adapter {
                 }
             }
 
-            // Push loaded data into native config so Admin UI refreshes
-            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                native: { pages: flatPages, functionKeys }
-            });
-
             this.log.info(`loadDevicePages: Loaded ${pages.length} pages for device ${deviceId}`);
-            this.sendTo(obj.from, obj.command, { success: true, pages: flatPages }, obj.callback);
+            // Return data in response — jsonConfig sendTo shows this as result
+            // Also return as native-shaped object so admin can merge it
+            this.sendTo(obj.from, obj.command, {
+                native: { pages: flatPages, functionKeys }
+            }, obj.callback);
         } catch (error) {
             this.log.error(`Error in loadDevicePages: ${error.message}`);
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
