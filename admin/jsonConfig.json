@@ -139,9 +139,10 @@
               "sm": 12
             },
             "selectedDevice": {
-              "type": "selectSendTo",
-              "command": "browseDevices",
-              "label": "Device",
+              "type": "text",
+              "label": "Device ID",
+              "placeholder": "mcdu-client-mcdu-pi",
+              "help": "Enter the MCDU device ID (shown in adapter log on device connect)",
               "sm": 12,
               "md": 6
             },
