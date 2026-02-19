@@ -156,6 +156,7 @@
               "type": "sendTo",
               "command": "loadDevicePages",
               "jsonData": "{\"deviceId\": \"${data.selectedDevice}\"}",
+              "useNative": true,
               "variant": "contained",
               "label": "Load Config",
               "showProcess": true,
@@ -166,9 +167,10 @@
             "saveDevicePagesBtn": {
               "type": "sendTo",
               "command": "saveDevicePages",
+              "jsonData": "${JSON.stringify(data)}",
+              "useNative": true,
               "variant": "contained",
               "label": "Save Config",
-              "useNative": true,
               "showProcess": true,
               "sm": 6,
               "md": 3,
@@ -248,22 +250,10 @@
                   "default": 1
                 },
                 {
-                  "type": "select",
-                  "attr": "leftDisplayType",
-                  "title": "L-Type",
-                  "width": "90px",
-                  "default": "empty",
-                  "options": [
-                    {"label": "-", "value": "empty"},
-                    {"label": "Label", "value": "label"},
-                    {"label": "Datapoint", "value": "datapoint"}
-                  ]
-                },
-                {
                   "type": "text",
                   "attr": "leftText",
                   "title": "L-Text",
-                  "width": "100px",
+                  "width": "120px",
                   "default": ""
                 },
                 {
@@ -285,13 +275,6 @@
                   ]
                 },
                 {
-                  "type": "text",
-                  "attr": "leftLabel",
-                  "title": "L-Label",
-                  "width": "80px",
-                  "default": ""
-                },
-                {
                   "type": "select",
                   "attr": "leftButtonType",
                   "title": "L-Btn",
@@ -307,26 +290,14 @@
                   "type": "text",
                   "attr": "leftTarget",
                   "title": "L-Target",
-                  "width": "100px",
+                  "width": "120px",
                   "default": ""
-                },
-                {
-                  "type": "select",
-                  "attr": "rightDisplayType",
-                  "title": "R-Type",
-                  "width": "90px",
-                  "default": "empty",
-                  "options": [
-                    {"label": "-", "value": "empty"},
-                    {"label": "Label", "value": "label"},
-                    {"label": "Datapoint", "value": "datapoint"}
-                  ]
                 },
                 {
                   "type": "text",
                   "attr": "rightText",
                   "title": "R-Text",
-                  "width": "100px",
+                  "width": "120px",
                   "default": ""
                 },
                 {
@@ -348,13 +319,6 @@
                   ]
                 },
                 {
-                  "type": "text",
-                  "attr": "rightLabel",
-                  "title": "R-Label",
-                  "width": "80px",
-                  "default": ""
-                },
-                {
                   "type": "select",
                   "attr": "rightButtonType",
                   "title": "R-Btn",
@@ -370,7 +334,7 @@
                   "type": "text",
                   "attr": "rightTarget",
                   "title": "R-Target",
-                  "width": "100px",
+                  "width": "120px",
                   "default": ""
                 }
               ]
@@ -447,6 +411,7 @@
               "type": "sendTo",
               "command": "loadTemplate",
               "jsonData": "{\"templateId\": \"${data.selectedTemplate}\"}",
+              "useNative": true,
               "variant": "contained",
               "label": "Apply Template",
               "sm": 12,

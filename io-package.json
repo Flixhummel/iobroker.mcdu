@@ -99,37 +99,7 @@
       { "key": "ATC", "enabled": true, "action": "gotoPage", "targetPageId": "meldungen-main" },
       { "key": "AIRPORT", "enabled": true, "action": "gotoPage", "targetPageId": "raeume-main" }
     ],
-    "pages": [
-      {
-        "id": "home-main",
-        "name": "Hauptmenue",
-        "layoutType": "menu",
-        "parent": null,
-        "lines": [
-          {
-            "row": 1,
-            "leftLabel": "", "leftDisplayType": "label", "leftText": "BELEUCHTUNG", "leftColor": "white",
-            "leftButtonType": "empty", "leftTarget": "",
-            "rightLabel": "", "rightDisplayType": "empty", "rightText": "", "rightColor": "",
-            "rightButtonType": "empty", "rightTarget": ""
-          },
-          {
-            "row": 3,
-            "leftLabel": "", "leftDisplayType": "label", "leftText": "KLIMA", "leftColor": "white",
-            "leftButtonType": "empty", "leftTarget": "",
-            "rightLabel": "", "rightDisplayType": "empty", "rightText": "", "rightColor": "",
-            "rightButtonType": "empty", "rightTarget": ""
-          },
-          {
-            "row": 5,
-            "leftLabel": "", "leftDisplayType": "label", "leftText": "SYSTEM STATUS", "leftColor": "white",
-            "leftButtonType": "empty", "leftTarget": "",
-            "rightLabel": "", "rightDisplayType": "empty", "rightText": "", "rightColor": "",
-            "rightButtonType": "empty", "rightTarget": ""
-          }
-        ]
-      }
-    ]
+    "pages": []
   },
   "objects": [],
   "instanceObjects": [

@@ -1037,19 +1037,24 @@ class McduAdapter extends utils.Adapter {
      */
     async handleSaveDevicePages(obj) {
         try {
-            // Support both direct {deviceId, pages} and useNative (entire native config)
+            // jsonData sends the full form data as obj.message (all native config fields)
+            // Also support direct {deviceId, pages} for programmatic calls
             let deviceId, pages, functionKeys;
-            if (obj.message?.deviceId) {
-                deviceId = obj.message.deviceId;
-                pages = obj.message.pages;
-            } else {
-                // useNative sends the full native config
-                deviceId = obj.message?.selectedDevice;
-                pages = obj.message?.pages;
-                functionKeys = obj.message?.functionKeys;
+
+            const msg = obj.message || {};
+            if (msg.selectedDevice) {
+                // From Admin UI jsonData — full form data with selectedDevice, pages, functionKeys, etc.
+                deviceId = msg.selectedDevice;
+                pages = msg.pages;
+                functionKeys = msg.functionKeys;
+            } else if (msg.deviceId) {
+                // Direct programmatic call
+                deviceId = msg.deviceId;
+                pages = msg.pages;
+                functionKeys = msg.functionKeys;
             }
 
-            this.log.debug(`saveDevicePages: keys=${Object.keys(obj.message || {}).join(',')}, deviceId=${deviceId}`);
+            this.log.info(`saveDevicePages: deviceId=${deviceId}, pages=${Array.isArray(pages) ? pages.length : 'N/A'}, fk=${Array.isArray(functionKeys) ? functionKeys.length : 'N/A'}`);
 
             if (!deviceId) {
                 this.sendTo(obj.from, obj.command, { error: 'No device selected' }, obj.callback);
