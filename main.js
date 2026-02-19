@@ -788,7 +788,7 @@ class McduAdapter extends utils.Adapter {
             return;
         }
         
-        this.log.info(`Received admin message: ${obj.command}`);
+        this.log.debug(`Received admin message: ${obj.command}`);
         
         try {
             switch (obj.command) {
@@ -888,23 +888,18 @@ class McduAdapter extends utils.Adapter {
      */
     async handleBrowseDevices(obj) {
         try {
-            // Get all channel objects under devices (startkey without trailing dot to include direct children)
-            const devices = await this.getObjectViewAsync('system', 'channel', {
+            // Query device-type objects (not channels — sub-channels are type channel, devices are type device)
+            const devices = await this.getObjectViewAsync('system', 'device', {
                 startkey: `${this.namespace}.devices`,
                 endkey: `${this.namespace}.devices\u9999`
             });
 
             const deviceList = [];
 
-            this.log.info(`browseDevices: query returned ${devices?.rows?.length || 0} rows`);
-
             if (devices && devices.rows) {
                 for (const row of devices.rows) {
-                    // Only include direct children (depth 4: mcdu.0.devices.{deviceId})
-                    // Skip sub-channels like mcdu.0.devices.{deviceId}.info
                     const parts = row.id.split('.');
-                    this.log.info(`browseDevices: checking ${row.id} (${parts.length} parts)`);
-                    if (parts.length !== 4) {
+                    if (parts.length < 4) {
                         continue;
                     }
                     const deviceId = parts[3];
@@ -1091,16 +1086,14 @@ class McduAdapter extends utils.Adapter {
      * This ensures the adapter works without requiring the mcdu-client to re-announce.
      */
     async recoverKnownDevices() {
-        this.log.info('Recovering known devices from object tree...');
         try {
             const startkey = `${this.namespace}.devices`;
             const endkey = `${this.namespace}.devices\u9999`;
-            this.log.info(`recoverKnownDevices: querying channels [${startkey} .. ${endkey}]`);
-            const devices = await this.getObjectViewAsync('system', 'channel', {
+            const devices = await this.getObjectViewAsync('system', 'device', {
                 startkey,
                 endkey
             });
-            this.log.info(`recoverKnownDevices: got ${devices?.rows?.length || 0} rows`);
+            this.log.info(`recoverKnownDevices: got ${devices?.rows?.length || 0} device objects`);
 
             if (!devices || !devices.rows) {
                 return;
@@ -1108,14 +1101,12 @@ class McduAdapter extends utils.Adapter {
 
             for (const row of devices.rows) {
                 const id = row.id || row.value?._id;
-                this.log.info(`recoverKnownDevices: row id=${id}, keys=${JSON.stringify(Object.keys(row))}`);
                 if (!id) {
                     continue;
                 }
+                // Extract deviceId from mcdu.0.devices.{deviceId}
                 const parts = id.split('.');
-                // Direct device children: mcdu.0.devices.{deviceId} = 4 parts
-                if (parts.length !== 4 || parts[2] !== 'devices') {
-                    this.log.info(`recoverKnownDevices: skipping ${id} (${parts.length} parts)`);
+                if (parts.length < 4) {
                     continue;
                 }
                 const deviceId = parts[3];
