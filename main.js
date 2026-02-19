@@ -785,7 +785,7 @@ class McduAdapter extends utils.Adapter {
             return;
         }
         
-        this.log.debug(`Received admin message: ${obj.command}`);
+        this.log.info(`Received admin message: ${obj.command}`);
         
         try {
             switch (obj.command) {
@@ -890,30 +890,24 @@ class McduAdapter extends utils.Adapter {
                 startkey: `${this.namespace}.devices.`,
                 endkey: `${this.namespace}.devices.\u9999`
             });
-            
+
             const deviceList = [];
-            
-            const prefix = `${this.namespace}.devices.`;
+
+            this.log.info(`browseDevices: query returned ${devices?.rows?.length || 0} rows`);
+
             if (devices && devices.rows) {
                 for (const row of devices.rows) {
                     // Only include direct children (depth 4: mcdu.0.devices.{deviceId})
                     // Skip sub-channels like mcdu.0.devices.{deviceId}.info
                     const parts = row.id.split('.');
+                    this.log.info(`browseDevices: checking ${row.id} (${parts.length} parts)`);
                     if (parts.length !== 4) {
                         continue;
                     }
                     const deviceId = parts[3];
 
-                    // Get hostname from info state (if available)
-                    let hostname = 'unknown';
-                    try {
-                        const hostnameState = await this.getStateAsync(`devices.${deviceId}.info.hostname`);
-                        if (hostnameState && hostnameState.val) {
-                            hostname = hostnameState.val;
-                        }
-                    } catch (err) {
-                        this.log.debug(`Could not get hostname for ${deviceId}: ${err.message}`);
-                    }
+                    // Get hostname from native data (more reliable than state)
+                    const hostname = row.value?.native?.hostname || 'unknown';
 
                     deviceList.push({
                         label: `${deviceId} (${hostname})`,
@@ -921,8 +915,8 @@ class McduAdapter extends utils.Adapter {
                     });
                 }
             }
-            
-            this.log.info(`browseDevices: Found ${deviceList.length} devices`);
+
+            this.log.info(`browseDevices: Found ${deviceList.length} devices: ${JSON.stringify(deviceList)}`);
             this.sendTo(obj.from, obj.command, deviceList, obj.callback);
             
         } catch (error) {
