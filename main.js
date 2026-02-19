@@ -430,22 +430,25 @@ class McduAdapter extends utils.Adapter {
                     this.log.error('Button action missing target');
                     return;
                 }
-                
-                if (action === 'toggle') {
+
+                // Default action for datapoint is 'toggle' (Admin UI flat format omits action field)
+                const dpAction = action || 'toggle';
+
+                if (dpAction === 'toggle') {
                     // Toggle boolean state
                     const state = await this.getForeignStateAsync(target);
                     const newVal = !state?.val;
                     await this.setForeignStateAsync(target, newVal);
                     this.log.debug(`Toggled ${target}: ${newVal}`);
                 }
-                else if (action === 'increment') {
+                else if (dpAction === 'increment') {
                     // Increment numeric state
                     const state = await this.getForeignStateAsync(target);
                     const newVal = (parseFloat(state?.val) || 0) + 1;
                     await this.setForeignStateAsync(target, newVal);
                     this.log.debug(`Incremented ${target}: ${newVal}`);
                 }
-                else if (action === 'decrement') {
+                else if (dpAction === 'decrement') {
                     // Decrement numeric state
                     const state = await this.getForeignStateAsync(target);
                     const newVal = (parseFloat(state?.val) || 0) - 1;
@@ -453,7 +456,7 @@ class McduAdapter extends utils.Adapter {
                     this.log.debug(`Decremented ${target}: ${newVal}`);
                 }
                 else {
-                    this.log.warn(`Unknown action: ${action}`);
+                    this.log.warn(`Unknown action: ${dpAction}`);
                 }
             }
             else {
