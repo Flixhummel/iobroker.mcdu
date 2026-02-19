@@ -416,10 +416,14 @@ class McduAdapter extends utils.Adapter {
             }
             
             const { type, action, target } = buttonConfig;
-            
-            if (type === 'navigation' && action === 'goto') {
-                // Switch to target page
-                await this.switchToPage(target);
+
+            if (type === 'navigation') {
+                // Switch to target page (action 'goto' is optional/default)
+                if (target) {
+                    await this.switchToPage(target);
+                } else {
+                    this.log.warn('Navigation button has no target page');
+                }
             }
             else if (type === 'datapoint') {
                 if (!target) {
@@ -1021,7 +1025,7 @@ class McduAdapter extends utils.Adapter {
             // Flatten lines for Admin UI table
             const flatPages = flattenPages(pages);
 
-            // Also load function keys for this device
+            // Also load function keys for this device (fall back to adapter config)
             const fkStateId = `devices.${deviceId}.config.functionKeys`;
             const fkState = await this.getStateAsync(fkStateId);
             let functionKeys = [];
@@ -1031,6 +1035,11 @@ class McduAdapter extends utils.Adapter {
                 } catch (e) {
                     this.log.warn(`Invalid JSON in ${fkStateId}: ${e.message}`);
                 }
+            }
+            // Fall back to adapter config if device has no FK
+            if (!Array.isArray(functionKeys) || functionKeys.length === 0) {
+                functionKeys = this.config.functionKeys || [];
+                this.log.info(`loadDevicePages: Using adapter config FK (${functionKeys.length} keys) for device ${deviceId}`);
             }
 
             this.log.info(`loadDevicePages: Loaded ${pages.length} pages for device ${deviceId}`);
