@@ -1091,11 +1091,16 @@ class McduAdapter extends utils.Adapter {
      * This ensures the adapter works without requiring the mcdu-client to re-announce.
      */
     async recoverKnownDevices() {
+        this.log.info('Recovering known devices from object tree...');
         try {
+            const startkey = `${this.namespace}.devices`;
+            const endkey = `${this.namespace}.devices\u9999`;
+            this.log.info(`recoverKnownDevices: querying channels [${startkey} .. ${endkey}]`);
             const devices = await this.getObjectViewAsync('system', 'channel', {
-                startkey: `${this.namespace}.devices`,
-                endkey: `${this.namespace}.devices\u9999`
+                startkey,
+                endkey
             });
+            this.log.info(`recoverKnownDevices: got ${devices?.rows?.length || 0} rows`);
 
             if (!devices || !devices.rows) {
                 return;
