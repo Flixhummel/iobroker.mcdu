@@ -1107,9 +1107,15 @@ class McduAdapter extends utils.Adapter {
             }
 
             for (const row of devices.rows) {
-                const parts = row.id.split('.');
+                const id = row.id || row.value?._id;
+                this.log.info(`recoverKnownDevices: row id=${id}, keys=${JSON.stringify(Object.keys(row))}`);
+                if (!id) {
+                    continue;
+                }
+                const parts = id.split('.');
                 // Direct device children: mcdu.0.devices.{deviceId} = 4 parts
                 if (parts.length !== 4 || parts[2] !== 'devices') {
+                    this.log.info(`recoverKnownDevices: skipping ${id} (${parts.length} parts)`);
                     continue;
                 }
                 const deviceId = parts[3];
