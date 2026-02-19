@@ -41,6 +41,7 @@
     "mode": "daemon",
     "type": "hardware",
     "compact": true,
+    "messagebox": true,
     "connectionType": "local",
     "dataSource": "push",
     "tier": 3,
