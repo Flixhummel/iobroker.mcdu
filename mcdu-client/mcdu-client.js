@@ -290,7 +290,7 @@ function handleDisplaySet(data) {
     displayCache.lines[i] = {text, color};
     
     if (!CONFIG.mockMode) {
-      mcdu.setLine(i + 1, text, color);
+      mcdu.setLine(i, text, color);
     }
   });
   
@@ -325,7 +325,7 @@ function handleDisplayLine(data) {
     displayCache.lines[idx] = {segments: validSegments};
     
     if (!CONFIG.mockMode) {
-      mcdu.setLine(data.lineNumber, validSegments);
+      mcdu.setLine(idx, validSegments);
     }
   } else {
     // Simple mode: single color for entire line (backward compatible)
@@ -337,7 +337,7 @@ function handleDisplayLine(data) {
     displayCache.lines[idx] = {text, color};
     
     if (!CONFIG.mockMode) {
-      mcdu.setLine(data.lineNumber, text, color);
+      mcdu.setLine(idx, text, color);
     }
   }
   
@@ -526,15 +526,16 @@ function connectMCDU() {
     
     log.info('MCDU device connected (VID:', CONFIG.hardware.vendorId.toString(16), 'PID:', CONFIG.hardware.productId.toString(16) + ')');
     
-    // Initialize display
+    // Initialize display — send init packets (0xf0), then wait before any display writes.
+    // The WinWing firmware needs time to process init before accepting display data (0xf2).
     mcdu.initDisplay();
-    log.info('Display initialized (14 lines × 24 chars)');
-    
-    // Set initial LEDs (backlights on, others off)
+    log.info('Display initialized (14 lines x 24 chars)');
+
+    // Set initial LEDs (backlights on, others off) — LED packets (0x02) work immediately
     mcdu.setAllLEDs(ledCache);
     log.info('LEDs initialized');
-    
-    // Start button reading
+
+    // Start button reading — also drains any pending input reports
     mcdu.startButtonReading((buttonCodes) => {
       // Map button codes to names
       for (const code of buttonCodes) {
@@ -544,8 +545,19 @@ function connectMCDU() {
         }
       }
     }, CONFIG.performance.buttonPollRate);
-    
+
     log.info('Button reading started (' + CONFIG.performance.buttonPollRate + 'Hz)');
+
+    // Clear display after a delay to replace WinWing boot logo with blank screen.
+    // The delay gives firmware time to fully process init packets before display data.
+    setTimeout(function() {
+      try {
+        mcdu.clear();
+        log.info('Display cleared (boot logo replaced)');
+      } catch (err) {
+        log.error('Failed to clear display:', err.message);
+      }
+    }, 500);
     
   } catch (err) {
     log.error('Failed to connect to MCDU:', err.message);
@@ -662,12 +674,12 @@ function shutdown() {
   
   log.info('Shutting down...');
   
-  // Clear display
+  // Turn off LEDs only — do NOT send display data (clear/updateDisplay) before exit.
+  // Sending display packets (0xf2) immediately before the HID device is closed by
+  // process exit can leave the WinWing firmware in a bad state where it ignores
+  // display data on the next device open (requires USB power cycle to recover).
   if (!CONFIG.mockMode && mcdu) {
     try {
-      mcdu.clear();
-      
-      // Turn off all LEDs except backlights
       mcdu.setAllLEDs({
         FAIL: false,
         FM: false,
