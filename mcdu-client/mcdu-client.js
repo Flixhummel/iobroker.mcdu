@@ -526,14 +526,12 @@ function connectMCDU() {
     
     log.info('MCDU device connected (VID:', CONFIG.hardware.vendorId.toString(16), 'PID:', CONFIG.hardware.productId.toString(16) + ')');
     
-    // Initialize display — send init packets (0xf0), then clear boot logo immediately.
+    // Initialize display — send init packets (0xf0).
+    // Do NOT call clear() here — the firmware only accepts one full display write
+    // per connection. We save that write for the first MQTT display/set message,
+    // which will naturally replace the WinWing boot logo.
     mcdu.initDisplay();
     log.info('Display initialized (14 lines x 24 chars)');
-
-    // Clear WinWing boot logo — done before MQTT subscribes so retained messages
-    // won't be overwritten by a delayed clear().
-    mcdu.clear();
-    log.info('Display cleared (boot logo replaced)');
 
     // Set initial LEDs (backlights on, others off) — LED packets (0x02) work immediately
     mcdu.setAllLEDs(ledCache);
