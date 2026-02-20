@@ -200,6 +200,12 @@ function connectMQTT() {
       topic('status/ping')
     ];
     
+    // Connect MCDU hardware NOW — after MQTT TCP is established so the
+    // LAN9512 USB/Ethernet chip is not busy with TCP handshake during initDisplay().
+    // Node.js is single-threaded: retained 'display/set' won't fire until after
+    // connectMCDU() returns, so the display is ready before the first write.
+    connectMCDU();
+
     mqttClient.subscribe(topics, {qos: 1}, (err) => {
       if (err) {
         log.error('Subscribe failed:', err);
@@ -735,12 +741,10 @@ function main() {
   log.info('Mock mode:', CONFIG.mockMode);
   log.info('===============================');
   
-  // Connect to MQTT broker
+  // Connect to MQTT broker first — connectMCDU() is called inside the
+  // on('connect') callback so MCDU init happens after TCP is established.
   connectMQTT();
-  
-  // Connect to MCDU hardware
-  connectMCDU();
-  
+
   log.info('Startup complete');
 }
 
