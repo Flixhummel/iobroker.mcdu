@@ -537,18 +537,19 @@ function connectMCDU() {
     mcdu.setAllLEDs(ledCache);
     log.info('LEDs initialized');
 
-    // Start button reading — also drains any pending input reports
-    mcdu.startButtonReading((buttonCodes) => {
-      // Map button codes to names
-      for (const code of buttonCodes) {
-        const buttonName = getButtonName(code);
-        if (buttonName) {
-          handleButtonEvent(buttonName, 'press');
+    // Delay button reading by 3s to allow the first display/set message to render
+    // without USB bandwidth contention from the HID read loop.
+    setTimeout(function() {
+      mcdu.startButtonReading((buttonCodes) => {
+        for (const code of buttonCodes) {
+          const buttonName = getButtonName(code);
+          if (buttonName) {
+            handleButtonEvent(buttonName, 'press');
+          }
         }
-      }
-    }, CONFIG.performance.buttonPollRate);
-
-    log.info('Button reading started (' + CONFIG.performance.buttonPollRate + 'Hz)');
+      }, CONFIG.performance.buttonPollRate);
+      log.info('Button reading started (' + CONFIG.performance.buttonPollRate + 'Hz)');
+    }, 3000);
     
   } catch (err) {
     log.error('Failed to connect to MCDU:', err.message);
