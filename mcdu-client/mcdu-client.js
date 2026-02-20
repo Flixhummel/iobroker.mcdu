@@ -287,19 +287,26 @@ function handleDisplaySet(data) {
   }
   
   log.info('Display set received:', data.lines.length, 'lines, line0:', (data.lines[0] && data.lines[0].text || '').trim());
-  
+
   // Update cache and set lines
   data.lines.forEach((line, i) => {
     const text = padOrTruncate(line.text, 24);
     const color = validateColor(line.color);
-    
+
     displayCache.lines[i] = {text, color};
-    
+
     if (!CONFIG.mockMode) {
       mcdu.setLine(i, text, color);
     }
   });
-  
+
+  // On the very first render: call initDisplay() immediately before updateDisplay()
+  // so 0xf2 display data follows 0xf0 init packets within milliseconds.
+  if (!CONFIG.mockMode && stats.displaysRendered === 0) {
+    log.info('First render: calling initDisplay() now');
+    mcdu.initDisplay();
+  }
+
   // Render (throttled)
   updateDisplay();
 }
@@ -532,30 +539,27 @@ function connectMCDU() {
     
     log.info('MCDU device connected (VID:', CONFIG.hardware.vendorId.toString(16), 'PID:', CONFIG.hardware.productId.toString(16) + ')');
     
-    // Initialize display — send init packets (0xf0).
-    // Do NOT call clear() here — the firmware only accepts one full display write
-    // per connection. We save that write for the first MQTT display/set message,
-    // which will naturally replace the WinWing boot logo.
-    mcdu.initDisplay();
-    log.info('Display initialized (14 lines x 24 chars)');
+    // Open HID device only — do NOT call initDisplay() yet.
+    // The firmware has a tight timing window: 0xf2 display data must follow
+    // 0xf0 init packets within milliseconds or the display module closes.
+    // initDisplay() is deferred to handleDisplaySet() so it runs immediately
+    // before the first updateDisplay() call with real content.
+    log.info('MCDU device opened, deferring initDisplay to first render');
 
     // Set initial LEDs (backlights on, others off) — LED packets (0x02) work immediately
     mcdu.setAllLEDs(ledCache);
     log.info('LEDs initialized');
 
-    // Delay button reading by 3s to allow the first display/set message to render
-    // without USB bandwidth contention from the HID read loop.
-    setTimeout(function() {
-      mcdu.startButtonReading((buttonCodes) => {
-        for (const code of buttonCodes) {
-          const buttonName = getButtonName(code);
-          if (buttonName) {
-            handleButtonEvent(buttonName, 'press');
-          }
+    // Start button reading immediately — buttons work regardless of display state
+    mcdu.startButtonReading((buttonCodes) => {
+      for (const code of buttonCodes) {
+        const buttonName = getButtonName(code);
+        if (buttonName) {
+          handleButtonEvent(buttonName, 'press');
         }
-      }, CONFIG.performance.buttonPollRate);
-      log.info('Button reading started (' + CONFIG.performance.buttonPollRate + 'Hz)');
-    }, 3000);
+      }
+    }, CONFIG.performance.buttonPollRate);
+    log.info('Button reading started (' + CONFIG.performance.buttonPollRate + 'Hz)');
     
   } catch (err) {
     log.error('Failed to connect to MCDU:', err.message);
