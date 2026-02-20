@@ -280,7 +280,7 @@ function handleDisplaySet(data) {
     return;
   }
   
-  log.info('Display set received:', data.lines.length, 'lines, line0:', data.lines[0]?.text?.trim());
+  log.info('Display set received:', data.lines.length, 'lines, line0:', (data.lines[0] && data.lines[0].text || '').trim());
   
   // Update cache and set lines
   data.lines.forEach((line, i) => {
