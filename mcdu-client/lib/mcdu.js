@@ -288,9 +288,28 @@ class MCDU {
         });
     }
 
+    /**
+     * Stop button reading and clean up the HID read thread.
+     * MUST be called before close() or process exit to prevent
+     * node-hid read thread from corrupting the USB endpoint state.
+     */
+    stopButtonReading() {
+        if (this.device) {
+            this.device.removeAllListeners('data');
+            try {
+                this.device.setNonBlocking(1);
+            } catch (e) {
+                // may fail if device already closed
+            }
+        }
+        this.buttonCallback = null;
+    }
+
     close() {
+        this.stopButtonReading();
         if (this.device) {
             this.device.close();
+            this.device = null;
             console.log('Device closed');
         }
     }
