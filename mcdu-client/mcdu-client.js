@@ -674,12 +674,15 @@ function shutdown() {
   
   log.info('Shutting down...');
   
-  // Turn off LEDs only — do NOT send display data (clear/updateDisplay) before exit.
-  // Sending display packets (0xf2) immediately before the HID device is closed by
-  // process exit can leave the WinWing firmware in a bad state where it ignores
-  // display data on the next device open (requires USB power cycle to recover).
+  // CRITICAL: Stop button reading FIRST to clean up the node-hid read thread.
+  // If the process exits with an active data listener, node-hid's read thread
+  // can corrupt the USB endpoint state, making the display unresponsive on next open.
   if (!CONFIG.mockMode && mcdu) {
     try {
+      mcdu.stopButtonReading();
+      log.info('Button reading stopped');
+
+      // Turn off LEDs — do NOT send display data (0xf2) before exit.
       mcdu.setAllLEDs({
         FAIL: false,
         FM: false,
