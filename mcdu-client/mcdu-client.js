@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+require('dotenv').config({ path: require('path').join(__dirname, 'config.env') });
 /**
  * MCDU MQTT Client - Phase 3a
- * 
+ *
  * Hardware bridge between WINWING MCDU-32-CAPTAIN and MQTT broker.
  * Optimized for Raspberry Pi 1 Model B Rev 2 (ARMv6, 512MB RAM).
- * 
+ *
  * Contract: See ../PHASE3A-SPEC.md for MQTT topics and message formats.
  */
 
