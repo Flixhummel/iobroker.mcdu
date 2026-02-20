@@ -280,7 +280,7 @@ function handleDisplaySet(data) {
     return;
   }
   
-  log.debug('Display set:', data.lines.length, 'lines');
+  log.info('Display set received:', data.lines.length, 'lines, line0:', data.lines[0]?.text?.trim());
   
   // Update cache and set lines
   data.lines.forEach((line, i) => {
@@ -476,7 +476,7 @@ function updateDisplay() {
   displayCache.lastUpdate = now;
   stats.displaysRendered++;
   
-  log.debug('Display rendered');
+  log.info('Display rendered (writes:', stats.displaysRendered, ')');
 }
 
 let lastLEDUpdate = 0;
