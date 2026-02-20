@@ -526,10 +526,14 @@ function connectMCDU() {
     
     log.info('MCDU device connected (VID:', CONFIG.hardware.vendorId.toString(16), 'PID:', CONFIG.hardware.productId.toString(16) + ')');
     
-    // Initialize display — send init packets (0xf0), then wait before any display writes.
-    // The WinWing firmware needs time to process init before accepting display data (0xf2).
+    // Initialize display — send init packets (0xf0), then clear boot logo immediately.
     mcdu.initDisplay();
     log.info('Display initialized (14 lines x 24 chars)');
+
+    // Clear WinWing boot logo — done before MQTT subscribes so retained messages
+    // won't be overwritten by a delayed clear().
+    mcdu.clear();
+    log.info('Display cleared (boot logo replaced)');
 
     // Set initial LEDs (backlights on, others off) — LED packets (0x02) work immediately
     mcdu.setAllLEDs(ledCache);
@@ -547,17 +551,6 @@ function connectMCDU() {
     }, CONFIG.performance.buttonPollRate);
 
     log.info('Button reading started (' + CONFIG.performance.buttonPollRate + 'Hz)');
-
-    // Clear display after a delay to replace WinWing boot logo with blank screen.
-    // The delay gives firmware time to fully process init packets before display data.
-    setTimeout(function() {
-      try {
-        mcdu.clear();
-        log.info('Display cleared (boot logo replaced)');
-      } catch (err) {
-        log.error('Failed to clear display:', err.message);
-      }
-    }, 500);
     
   } catch (err) {
     log.error('Failed to connect to MCDU:', err.message);
