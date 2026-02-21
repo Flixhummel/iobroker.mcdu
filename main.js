@@ -80,6 +80,9 @@ class McduAdapter extends utils.Adapter {
         /** @type {Map<string, object>} Device registry */
         this.deviceRegistry = new Map();
 
+        /** @type {Map<string, object>} Datapoint metadata cache (source → {write, type, min, max, unit, states}) */
+        this.datapointMeta = new Map();
+
         /** @type {Array<{id: string, name: string}>} Current breadcrumb path */
         this.breadcrumb = [];
 
@@ -255,11 +258,30 @@ class McduAdapter extends utils.Adapter {
         const pages = this.config.pages || [];
         let count = 0;
 
-        const subscribeTo = (stateId) => {
+        const subscribeTo = async (stateId) => {
             if (stateId && !this.subscriptions.has(stateId)) {
                 this.subscribeForeignStates(stateId);
                 this.subscriptions.add(stateId);
                 count++;
+
+                // Cache datapoint metadata if not already cached
+                if (!this.datapointMeta.has(stateId)) {
+                    try {
+                        const obj = await this.getForeignObjectAsync(stateId);
+                        if (obj && obj.common) {
+                            this.datapointMeta.set(stateId, {
+                                write: obj.common.write !== false,
+                                type: obj.common.type,
+                                min: obj.common.min,
+                                max: obj.common.max,
+                                unit: obj.common.unit,
+                                states: obj.common.states
+                            });
+                        }
+                    } catch (e) {
+                        this.log.debug(`Could not cache metadata for ${stateId}: ${e.message}`);
+                    }
+                }
             }
         };
 
@@ -271,22 +293,22 @@ class McduAdapter extends utils.Adapter {
                     for (const side of [line.left, line.right]) {
                         if (!side) continue;
                         if (side.display?.type === 'datapoint' && side.display.source) {
-                            subscribeTo(side.display.source);
+                            await subscribeTo(side.display.source);
                         }
                         if (side.button?.type === 'datapoint' && side.button.target) {
-                            subscribeTo(side.button.target);
+                            await subscribeTo(side.button.target);
                         }
                     }
                 } else {
                     // Old format
                     if (line.display?.type === 'datapoint' && line.display.source) {
-                        subscribeTo(line.display.source);
+                        await subscribeTo(line.display.source);
                     }
                     if (line.leftButton?.target && line.leftButton.type === 'datapoint') {
-                        subscribeTo(line.leftButton.target);
+                        await subscribeTo(line.leftButton.target);
                     }
                     if (line.rightButton?.target && line.rightButton.type === 'datapoint') {
-                        subscribeTo(line.rightButton.target);
+                        await subscribeTo(line.rightButton.target);
                     }
                 }
             }
@@ -1035,6 +1057,16 @@ class McduAdapter extends utils.Adapter {
                         const obj = await this.getForeignObjectAsync(side.display.source);
                         if (!obj || !obj.common) continue;
 
+                        // Cache datapoint metadata for LSK interaction
+                        this.datapointMeta.set(side.display.source, {
+                            write: obj.common.write !== false,
+                            type: obj.common.type,
+                            min: obj.common.min,
+                            max: obj.common.max,
+                            unit: obj.common.unit,
+                            states: obj.common.states
+                        });
+
                         if (!side.display.unit && obj.common.unit) {
                             side.display.unit = obj.common.unit;
                         }
@@ -1368,31 +1400,36 @@ class McduAdapter extends utils.Adapter {
     async handleCreateSampleData(obj) {
         const BASE = '0_userdata.0.mcdu_test';
         const testStates = [
-            { id: 'temperature_living', type: 'number', role: 'value.temperature', unit: '°C', val: 21.5, name: 'Temperatur Wohnzimmer' },
-            { id: 'temperature_bedroom', type: 'number', role: 'value.temperature', unit: '°C', val: 19.8, name: 'Temperatur Schlafzimmer' },
-            { id: 'humidity_living', type: 'number', role: 'value.humidity', unit: '%', val: 55, name: 'Luftfeuchte Wohnzimmer' },
-            { id: 'light_kitchen', type: 'boolean', role: 'switch.light', unit: '', val: true, name: 'Licht Kueche' },
-            { id: 'light_living_dimmer', type: 'number', role: 'level.dimmer', unit: '%', val: 75, name: 'Dimmer Wohnzimmer' },
-            { id: 'window_bedroom', type: 'boolean', role: 'sensor.window', unit: '', val: false, name: 'Fenster Schlafzimmer' },
-            { id: 'door_front', type: 'boolean', role: 'sensor.door', unit: '', val: false, name: 'Haustuer' },
-            { id: 'power_total', type: 'number', role: 'value.power', unit: 'W', val: 2450, name: 'Gesamtleistung' },
-            { id: 'energy_today', type: 'number', role: 'value.energy', unit: 'kWh', val: 12.7, name: 'Energie heute' },
-            { id: 'text_status', type: 'string', role: 'text', unit: '', val: 'Alles OK', name: 'Status Text' }
+            { id: 'temperature_living', type: 'number', role: 'value.temperature', unit: '°C', val: 21.5, name: 'Temperatur Wohnzimmer', write: false },
+            { id: 'temperature_bedroom', type: 'number', role: 'value.temperature', unit: '°C', val: 19.8, name: 'Temperatur Schlafzimmer', write: false },
+            { id: 'humidity_living', type: 'number', role: 'value.humidity', unit: '%', val: 55, name: 'Luftfeuchte Wohnzimmer', write: false },
+            { id: 'light_kitchen', type: 'boolean', role: 'switch.light', unit: '', val: true, name: 'Licht Kueche', write: true },
+            { id: 'light_living_dimmer', type: 'number', role: 'level.dimmer', unit: '%', val: 75, name: 'Dimmer Wohnzimmer', write: true, min: 0, max: 100 },
+            { id: 'window_bedroom', type: 'boolean', role: 'sensor.window', unit: '', val: false, name: 'Fenster Schlafzimmer', write: false },
+            { id: 'door_front', type: 'boolean', role: 'sensor.door', unit: '', val: false, name: 'Haustuer', write: false },
+            { id: 'power_total', type: 'number', role: 'value.power', unit: 'W', val: 2450, name: 'Gesamtleistung', write: false },
+            { id: 'energy_today', type: 'number', role: 'value.energy', unit: 'kWh', val: 12.7, name: 'Energie heute', write: false },
+            { id: 'text_status', type: 'string', role: 'text', unit: '', val: 'Alles OK', name: 'Status Text', write: true },
+            { id: 'setpoint_living', type: 'number', role: 'level.temperature', unit: '°C', val: 21.0, name: 'Sollwert Wohnzimmer', write: true, min: 5, max: 30 },
+            { id: 'setpoint_bedroom', type: 'number', role: 'level.temperature', unit: '°C', val: 19.0, name: 'Sollwert Schlafzimmer', write: true, min: 5, max: 30 }
         ];
 
         try {
             for (const s of testStates) {
                 const fullId = `${BASE}.${s.id}`;
+                const common = {
+                    name: s.name,
+                    type: s.type,
+                    role: s.role,
+                    unit: s.unit,
+                    read: true,
+                    write: s.write !== undefined ? s.write : (s.role.startsWith('switch') || s.role.startsWith('level'))
+                };
+                if (s.min !== undefined) common.min = s.min;
+                if (s.max !== undefined) common.max = s.max;
                 await this.setForeignObjectNotExistsAsync(fullId, {
                     type: 'state',
-                    common: {
-                        name: s.name,
-                        type: s.type,
-                        role: s.role,
-                        unit: s.unit,
-                        read: true,
-                        write: s.role.startsWith('switch') || s.role.startsWith('level')
-                    },
+                    common,
                     native: {}
                 });
                 await this.setForeignStateAsync(fullId, s.val, true);
@@ -1691,6 +1728,12 @@ class McduAdapter extends utils.Adapter {
             if (this.deviceRegistry) {
                 this.deviceRegistry.clear();
                 this.log.debug('Device registry cleared');
+            }
+
+            // Phase 7: Clear datapoint metadata cache
+            if (this.datapointMeta) {
+                this.datapointMeta.clear();
+                this.log.debug('Datapoint metadata cache cleared');
             }
             
             this.log.info('✅ MCDU Adapter shut down complete');

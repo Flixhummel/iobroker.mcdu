@@ -381,6 +381,45 @@ describe('ScratchpadManager', () => {
         });
     });
     
+    describe('Airbus Error Pattern', () => {
+        it('should save content when showError is called', async () => {
+            scratchpad.set('22.5');
+            await scratchpad.showError('FORMAT ERROR');
+
+            expect(scratchpad.getContent()).to.equal('FORMAT ERROR');
+            expect(scratchpad.savedContent).to.equal('22.5');
+            expect(scratchpad.errorShowing).to.be.true;
+            expect(scratchpad.getColor()).to.equal('white');
+        });
+
+        it('should restore saved content on first CLR after error', async () => {
+            scratchpad.set('999');
+            await scratchpad.showError('ENTRY OUT OF RANGE');
+
+            // First CLR: restore saved content
+            scratchpad.clear();
+            expect(scratchpad.getContent()).to.equal('999');
+            expect(scratchpad.errorShowing).to.be.false;
+            expect(scratchpad.savedContent).to.be.null;
+        });
+
+        it('should clear completely on second CLR', async () => {
+            scratchpad.set('999');
+            await scratchpad.showError('ENTRY OUT OF RANGE');
+
+            scratchpad.clear(); // restore "999"
+            scratchpad.clear(); // clear for real
+            expect(scratchpad.getContent()).to.equal('');
+        });
+
+        it('should clear normally when no error is showing', () => {
+            scratchpad.set('22.5');
+            scratchpad.clear();
+            expect(scratchpad.getContent()).to.equal('');
+            expect(scratchpad.savedContent).to.be.null;
+        });
+    });
+
     describe('Edge Cases', () => {
         it('should handle empty config (no validation)', () => {
             scratchpad.set('anything');
