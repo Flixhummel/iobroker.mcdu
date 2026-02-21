@@ -121,11 +121,11 @@ describe('PageRenderer', () => {
             const lines = displayPublisher._published[0];
             // Row 4 (index 3) should have sub-label for row 5
             expect(lines[3].text).to.include('WOHNZIMMER');
-            expect(lines[3].color).to.equal('cyan');
+            expect(lines[3].color).to.equal('white');
 
             // Row 6 (index 5) should have sub-label for row 7
             expect(lines[5].text).to.include('KUECHE');
-            expect(lines[5].color).to.equal('cyan');
+            expect(lines[5].color).to.equal('white');
         });
 
         it('should render blank even rows when no sub-label is defined', async () => {
@@ -134,16 +134,16 @@ describe('PageRenderer', () => {
             const lines = displayPublisher._published[0];
             // Row 8 (index 7) — row 9 has no left.label
             expect(lines[7].text.trim()).to.equal('');
-            expect(lines[7].color).to.equal('cyan');
+            expect(lines[7].color).to.equal('white');
         });
 
-        it('should render all even rows (2,4,6,8,10,12) as cyan', async () => {
+        it('should render all even rows (2,4,6,8,10,12) in default color', async () => {
             await renderer.renderPage('home-main');
 
             const lines = displayPublisher._published[0];
             const evenIndices = [1, 3, 5, 7, 9, 11]; // rows 2,4,6,8,10,12
             for (const idx of evenIndices) {
-                expect(lines[idx].color).to.equal('cyan');
+                expect(lines[idx].color).to.equal('white');
             }
         });
 
