@@ -228,6 +228,35 @@ describe('InputModeManager', () => {
         });
     });
 
+    describe('Admin UI button.type quirk', () => {
+        it('should treat datapoint button with empty target as non-actionable', async () => {
+            // Admin UI saves button.type='datapoint' even when only display is datapoint
+            adapter.config.pages[0].lines[0].left.button = { type: 'datapoint', target: '' };
+            // display is still the datapoint with source
+            scratchpad.set('22');
+
+            await inputManager.handleLSK('left', 3);
+
+            // Should fall through to handleDatapointLSK and write value
+            expect(adapter._foreignStates['test.temperature'].val).to.equal(22);
+        });
+
+        it('should treat navigation button with empty target as non-actionable', () => {
+            const result = inputManager.isActionableButton({ type: 'navigation', target: '' });
+            expect(result).to.be.false;
+        });
+
+        it('should treat button with valid target as actionable', () => {
+            const result = inputManager.isActionableButton({ type: 'navigation', target: 'some-page' });
+            expect(result).to.be.true;
+        });
+
+        it('should treat empty button as non-actionable', () => {
+            const result = inputManager.isActionableButton({ type: 'empty' });
+            expect(result).to.be.false;
+        });
+    });
+
     describe('Airbus Error Pattern (CLR)', () => {
         it('should restore rejected input on CLR after error', async () => {
             scratchpad.set('999');
