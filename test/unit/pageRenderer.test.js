@@ -17,17 +17,17 @@ describe('PageRenderer', () => {
                     name: 'Home',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: { label: '', display: { type: 'label', text: 'WELCOME', color: 'white' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 3,
+                            row: 5,
                             left: { label: 'TEMPERATUR', display: { type: 'label', text: '21.5 C', color: 'white' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 5,
+                            row: 7,
                             left: { label: '', display: { type: 'label', text: 'LIGHTS', color: 'white' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         }
@@ -53,22 +53,22 @@ describe('PageRenderer', () => {
                     name: 'Sub Labels',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: { label: '', display: { type: 'label', text: 'TITLE' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 3,
+                            row: 5,
                             left: { label: 'WOHNZIMMER', display: { type: 'label', text: '21.5 C' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 5,
+                            row: 7,
                             left: { label: 'KUECHE', display: { type: 'label', text: '19.0 C' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 7,
+                            row: 9,
                             left: { label: '', display: { type: 'label', text: 'NO SUB' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         }
@@ -79,17 +79,17 @@ describe('PageRenderer', () => {
                     name: 'Left Right',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: { label: 'LINKS', display: { type: 'label', text: 'Decke', color: 'white' }, button: { type: 'empty' } },
                             right: { label: 'RECHTS', display: { type: 'label', text: 'AN', color: 'green' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 3,
+                            row: 5,
                             left: { label: '', display: { type: 'label', text: 'Only Left', color: 'white' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         },
                         {
-                            row: 5,
+                            row: 7,
                             left: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                             right: { label: '', display: { type: 'label', text: 'Only Right', color: 'amber' }, button: { type: 'empty' } }
                         }
@@ -119,29 +119,29 @@ describe('PageRenderer', () => {
             await renderer.renderPage('sub-labels-page');
 
             const lines = displayPublisher._published[0];
-            // Row 2 (index 1) should have sub-label for row 3
-            expect(lines[1].text).to.include('WOHNZIMMER');
-            expect(lines[1].color).to.equal('cyan');
-
             // Row 4 (index 3) should have sub-label for row 5
-            expect(lines[3].text).to.include('KUECHE');
+            expect(lines[3].text).to.include('WOHNZIMMER');
             expect(lines[3].color).to.equal('cyan');
+
+            // Row 6 (index 5) should have sub-label for row 7
+            expect(lines[5].text).to.include('KUECHE');
+            expect(lines[5].color).to.equal('cyan');
         });
 
         it('should render blank even rows when no sub-label is defined', async () => {
             await renderer.renderPage('sub-labels-page');
 
             const lines = displayPublisher._published[0];
-            // Row 6 (index 5) — row 7 has no left.label
-            expect(lines[5].text.trim()).to.equal('');
-            expect(lines[5].color).to.equal('cyan');
+            // Row 8 (index 7) — row 9 has no left.label
+            expect(lines[7].text.trim()).to.equal('');
+            expect(lines[7].color).to.equal('cyan');
         });
 
-        it('should render all even rows (2,4,6,8,10) as cyan', async () => {
+        it('should render all even rows (2,4,6,8,10,12) as cyan', async () => {
             await renderer.renderPage('home-main');
 
             const lines = displayPublisher._published[0];
-            const evenIndices = [1, 3, 5, 7, 9]; // rows 2,4,6,8,10
+            const evenIndices = [1, 3, 5, 7, 9, 11]; // rows 2,4,6,8,10,12
             for (const idx of evenIndices) {
                 expect(lines[idx].color).to.equal('cyan');
             }
@@ -151,18 +151,15 @@ describe('PageRenderer', () => {
             await renderer.renderPage('left-right-page');
 
             const lines = displayPublisher._published[0];
-            // Row 0 (row 1) has content; row 1 (even row 2) has sub-labels for row 3
-            // Row 3 has no sub-labels, so even row 2 should be empty
-            // But the sub-labels for row 1 are on even row 0... wait, no.
-            // Even rows render sub-labels for the NEXT odd row.
-            // Row 2 (index 1) renders sub-label for row 3 → no sub-labels
-            // We need to check the line at index 0 (row 1) which is an odd row with the left-right content
-            // Sub-labels for row 1 would be on row 0 (which doesn't exist)
+            // Row 2 (index 1) renders sub-label for row 3
+            // Row 3 has left.label='LINKS' and right.label='RECHTS'
+            expect(lines[1].text).to.include('LINKS');
+            expect(lines[1].text).to.include('RECHTS');
 
-            // For row 1 content, check left/right composition
-            const row1 = lines[0];
-            expect(row1.text).to.include('Decke');
-            expect(row1.text).to.include('AN');
+            // Row 3 (index 2) should have left-right content
+            const row3 = lines[2];
+            expect(row3.text).to.include('Decke');
+            expect(row3.text).to.include('AN');
         });
     });
 
@@ -171,13 +168,13 @@ describe('PageRenderer', () => {
             await renderer.renderPage('left-right-page');
 
             const lines = displayPublisher._published[0];
-            const row1 = lines[0]; // Row 1
-            expect(row1.text.length).to.equal(24);
+            const row3 = lines[2]; // Row 3 (index 2)
+            expect(row3.text.length).to.equal(24);
             // Left 12 chars should contain "Decke"
-            const leftHalf = row1.text.substring(0, 12);
+            const leftHalf = row3.text.substring(0, 12);
             expect(leftHalf).to.include('Decke');
             // Right 12 chars should contain "AN"
-            const rightHalf = row1.text.substring(12);
+            const rightHalf = row3.text.substring(12);
             expect(rightHalf).to.include('AN');
         });
 
@@ -185,32 +182,34 @@ describe('PageRenderer', () => {
             await renderer.renderPage('left-right-page');
 
             const lines = displayPublisher._published[0];
-            const row3 = lines[2]; // Row 3 (index 2)
-            expect(row3.text).to.include('Only Left');
-            expect(row3.text.length).to.equal(24);
+            const row5 = lines[4]; // Row 5 (index 4)
+            expect(row5.text).to.include('Only Left');
+            expect(row5.text.length).to.equal(24);
         });
 
         it('should right-align when only right has content', async () => {
             await renderer.renderPage('left-right-page');
 
             const lines = displayPublisher._published[0];
-            const row5 = lines[4]; // Row 5 (index 4)
-            expect(row5.text).to.include('Only Right');
+            const row7 = lines[6]; // Row 7 (index 6)
+            expect(row7.text).to.include('Only Right');
             // Should be right-aligned
-            expect(row5.text.trimStart()).to.equal('Only Right');
+            expect(row7.text.trimStart()).to.equal('Only Right');
         });
     });
 
     describe('Backward Compatibility (Old Format)', () => {
-        it('should render old format lines with display.label', async () => {
+        it('should render old format lines with display.label (migrated to row 3)', async () => {
             await renderer.renderPage('old-format-page');
 
             const lines = displayPublisher._published[0];
-            expect(lines[0].text).to.include('OLD FORMAT');
+            // Old row 1 migrates to row 3 (index 2)
+            expect(lines[2].text).to.include('OLD FORMAT');
         });
 
         it('should render old format sub-labels', async () => {
             // Add a page with old-format line on row 3 that has subLabel
+            // Row 3 is new-format (no row 1), so no migration needed
             adapter.config.pages.push({
                 id: 'old-sub',
                 name: 'Old Sub',
@@ -227,12 +226,12 @@ describe('PageRenderer', () => {
         });
     });
 
-    describe('Status Bar (Row 13)', () => {
-        it('should render status bar on row 13', async () => {
+    describe('Status Bar (Row 1)', () => {
+        it('should render status bar on row 1 (index 0)', async () => {
             await renderer.renderPage('home-main');
 
             const lines = displayPublisher._published[0];
-            const statusBar = lines[12];
+            const statusBar = lines[0];
             expect(statusBar.color).to.equal('cyan');
             expect(statusBar.text).to.include('HOME');
         });
@@ -241,7 +240,7 @@ describe('PageRenderer', () => {
             await renderer.renderPage('home-main');
 
             const lines = displayPublisher._published[0];
-            const statusBar = lines[12];
+            const statusBar = lines[0];
             expect(statusBar.text).to.match(/\d{2}:\d{2}/);
         });
 
@@ -249,7 +248,7 @@ describe('PageRenderer', () => {
             await renderer.renderPage('long-page');
 
             const lines = displayPublisher._published[0];
-            const statusBar = lines[12];
+            const statusBar = lines[0];
             expect(statusBar.text).to.include('1/2');
         });
 
@@ -257,7 +256,7 @@ describe('PageRenderer', () => {
             await renderer.renderPage('home-main');
 
             const lines = displayPublisher._published[0];
-            const statusBar = lines[12];
+            const statusBar = lines[0];
             expect(statusBar.text).to.not.match(/\d+\/\d+/);
         });
 
@@ -265,7 +264,7 @@ describe('PageRenderer', () => {
             await renderer.renderPage('home-main');
 
             const lines = displayPublisher._published[0];
-            const statusBar = lines[12];
+            const statusBar = lines[0];
             expect(statusBar.text.length).to.equal(24);
         });
     });
@@ -344,8 +343,9 @@ describe('PageRenderer', () => {
             await renderer.renderPage('long-page');
 
             const lines = displayPublisher._published[0];
-            expect(lines[0].text).to.include('ITEM 1');
-            expect(lines[10].text).to.include('ITEM 6');
+            // oddRows[0]=3 → index 2, oddRows[5]=13 → index 12
+            expect(lines[2].text).to.include('ITEM 1');
+            expect(lines[12].text).to.include('ITEM 6');
         });
 
         it('should render remaining items on page 2', async () => {
@@ -353,9 +353,10 @@ describe('PageRenderer', () => {
             await renderer.renderPage('long-page');
 
             const lines = displayPublisher._published[0];
-            expect(lines[0].text).to.include('ITEM 7');
-            expect(lines[2].text).to.include('ITEM 8');
-            expect(lines[4].text).to.include('ITEM 9');
+            // oddRows[0]=3 → index 2, oddRows[1]=5 → index 4, oddRows[2]=7 → index 6
+            expect(lines[2].text).to.include('ITEM 7');
+            expect(lines[4].text).to.include('ITEM 8');
+            expect(lines[6].text).to.include('ITEM 9');
         });
 
         it('should clamp currentPageOffset to valid range', async () => {
@@ -416,7 +417,7 @@ describe('PageRenderer', () => {
                     layoutType: 'menu',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'LIGHTS' },
@@ -432,8 +433,9 @@ describe('PageRenderer', () => {
 
             await renderer.renderPage('test-menu');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
-            expect(display[0].text).to.match(/^</);
-            expect(display[0].text).to.match(/>$/);
+            // Row 3 = index 2
+            expect(display[2].text).to.match(/^</);
+            expect(display[2].text).to.match(/>$/);
         });
 
         it('should NOT add < > indicators on lines without buttons', async () => {
@@ -444,7 +446,7 @@ describe('PageRenderer', () => {
                     layoutType: 'menu',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'INFO TEXT' },
@@ -460,7 +462,8 @@ describe('PageRenderer', () => {
 
             await renderer.renderPage('test-menu');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
-            expect(display[0].text).to.not.match(/^</);
+            // Row 3 = index 2
+            expect(display[2].text).to.not.match(/^</);
         });
 
         it('should NOT add < > indicators on data layout', async () => {
@@ -471,7 +474,7 @@ describe('PageRenderer', () => {
                     layoutType: 'data',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: {
                                 label: 'TEMP',
                                 display: { type: 'label', text: '21.5' },
@@ -487,7 +490,8 @@ describe('PageRenderer', () => {
 
             await renderer.renderPage('test-data');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
-            expect(display[0].text).to.not.match(/^</);
+            // Row 3 = index 2
+            expect(display[2].text).to.not.match(/^</);
         });
 
         it('should default to menu layout when layoutType is not set', async () => {
@@ -497,7 +501,7 @@ describe('PageRenderer', () => {
                     name: 'Test Default',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'ITEM' },
@@ -513,8 +517,9 @@ describe('PageRenderer', () => {
 
             await renderer.renderPage('test-default');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
-            expect(display[0].text).to.match(/^</);
-            expect(display[0].text).to.match(/>$/);
+            // Row 3 = index 2
+            expect(display[2].text).to.match(/^</);
+            expect(display[2].text).to.match(/>$/);
         });
 
         it('should add scroll indicators for list layout with pagination', async () => {

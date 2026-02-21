@@ -11,7 +11,7 @@
       "parent": null,
       "lines": [
         {
-          "row": 1,
+          "row": 5,
           "left": {
             "label": "",
             "display": { "type": "label", "text": "CLIMATE CONTROL", "color": "green" },
@@ -24,7 +24,7 @@
           }
         },
         {
-          "row": 3,
+          "row": 7,
           "left": {
             "label": "WOHNZIMMER",
             "display": { "type": "datapoint", "text": "Living", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -37,7 +37,7 @@
           }
         },
         {
-          "row": 5,
+          "row": 9,
           "left": {
             "label": "SCHLAFZIMMER",
             "display": { "type": "datapoint", "text": "Bedroom", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -50,7 +50,7 @@
           }
         },
         {
-          "row": 7,
+          "row": 11,
           "left": {
             "label": "KUECHE",
             "display": { "type": "datapoint", "text": "Kitchen", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -63,7 +63,7 @@
           }
         },
         {
-          "row": 9,
+          "row": 13,
           "left": {
             "label": "BADEZIMMER",
             "display": { "type": "datapoint", "text": "Bathroom", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -83,7 +83,7 @@
       "parent": "climate-main",
       "lines": [
         {
-          "row": 1,
+          "row": 5,
           "left": {
             "label": "",
             "display": { "type": "label", "text": "LIVING ROOM", "color": "green" },
@@ -96,7 +96,7 @@
           }
         },
         {
-          "row": 3,
+          "row": 7,
           "left": {
             "label": "IST",
             "display": { "type": "datapoint", "text": "Current", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -109,7 +109,7 @@
           }
         },
         {
-          "row": 5,
+          "row": 9,
           "left": {
             "label": "SOLL",
             "display": { "type": "datapoint", "text": "Setpoint", "source": "", "format": "%.1f", "unit": "C", "color": "amber", "editable": true, "inputType": "numeric", "validation": { "min": 15.0, "max": 28.0, "step": 0.5 } },
@@ -122,7 +122,7 @@
           }
         },
         {
-          "row": 7,
+          "row": 11,
           "left": {
             "label": "FEUCHTE",
             "display": { "type": "datapoint", "text": "Humidity", "source": "", "format": "%d%%", "unit": "%", "color": "cyan" },
@@ -135,7 +135,7 @@
           }
         },
         {
-          "row": 9,
+          "row": 13,
           "left": {
             "label": "MODUS",
             "display": { "type": "datapoint", "text": "Heating Mode", "source": "", "format": "%s", "color": "white" },
@@ -155,7 +155,7 @@
       "parent": "climate-main",
       "lines": [
         {
-          "row": 1,
+          "row": 5,
           "left": {
             "label": "",
             "display": { "type": "label", "text": "BEDROOM", "color": "green" },
@@ -168,7 +168,7 @@
           }
         },
         {
-          "row": 3,
+          "row": 7,
           "left": {
             "label": "IST",
             "display": { "type": "datapoint", "text": "Current", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -181,7 +181,7 @@
           }
         },
         {
-          "row": 5,
+          "row": 9,
           "left": {
             "label": "SOLL",
             "display": { "type": "datapoint", "text": "Setpoint", "source": "", "format": "%.1f", "unit": "C", "color": "amber", "editable": true, "inputType": "numeric", "validation": { "min": 15.0, "max": 28.0, "step": 0.5 } },
@@ -201,7 +201,7 @@
       "parent": "climate-main",
       "lines": [
         {
-          "row": 1,
+          "row": 5,
           "left": {
             "label": "",
             "display": { "type": "label", "text": "KITCHEN", "color": "green" },
@@ -214,7 +214,7 @@
           }
         },
         {
-          "row": 3,
+          "row": 7,
           "left": {
             "label": "IST",
             "display": { "type": "datapoint", "text": "Current", "source": "", "format": "%.1f", "unit": "C", "color": "white" },
@@ -234,7 +234,7 @@
       "parent": "climate-main",
       "lines": [
         {
-          "row": 1,
+          "row": 5,
           "left": {
             "label": "",
             "display": { "type": "label", "text": "BATHROOM", "color": "green" },
@@ -247,7 +247,7 @@
           }
         },
         {
-          "row": 3,
+          "row": 7,
           "left": {
             "label": "IST",
             "display": { "type": "datapoint", "text": "Current", "source": "", "format": "%.1f", "unit": "C", "color": "white" },

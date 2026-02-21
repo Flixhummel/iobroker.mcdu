@@ -219,7 +219,7 @@ class MCDU {
         for (let lineIdx = 0; lineIdx < this.page.length; lineIdx++) {
             const line = this.page[lineIdx];
             for (let charIdx = 0; charIdx < PAGE_CHARS_PER_LINE; charIdx++) {
-                const colorCode = COLORS.W; // TEMP: force white — testing color encoding issue
+                const colorCode = COLORS[this.colors[lineIdx][charIdx]] || COLORS.W;
                 const charCode = line.charCodeAt(charIdx);
                 if (charCode > 0x7F) {
                     console.error(`[DISPLAY] NON-ASCII char at line ${lineIdx} col ${charIdx}: 0x${charCode.toString(16)} ('${line[charIdx]}') — firmware will drop this frame!`);
