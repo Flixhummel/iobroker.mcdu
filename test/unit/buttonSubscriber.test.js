@@ -251,29 +251,6 @@ describe('ButtonSubscriber', () => {
             expect(adapter.pageRenderer.currentPageOffset).to.equal(1);
         });
 
-        it('should handle directAccess action with scratchpad content', async () => {
-            adapter.config.functionKeys = [
-                { key: 'DIR', enabled: true, action: 'directAccess', targetPageId: '' }
-            ];
-            let switchedTo = null;
-            adapter.switchToPage = async (id) => { switchedTo = id; };
-
-            let cleared = false;
-            const inputModeManager = {
-                getMode: () => 'normal',
-                setState: async () => {},
-                getScratchpad: () => ({
-                    getContent: () => 'lights-main',
-                    clear: () => { cleared = true; },
-                    renderError: async () => {}
-                })
-            };
-            subscriber.setInputModeManager(inputModeManager);
-
-            await subscriber.handleFunctionKey('DIR');
-            expect(switchedTo).to.equal('lights-main');
-            expect(cleared).to.be.true;
-        });
     });
 
     describe('handleButtonEvent', () => {

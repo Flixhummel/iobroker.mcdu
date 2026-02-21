@@ -195,9 +195,9 @@
               "attr": "id",
               "sm": 12,
               "md": 4,
-              "label": "Page ID",
-              "placeholder": "home-main",
-              "help": "Unique page identifier (lowercase, numbers, dashes only)"
+              "label": "Page ID (auto-generated)",
+              "disabled": true,
+              "help": "Generated from page name on first save"
             },
             {
               "type": "text",
@@ -429,8 +429,7 @@
               "width": "140px",
               "options": [
                 {"label": "Go to Page", "value": "gotoPage"},
-                {"label": "Home (MENU)", "value": "navigateHome"},
-                {"label": "Direct Access", "value": "directAccess"}
+                {"label": "Home (MENU)", "value": "navigateHome"}
               ]
             },
             {
