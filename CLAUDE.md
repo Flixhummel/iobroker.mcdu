@@ -65,11 +65,19 @@ Per-device state trees under `mcdu.0.devices.{deviceId}/`. The adapter subscribe
 
 ## Development Rules
 
-1. **No backward-compatibility migrations.** We are in active development. There is ONE current config format. If existing stored configuration doesn't match the current format, show a clear error message in the Admin UI — do NOT silently migrate. The developer will manually recreate configs when the format changes.
+1. **Keep code simple, reliable, resilient.** No migration layers, no old-format detection, no backward-compat shims. One format, one code path. No crutches or workarounds — keep it as clean as possible.
 
-2. **Keep code simple and clean.** No migration layers, no old-format detection, no backward-compat shims. One format, one code path.
+2. **No backward-compatibility migrations.** This is a development environment. If stored configuration doesn't match the current format, show a clear error — do NOT silently migrate. The developer will manually recreate configs when the format changes.
 
-3. **Do NOT deploy to the Raspberry Pi** unless explicitly asked. We develop and test locally on Mac (MCDU plugged into Mac via USB). Only deploy to mcdu-pi when the user specifically requests it.
+3. **Lean on ioBroker data.** This is a display control device — use as much logic from the ioBroker installation as possible. Don't add unnecessary validation, transformation, or business logic that ioBroker already provides (object metadata, state types, min/max, write flags, enums, etc.).
+
+4. **Follow ioBroker adapter best practices.** Use standard adapter patterns, APIs, and conventions. Research online when unsure.
+
+5. **Refactor when it makes sense.** Review code for overhead and dead code. Remove unnecessary abstractions, unused state writes, and vestigial code paths.
+
+6. **Research best practices.** When implementing new features or patterns, look up current best practices online rather than guessing.
+
+7. **Do NOT deploy to the Raspberry Pi** unless explicitly asked. We develop and test locally on Mac (MCDU plugged into Mac via USB). Only deploy to mcdu-pi when the user specifically requests it.
 
 ## Configuration
 

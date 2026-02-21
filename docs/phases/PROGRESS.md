@@ -1,7 +1,7 @@
 # MCDU Smart Home Controller - Progress Tracker
 
-**Last Updated:** 2026-02-19
-**Status:** Adapter Phase 2 (Admin UI Redesign) + Phase 3 (Business Logic) Complete - Bug fixes applied
+**Last Updated:** 2026-02-21
+**Status:** Datapoint LSK Interaction working — toggle booleans, write values from scratchpad
 
 ---
 
@@ -30,7 +30,46 @@ The project follows two levels of phasing:
 | Phase 4: Template System Enhancement | NOT STARTED | -- |
 | Phase 5: Testing and Hardware Deployment | NOT STARTED | -- |
 
-**Total Tests:** 109 (all passing)
+**Total Tests:** 191 (180 unit + 11 integration, all passing)
+
+---
+
+## Datapoint LSK Interaction (2026-02-21)
+
+Metadata-driven LSK interaction — no manual `editable` flags needed. The adapter reads `obj.common.write`, `obj.common.type`, `obj.common.min/max` from ioBroker object metadata.
+
+### Feature: Metadata-driven toggle/write (commit 2112a2a)
+- `datapointMeta` Map cache in main.js, populated from ioBroker object metadata
+- Boolean datapoints → immediate toggle on LSK press (no scratchpad)
+- Number/string datapoints → validate scratchpad content, write to ioBroker
+- Read-only datapoints → LSK does nothing
+- Airbus error pattern: FORMAT ERROR / ENTRY OUT OF RANGE shown in scratchpad (white)
+- CLR after error → restores rejected input for editing
+- Simplified state machine: NORMAL↔INPUT only (removed EDIT mode)
+
+### Fix: Admin UI stale button targets (commits ba7ede3, 09e5e5f)
+- Admin UI saves `button.type='datapoint'` with empty/stale target
+- `isActionableButton()` requires truthy target for datapoint/navigation buttons
+- Datapoint display takes priority over datapoint button (prevents stale target execution)
+
+### Fix: Display glitch after value write (commit 9574871)
+- Removed GESPEICHERT success message — raced with full page render via onStateChange
+- Removed all write-only runtime states (eliminated "has no existing object" warnings)
+- Removed vestigial per-line display state writes from PageRenderer
+
+### Fix: Button debounce (commit 2e56811)
+- Increased debounce from 200ms to 300ms — DOT button bounced at 243ms
+- Removed per-line display state writes from PageRenderer (db0d375)
+
+### Files Modified
+- `main.js` — datapointMeta cache, removed uptime interval, removed runtime state init
+- `lib/input/InputModeManager.js` — complete rewrite for metadata-driven LSK
+- `lib/input/ScratchpadManager.js` — Airbus error pattern, removed runtime state writes
+- `lib/rendering/PageRenderer.js` — removed edit indicators, removed per-line state writes
+- `lib/mqtt/ButtonSubscriber.js` — increased debounce, removed runtime state writes
+- `test/unit/inputModeManager.test.js` — NEW, 24 tests
+- `test/unit/ScratchpadManager.test.js` — 4 new Airbus error pattern tests
+- `docs/PAGE-CONFIGURATION-GUIDE.md` — rewritten for current left/right model
 
 ---
 
