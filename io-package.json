@@ -74,7 +74,8 @@
     "display": {
       "columns": 24,
       "rows": 14,
-      "defaultColor": "white"
+      "defaultColor": "white",
+      "brightnessStep": 20
     },
     "performance": {
       "renderThrottle": 100,

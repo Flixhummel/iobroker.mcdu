@@ -187,6 +187,16 @@
               "sm": 12,
               "md": 4,
               "help": "Default color for data text when no per-line ColData is set"
+            },
+            "display.brightnessStep": {
+              "type": "number",
+              "label": "BRT/DIM Step",
+              "min": 1,
+              "max": 255,
+              "default": 20,
+              "sm": 12,
+              "md": 4,
+              "help": "Amount added/subtracted per BRT/DIM button press (0-255 range)"
             }
           }
         },
