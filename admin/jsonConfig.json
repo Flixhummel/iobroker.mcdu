@@ -261,7 +261,8 @@
                   "attr": "leftText",
                   "title": "L-Data",
                   "width": "120px",
-                  "default": ""
+                  "default": "",
+                  "hidden": "data.leftButtonType === 'datapoint'"
                 },
                 {
                   "type": "select",
@@ -304,9 +305,10 @@
                   "hidden": "data.leftButtonType !== 'navigation'"
                 },
                 {
-                  "type": "text",
+                  "type": "objectId",
                   "attr": "leftSource",
                   "title": "L-Source",
+                  "types": ["state"],
                   "width": "140px",
                   "default": "",
                   "hidden": "data.leftButtonType !== 'datapoint'"
@@ -339,7 +341,8 @@
                   "attr": "rightText",
                   "title": "R-Data",
                   "width": "120px",
-                  "default": ""
+                  "default": "",
+                  "hidden": "data.rightButtonType === 'datapoint'"
                 },
                 {
                   "type": "select",
@@ -382,9 +385,10 @@
                   "hidden": "data.rightButtonType !== 'navigation'"
                 },
                 {
-                  "type": "text",
+                  "type": "objectId",
                   "attr": "rightSource",
                   "title": "R-Source",
+                  "types": ["state"],
                   "width": "140px",
                   "default": "",
                   "hidden": "data.rightButtonType !== 'datapoint'"

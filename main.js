@@ -1004,6 +1004,46 @@ class McduAdapter extends utils.Adapter {
     }
     
     /**
+     * Resolve default format/unit for datapoint displays by looking up ioBroker object metadata.
+     * Fills in empty format and unit fields based on the object's common properties.
+     * Operates on nested (storage) format pages.
+     * @param {Array} pages - Pages in nested format
+     * @returns {Promise<Array>} Pages with resolved defaults
+     */
+    async resolveDatapointDefaults(pages) {
+        for (const page of pages) {
+            const lines = page.lines || [];
+            for (const line of lines) {
+                for (const side of [line.left, line.right]) {
+                    if (!side?.display) continue;
+                    if (side.display.type !== 'datapoint' || !side.display.source) continue;
+                    if (side.display.format && side.display.unit) continue; // both already set
+
+                    try {
+                        const obj = await this.getForeignObjectAsync(side.display.source);
+                        if (!obj || !obj.common) continue;
+
+                        if (!side.display.unit && obj.common.unit) {
+                            side.display.unit = obj.common.unit;
+                        }
+                        if (!side.display.format) {
+                            const t = obj.common.type;
+                            if (t === 'number') {
+                                side.display.format = '%.1f';
+                            } else {
+                                side.display.format = '%s';
+                            }
+                        }
+                    } catch (e) {
+                        this.log.debug(`resolveDatapointDefaults: Could not look up ${side.display.source}: ${e.message}`);
+                    }
+                }
+            }
+        }
+        return pages;
+    }
+
+    /**
      * Handle loadDevicePages command from admin UI
      * Reads per-device page config from ioBroker object and returns it
      * @param {object} obj - Message object with deviceId
@@ -1028,6 +1068,9 @@ class McduAdapter extends utils.Adapter {
                     pages = [];
                 }
             }
+
+            // Auto-resolve format/unit from ioBroker object metadata
+            await this.resolveDatapointDefaults(pages);
 
             // Flatten lines for Admin UI table
             const flatPages = flattenPages(pages);
