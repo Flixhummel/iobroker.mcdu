@@ -188,7 +188,6 @@
           "label": "MCDU Pages",
           "titleAttr": "name",
           "clone": true,
-          "noDelete": false,
           "hidden": "!data.selectedDevice",
           "items": [
             {
@@ -301,7 +300,32 @@
                   "command": "getPageList",
                   "freeSolo": true,
                   "width": "120px",
-                  "default": ""
+                  "default": "",
+                  "hidden": "data.leftButtonType !== 'navigation'"
+                },
+                {
+                  "type": "text",
+                  "attr": "leftSource",
+                  "title": "L-Source",
+                  "width": "140px",
+                  "default": "",
+                  "hidden": "data.leftButtonType !== 'datapoint'"
+                },
+                {
+                  "type": "text",
+                  "attr": "leftFormat",
+                  "title": "L-Fmt",
+                  "width": "70px",
+                  "default": "",
+                  "hidden": "data.leftButtonType !== 'datapoint'"
+                },
+                {
+                  "type": "text",
+                  "attr": "leftUnit",
+                  "title": "L-Unit",
+                  "width": "60px",
+                  "default": "",
+                  "hidden": "data.leftButtonType !== 'datapoint'"
                 },
                 {
                   "type": "text",
@@ -354,7 +378,32 @@
                   "command": "getPageList",
                   "freeSolo": true,
                   "width": "120px",
-                  "default": ""
+                  "default": "",
+                  "hidden": "data.rightButtonType !== 'navigation'"
+                },
+                {
+                  "type": "text",
+                  "attr": "rightSource",
+                  "title": "R-Source",
+                  "width": "140px",
+                  "default": "",
+                  "hidden": "data.rightButtonType !== 'datapoint'"
+                },
+                {
+                  "type": "text",
+                  "attr": "rightFormat",
+                  "title": "R-Fmt",
+                  "width": "70px",
+                  "default": "",
+                  "hidden": "data.rightButtonType !== 'datapoint'"
+                },
+                {
+                  "type": "text",
+                  "attr": "rightUnit",
+                  "title": "R-Unit",
+                  "width": "60px",
+                  "default": "",
+                  "hidden": "data.rightButtonType !== 'datapoint'"
                 }
               ]
             }
@@ -473,6 +522,22 @@
         "exportInfo": {
           "type": "staticText",
           "text": "Use the standard ioBroker config export/import functionality to backup and restore your MCDU configuration."
+        },
+        "_dividerTestData": {
+          "type": "divider",
+          "text": "Test Data"
+        },
+        "testDataInfo": {
+          "type": "staticText",
+          "text": "Create sample ioBroker states under 0_userdata.0.mcdu_test for testing datapoint rendering."
+        },
+        "_createTestData": {
+          "type": "sendTo",
+          "label": "Create Test Data",
+          "command": "createSampleData",
+          "variant": "outlined",
+          "sm": 12,
+          "md": 4
         },
         "_dividerAbout": {
           "type": "divider",

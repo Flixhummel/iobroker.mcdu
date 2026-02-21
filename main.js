@@ -894,7 +894,11 @@ class McduAdapter extends utils.Adapter {
                 case 'browseStates':
                     this.handleBrowseStates(obj);
                     break;
-                    
+
+                case 'createSampleData':
+                    this.handleCreateSampleData(obj);
+                    break;
+
                 default:
                     this.log.warn(`Unknown command: ${obj.command}`);
                     this.sendTo(obj.from, obj.command, { error: 'Unknown command' }, obj.callback);
@@ -1267,6 +1271,50 @@ class McduAdapter extends utils.Adapter {
         }
     }
     
+    /**
+     * Handle createSampleData command — creates test states under 0_userdata.0.mcdu_test
+     * @param {object} obj - Message object
+     */
+    async handleCreateSampleData(obj) {
+        const BASE = '0_userdata.0.mcdu_test';
+        const testStates = [
+            { id: 'temperature_living', type: 'number', role: 'value.temperature', unit: '°C', val: 21.5, name: 'Temperatur Wohnzimmer' },
+            { id: 'temperature_bedroom', type: 'number', role: 'value.temperature', unit: '°C', val: 19.8, name: 'Temperatur Schlafzimmer' },
+            { id: 'humidity_living', type: 'number', role: 'value.humidity', unit: '%', val: 55, name: 'Luftfeuchte Wohnzimmer' },
+            { id: 'light_kitchen', type: 'boolean', role: 'switch.light', unit: '', val: true, name: 'Licht Kueche' },
+            { id: 'light_living_dimmer', type: 'number', role: 'level.dimmer', unit: '%', val: 75, name: 'Dimmer Wohnzimmer' },
+            { id: 'window_bedroom', type: 'boolean', role: 'sensor.window', unit: '', val: false, name: 'Fenster Schlafzimmer' },
+            { id: 'door_front', type: 'boolean', role: 'sensor.door', unit: '', val: false, name: 'Haustuer' },
+            { id: 'power_total', type: 'number', role: 'value.power', unit: 'W', val: 2450, name: 'Gesamtleistung' },
+            { id: 'energy_today', type: 'number', role: 'value.energy', unit: 'kWh', val: 12.7, name: 'Energie heute' },
+            { id: 'text_status', type: 'string', role: 'text', unit: '', val: 'Alles OK', name: 'Status Text' }
+        ];
+
+        try {
+            for (const s of testStates) {
+                const fullId = `${BASE}.${s.id}`;
+                await this.setForeignObjectNotExistsAsync(fullId, {
+                    type: 'state',
+                    common: {
+                        name: s.name,
+                        type: s.type,
+                        role: s.role,
+                        unit: s.unit,
+                        read: true,
+                        write: s.role.startsWith('switch') || s.role.startsWith('level')
+                    },
+                    native: {}
+                });
+                await this.setForeignStateAsync(fullId, s.val, true);
+            }
+            this.log.info(`Created ${testStates.length} test states under ${BASE}`);
+            this.sendTo(obj.from, obj.command, { result: { success: true, count: testStates.length } }, obj.callback);
+        } catch (error) {
+            this.log.error(`Error creating sample data: ${error.message}`);
+            this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
+        }
+    }
+
     /**
      * Recover known devices from ioBroker object tree on adapter startup.
      * This ensures the adapter works without requiring the mcdu-client to re-announce.
