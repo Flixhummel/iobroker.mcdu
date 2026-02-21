@@ -247,7 +247,7 @@ describe('PageRenderer', () => {
 
             const lines = displayPublisher._published[0];
             const statusBar = lines[0];
-            expect(statusBar.color).to.equal('cyan');
+            expect(statusBar.color).to.equal('white');
             expect(statusBar.text).to.include('HOME');
         });
 
@@ -288,7 +288,7 @@ describe('PageRenderer', () => {
         it('should use page name in uppercase', () => {
             const result = renderer.renderStatusBar('home-main');
             expect(result.text).to.include('HOME');
-            expect(result.color).to.equal('cyan');
+            expect(result.color).to.equal('white');
         });
 
         it('should fallback to pageId if no name', () => {
@@ -312,14 +312,14 @@ describe('PageRenderer', () => {
             ];
             const result = renderer.renderStatusBar('klima-main');
             expect(result.text).to.include('HOME > KLIMA');
-            expect(result.color).to.equal('cyan');
+            expect(result.color).to.equal('white');
         });
 
         it('should show just page name for root page', () => {
             adapter.breadcrumb = [{ id: 'home-main', name: 'Home' }];
             const result = renderer.renderStatusBar('home-main');
             expect(result.text).to.include('HOME');
-            expect(result.color).to.equal('cyan');
+            expect(result.color).to.equal('white');
         });
 
         it('should truncate long breadcrumbs', () => {
