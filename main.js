@@ -221,13 +221,6 @@ class McduAdapter extends utils.Adapter {
             this.subscribeStates('devices.*.control.*');
             this.subscribeStates('devices.*.config.*');
             
-            // Phase 4.1: Start uptime counter
-            this.startTime = Date.now();
-            this.uptimeInterval = setInterval(() => {
-                const uptimeSeconds = Math.floor((Date.now() - this.startTime) / 1000);
-                this.setStateAsync('runtime.uptime', uptimeSeconds, true);
-            }, 60000); // Update every minute
-
             // Live data re-render timer (status bar time + datapoint refresh)
             // Skips re-render during active input to avoid display flicker
             const reRenderInterval = this.config.performance?.reRenderInterval || 30000;
@@ -336,16 +329,8 @@ class McduAdapter extends utils.Adapter {
             }
         }
         
-        // Set initial mode
-        await this.setStateAsync('runtime.mode', 'normal', true);
-        
-        // Initialize scratchpad state
-        await this.setStateAsync('runtime.scratchpad', '', true);
-        await this.setStateAsync('runtime.scratchpadValid', true, true);
-        await this.setStateAsync('runtime.selectedLine', null, true);
-        
-        // Initialize confirmation state
-        await this.setStateAsync('runtime.confirmationPending', false, true);
+        // Runtime state initialization removed — these states were write-only debug telemetry
+        // that generated "has no existing object" warnings. Mode/scratchpad state lives in-memory.
     }
     
     /**
@@ -1687,11 +1672,6 @@ class McduAdapter extends utils.Adapter {
                 this.log.debug('Timeout check interval cleared');
             }
             
-            if (this.uptimeInterval) {
-                clearInterval(this.uptimeInterval);
-                this.uptimeInterval = null;
-                this.log.debug('Uptime interval cleared');
-            }
 
             if (this.reRenderInterval) {
                 clearInterval(this.reRenderInterval);
