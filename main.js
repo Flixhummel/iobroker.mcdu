@@ -221,6 +221,7 @@ class McduAdapter extends utils.Adapter {
             this.subscribeStates('devices.*.actions.*');
             this.subscribeStates('devices.*.control.*');
             this.subscribeStates('devices.*.config.*');
+            this.subscribeStates('devices.*.display.brightness');
             
             // Live data re-render timer (status bar time + datapoint refresh)
             // Skips re-render during active input to avoid display flicker
@@ -401,6 +402,16 @@ class McduAdapter extends utils.Adapter {
             await this.setStateAsync('runtime.currentPage', pageId, true);
             await this.setStateAsync(`pages.${pageId}.active`, true, true);
 
+            // Update per-device navigation states
+            const activeDeviceId = this.displayPublisher?.deviceId;
+            if (activeDeviceId) {
+                await this.setStateAsync(`devices.${activeDeviceId}.navigation.currentPage`, pageId, true);
+                await this.setStateAsync(`devices.${activeDeviceId}.display.currentPage`, pageId, true);
+                if (previousPage && previousPage !== pageId) {
+                    await this.setStateAsync(`devices.${activeDeviceId}.navigation.previousPage`, previousPage, true);
+                }
+            }
+
             // Build and store breadcrumb
             this.breadcrumb = this.buildBreadcrumb(pageId);
 
@@ -499,6 +510,18 @@ class McduAdapter extends utils.Adapter {
         // Control states only handle non-ack changes
         if (state.ack) return;
 
+        // Extract device state info: devices.{deviceId}.{channel}.{state}
+        let deviceId = null;
+        let deviceStatePath = null;
+        if (id.includes('.devices.')) {
+            const parts = id.split('.');
+            const devIdx = parts.indexOf('devices') + 1;
+            if (devIdx > 0 && devIdx < parts.length) {
+                deviceId = parts[devIdx];
+                deviceStatePath = parts.slice(devIdx + 1).join('.');
+            }
+        }
+
         try {
             // Handle control states
             if (id === `${this.namespace}.control.switchPage`) {
@@ -538,17 +561,67 @@ class McduAdapter extends utils.Adapter {
             }
             
             // Phase 4.1: LED changes (per-device)
-            else if (id.includes('.devices.') && id.includes('.leds.')) {
-                // Extract: mcdu.0.devices.mcdu-client-mcdu-pi.leds.FAIL
-                const parts = id.split('.');
-                const deviceIdIndex = parts.indexOf('devices') + 1;
-                const deviceId = parts[deviceIdIndex];
-                const ledName = parts[parts.length - 1];
-                
+            else if (deviceId && deviceStatePath && deviceStatePath.startsWith('leds.')) {
+                const ledName = deviceStatePath.split('.').pop();
                 await this.handleLEDChange(deviceId, ledName, state.val);
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
             }
-            
+
+            // Per-device control states
+            else if (deviceId && deviceStatePath === 'control.switchPage') {
+                await this.switchToPage(state.val);
+                await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
+            }
+            else if (deviceId && deviceStatePath === 'control.goBack') {
+                const prev = await this.getStateAsync('runtime.previousPage');
+                if (prev?.val) await this.switchToPage(prev.val);
+                await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
+            }
+            else if (deviceId && deviceStatePath === 'control.refresh') {
+                await this.renderCurrentPage();
+                await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
+            }
+
+            // Per-device actions states
+            else if (deviceId && deviceStatePath === 'actions.pressButton') {
+                if (state.val) {
+                    await this.triggerButton(state.val);
+                    await this.setStateAsync(id.replace(`${this.namespace}.`, ''), '', true);
+                }
+            }
+            else if (deviceId && deviceStatePath === 'actions.confirmAction') {
+                if (state.val === true) {
+                    await this.triggerOVFY();
+                    await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
+                }
+            }
+            else if (deviceId && deviceStatePath === 'actions.cancelAction') {
+                if (state.val === true) {
+                    await this.triggerCLR();
+                    await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
+                }
+            }
+
+            // Per-device notification states
+            else if (deviceId && deviceStatePath === 'notifications.message') {
+                if (state.val) {
+                    await this.showNotificationForDevice(deviceId, state.val);
+                    await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
+                }
+            }
+            else if (deviceId && deviceStatePath === 'notifications.clear') {
+                if (state.val === true) {
+                    await this.clearNotification();
+                    await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
+                }
+            }
+
+            // Per-device display brightness
+            else if (deviceId && deviceStatePath === 'display.brightness') {
+                await this.handleLEDChange(deviceId, 'SCREEN_BACKLIGHT', state.val);
+                await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
+            }
+
             // Phase 4.1: Scratchpad changes
             else if (id === `${this.namespace}.scratchpad.content`) {
                 this.scratchpadManager.set(state.val);
@@ -817,6 +890,34 @@ class McduAdapter extends utils.Adapter {
         }, durationMs);
     }
     
+    /**
+     * Show notification on display for a specific device
+     * Reads type/duration from the device's notification states
+     * @param {string} deviceId - Device ID
+     * @param {string} message - Notification message text
+     */
+    async showNotificationForDevice(deviceId, message) {
+        const type = await this.getStateAsync(`devices.${deviceId}.notifications.type`);
+        const duration = await this.getStateAsync(`devices.${deviceId}.notifications.duration`);
+
+        const colorMap = {
+            'info': 'white',
+            'warning': 'amber',
+            'error': 'red',
+            'success': 'green'
+        };
+
+        const color = colorMap[type?.val] || 'white';
+        const durationMs = duration?.val || 3000;
+
+        await this.displayPublisher.publishLine(13, message, color);
+        this.log.info(`Notification shown on ${deviceId}: ${message} (${type?.val || 'info'})`);
+
+        setTimeout(() => {
+            this.clearNotification();
+        }, durationMs);
+    }
+
     /**
      * Clear notification from display
      */
