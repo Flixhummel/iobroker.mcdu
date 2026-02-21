@@ -1,7 +1,7 @@
 # MCDU Smart Home Controller - Status Summary
 
-**Last Updated:** 2026-02-19
-**Overall Status:** Adapter Phase 3 (Business Logic) Complete -- 109 tests passing
+**Last Updated:** 2026-02-22
+**Overall Status:** Display Enhancement complete -- 191 tests passing (180 unit + 11 integration)
 
 ---
 
@@ -16,8 +16,10 @@
 | **ioBroker Adapter Foundation** | DONE | main.js, state tree, MQTT client |
 | **Input System** | DONE | Scratchpad, validation, confirmation dialogs |
 | **Business Logic (Phase 3)** | DONE | Rendering, pagination, function keys, splash |
-| **Unit Tests** | DONE | 109 tests passing |
-| **Admin UI Redesign** | NOT STARTED | Phase 4 |
+| **Admin UI Redesign** | DONE | 4-tab layout, left/right line model |
+| **UX Phases A-C** | DONE | Function keys, navigation, layout types |
+| **Display Enhancement** | DONE | colLabel/colData, BRT/DIM, device states |
+| **Unit Tests** | DONE | 191 tests passing |
 | **Template Enhancement** | NOT STARTED | Phase 4 |
 | **Hardware Deployment Test** | NOT STARTED | Phase 5 |
 
@@ -28,8 +30,8 @@
 Adapter Phase 3: Business Logic -- all 8 steps implemented.
 
 ### Rendering Improvements
-- **Even Row Sub-Labels** (Step 3.1): Cyan sub-labels on rows 2/4/6/8/10 sourced from the next odd row's `subLabel` field
-- **Status Bar** (Step 3.2): Row 13 dedicated to page name + pagination + HH:MM time
+- **Even Row Sub-Labels** (Step 3.1): Sub-labels on rows 2/4/6/8/10 in `colLabel` color (defaults to device `defaultColor`)
+- **Status Bar** (Step 3.2): Row 1 dedicated to breadcrumb + HH:MM time (colors from `pageNameColor` + `defaultColor`)
 - **Page Pagination** (Step 3.4): Auto-splits pages with >6 items into sub-pages with X/Y indicator
 
 ### Navigation and Input
@@ -106,11 +108,12 @@ Adapter Phase 3: Business Logic -- all 8 steps implemented.
 ## Test Summary
 
 ```
-npm test    -- runs all 109 tests
+npm test    -- runs all 191 tests (180 unit + 11 integration)
 
 test/unit/pageRenderer.test.js       30 tests  (sub-labels, status bar, pagination)
 test/unit/buttonSubscriber.test.js   19 tests  (button mapping, keypad, function keys)
 test/unit/asciiSafeMessages.test.js  10 tests  (ASCII-safe messages)
+test/unit/inputModeManager.test.js   24 tests  (metadata-driven LSK)
 test/unit/ScratchpadManager.test.js  (scratchpad operations)
 test/integration/                    (adapter startup tests)
 test/package/                        (package validation)

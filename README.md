@@ -26,10 +26,12 @@ The ioBroker adapter runs all business logic (page rendering, input handling, va
 
 - **14x24 character display** with 8 colors (white, amber, cyan, green, magenta, red, yellow, grey)
 - **73 buttons** including 12 Line Select Keys, 12 function keys, full alphanumeric keypad
-- **11 LEDs** (9 indicators + 2 backlights with brightness control)
+- **11 LEDs** (9 indicators + 2 backlights with BRT/DIM brightness control)
+- **Per-line color control**: independent colLabel and colData colors, per-page status bar color
 - **Aviation-style input**: scratchpad on line 14, LSK-based field selection, OVFY confirmation
-- **Page system**: configurable pages with sub-labels, automatic pagination for large pages
-- **Function keys**: MENU, INIT, DIR, PREV/NEXT page, FPLN, PERF navigation
+- **Page system**: configurable pages with sub-labels, automatic pagination, layout types (menu/data/list)
+- **Function keys**: 11 configurable keys (MENU, INIT, DIR, FPLN, PERF, etc.) with per-device mapping
+- **Navigation**: parent hierarchy, breadcrumb status bar, circular SLEW, CLR-to-parent
 - **Validation engine**: keystroke, format, range, and business logic validation levels
 - **Confirmation dialogs**: soft (LSK or OVFY) and hard (OVFY only) for critical actions
 - **Multi-device support**: multiple MCDUs via per-device MQTT topic namespaces
@@ -42,16 +44,18 @@ The ioBroker adapter runs all business logic (page rendering, input handling, va
 | Adapter Foundation (MQTT, state tree, display) | Done |
 | Input System (scratchpad, validation, confirmation) | Done |
 | Business Logic (rendering, pagination, function keys) | Done |
-| Admin UI Redesign | Not started |
+| Admin UI Redesign + Left/Right Line Model | Done |
+| UX Phases A-C (function keys, navigation, layout types) | Done |
+| Display Enhancement (color split, brightness, device states) | Done |
 | Hardware Deployment Testing | Not started |
 
-109 unit tests passing.
+191 tests passing (180 unit + 11 integration).
 
 ### Quick Start (Development)
 
 ```bash
 npm install
-npm test          # Run all 109 tests
+npm test          # Run all 191 tests
 npm run lint      # ESLint
 npm run check     # Lint + test combined
 ```

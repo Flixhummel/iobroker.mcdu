@@ -1,7 +1,7 @@
 # MCDU Smart Home Controller - Progress Tracker
 
-**Last Updated:** 2026-02-21
-**Status:** Datapoint LSK Interaction working — toggle booleans, write values from scratchpad
+**Last Updated:** 2026-02-22
+**Status:** Display Enhancement branch — colLabel/colData color split, BRT/DIM brightness, per-device state handlers
 
 ---
 
@@ -31,6 +31,68 @@ The project follows two levels of phasing:
 | Phase 5: Testing and Hardware Deployment | NOT STARTED | -- |
 
 **Total Tests:** 191 (180 unit + 11 integration, all passing)
+
+---
+
+## Display Enhancement (2026-02-22)
+
+Major rendering and device state management improvements on the `feature/display-enhancement` branch.
+
+### Color Model: colLabel/colData Split
+
+The single `color` field on display configs has been replaced with two independent fields:
+- `colLabel` -- color for the sub-label text (even rows). Defaults to device `defaultColor` (no longer hardcoded cyan).
+- `colData` -- color for the data/value text (odd rows). Defaults to device `defaultColor`.
+
+No backward compatibility for the old single `color` field. Stored configs using `color` must be recreated.
+
+### pageNameColor
+
+New per-page field `pageNameColor` sets the color of the page name in the status bar (row 1). Defaults to device `defaultColor`. The status bar time also uses device `defaultColor` (no longer hardcoded cyan).
+
+### defaultColor Moved to Device Tab
+
+The `defaultColor` setting moved from General Settings to the Device tab in the Admin UI. It is now per-device rather than global.
+
+### BRT/DIM Brightness Control
+
+BRT and DIM button presses increment/decrement both BACKLIGHT and SCREEN_BACKLIGHT LEDs by a configurable step. The step is configurable per-device in Admin UI via `display.brightnessStep` (default 20). Also exposed as a writable device state.
+
+### Scratchpad Placeholder Removed
+
+Empty scratchpad no longer shows underscores -- it is simply blank.
+
+### Admin UI Column Reorder
+
+Segment config columns reordered to: Pos, L-Type, L-Label, L-ColLabel, L-Data, L-ColData, L-Target, L-Source, L-Fmt, L-Unit. The old L-Btn/R-Btn columns renamed to L-Type/R-Type.
+
+### Device Object Tree: New States
+
+- `config.defaultColor` (string, writable) -- per-device default color
+- `display.brightnessStep` (number, writable, 1-255) -- BRT/DIM step size
+
+### Device State Sync on Startup
+
+`recoverKnownDevices()` now calls `createDeviceObjects()` for existing devices (creates new states from code updates) and `syncConfigToDeviceStates()` to sync Admin UI config values to device states.
+
+### Per-Device State Handlers
+
+Full `onStateChange` handlers wired for:
+- `control.*` channel
+- `actions.*` channel
+- `notifications.*` channel
+- `display.brightness`
+- `display.brightnessStep`
+- `config.defaultColor`
+
+### Files Modified
+- `lib/rendering/PageRenderer.js` -- colLabel/colData split, pageNameColor, defaultColor for status bar
+- `lib/mqtt/ButtonSubscriber.js` -- BRT/DIM handler with configurable step
+- `lib/input/ScratchpadManager.js` -- removed underscore placeholder
+- `lib/state/StateTreeManager.js` -- config.defaultColor, display.brightnessStep states
+- `main.js` -- recoverKnownDevices device state sync, per-device onStateChange handlers
+- `admin/jsonConfig.json` -- column reorder, defaultColor moved to device tab, brightnessStep
+- `io-package.json` -- native config updates
 
 ---
 
@@ -124,9 +186,10 @@ The Admin UI was completely redesigned with a 3-tab layout and a new left/right 
 
 ### Admin UI Tabs
 
-1. **General Settings** -- MQTT broker configuration
-2. **Device and Pages** -- device selector, load/save, pages accordion with left/right line editor
-3. **Advanced and About** -- performance settings, adapter info
+1. **General Settings** -- MQTT broker, performance configuration
+2. **Device and Pages** -- device selector, defaultColor, brightnessStep, load/save, pages accordion with left/right line editor
+3. **Function Keys** -- configurable function key mappings per device
+4. **Advanced and About** -- debug logging, adapter info
 
 ### Key Files Modified
 
@@ -150,17 +213,15 @@ Adapter Phase 3 focused on advanced rendering, navigation, and display polish. A
 
 **File:** `lib/rendering/PageRenderer.js`
 
-Even display rows (2, 4, 6, 8, 10) now render cyan sub-labels sourced from the next odd row's `subLabel` field. If no sub-label is configured, the even row remains blank with cyan color. This follows real MCDU conventions where label rows sit above their data rows.
+Even display rows (2, 4, 6, 8, 10) now render sub-labels sourced from the line config's `label` field, colored by `colLabel` (defaults to device `defaultColor`). If no sub-label is configured, the even row remains blank. This follows real MCDU conventions where label rows sit above their data rows.
 
 ### Step 3.2: Status Bar (Row 13)
 
 **File:** `lib/rendering/PageRenderer.js`
 
-Row 13 is now a dedicated status bar and is no longer page-configurable. It shows:
-- Page name (left-aligned)
-- Pagination indicator "X/Y" (center, only when page count > 1)
-- Current time HH:MM (right-aligned)
-- All in cyan
+Row 1 is now a dedicated status bar showing breadcrumb navigation and time:
+- Breadcrumb path (left-aligned, page name in `pageNameColor` or device `defaultColor`)
+- Current time HH:MM (right-aligned, in device `defaultColor`)
 
 New method: `renderStatusBar(pageId)`.
 

@@ -9,8 +9,8 @@ The MCDU adapter renders pages on the WinWing MCDU hardware display. Each page h
 Navigate to: **Instances > mcdu.0 > Configure**
 
 The configuration is organized into 4 tabs:
-- **General Settings** — MQTT broker, display, performance
-- **Device & Pages** — Select device, load/save pages, edit lines
+- **General Settings** — MQTT broker, performance
+- **Device & Pages** — Select device, defaultColor, brightnessStep, load/save pages, edit lines
 - **Function Keys** — Configure 11 function keys (MENU, DIR, INIT, etc.)
 - **Advanced & About** — Debug logging, version info
 
@@ -18,23 +18,23 @@ The configuration is organized into 4 tabs:
 
 ```
 Row  1: ┌────────────────────────┐  Status bar (breadcrumb + time)
-Row  2: │  sub-label (cyan)      │  Sub-label for row 3
+Row  2: │  sub-label (colLabel)  │  Sub-label for row 3
 Row  3: │ LEFT CONTENT  RIGHT    │  LSK1 line (left/right buttons)
-Row  4: │  sub-label (cyan)      │  Sub-label for row 5
+Row  4: │  sub-label (colLabel)  │  Sub-label for row 5
 Row  5: │ LEFT CONTENT  RIGHT    │  LSK2 line
-Row  6: │  sub-label (cyan)      │  Sub-label for row 7
+Row  6: │  sub-label (colLabel)  │  Sub-label for row 7
 Row  7: │ LEFT CONTENT  RIGHT    │  LSK3 line
-Row  8: │  sub-label (cyan)      │  Sub-label for row 9
+Row  8: │  sub-label (colLabel)  │  Sub-label for row 9
 Row  9: │ LEFT CONTENT  RIGHT    │  LSK4 line
-Row 10: │  sub-label (cyan)      │  Sub-label for row 11
+Row 10: │  sub-label (colLabel)  │  Sub-label for row 11
 Row 11: │ LEFT CONTENT  RIGHT    │  LSK5 line
-Row 12: │  sub-label (cyan)      │  Sub-label for row 13
+Row 12: │  sub-label (colLabel)  │  Sub-label for row 13
 Row 13: │ LEFT CONTENT  RIGHT    │  LSK6 line / status bar
 Row 14: └────────────────────────┘  Scratchpad (user input)
 ```
 
 - **Odd rows** (3, 5, 7, 9, 11, 13): main content lines, each with left/right LSK buttons
-- **Even rows** (2, 4, 6, 8, 10, 12): sub-labels (shown in cyan, above the next odd row)
+- **Even rows** (2, 4, 6, 8, 10, 12): sub-labels (color from `colLabel`, defaults to device `defaultColor`)
 - **Row 1**: status bar showing breadcrumb navigation + time
 - **Row 14**: scratchpad for keyboard input
 - Each line is **24 characters wide**, split into left (chars 1-12) and right (chars 13-24)
@@ -45,7 +45,7 @@ Each line has two sides — `left` and `right`. Each side has:
 
 | Field | Purpose |
 |-------|---------|
-| `label` | Sub-label text (shown on the even row above, cyan) |
+| `label` | Sub-label text (shown on the even row above, in `colLabel` color) |
 | `display` | What to show on this side (label, datapoint, or empty) |
 | `button` | What happens when LSK is pressed (navigation, datapoint, or empty) |
 
@@ -53,16 +53,20 @@ Each line has two sides — `left` and `right`. Each side has:
 
 **Label** — static text:
 ```json
-{ "type": "label", "text": "WOHNZIMMER", "color": "white" }
+{ "type": "label", "text": "WOHNZIMMER", "colLabel": "cyan", "colData": "white" }
 ```
+- `colLabel`: color for the sub-label on the even row above (defaults to device `defaultColor`)
+- `colData`: color for the data text on the odd row (defaults to device `defaultColor`)
 
 **Datapoint** — live value from ioBroker:
 ```json
-{ "type": "datapoint", "source": "hm-rpc.0.ABC123.TEMPERATURE", "format": "%.1f", "unit": "C", "color": "green" }
+{ "type": "datapoint", "source": "hm-rpc.0.ABC123.TEMPERATURE", "format": "%.1f", "unit": "C", "colLabel": "cyan", "colData": "green" }
 ```
 - `source`: ioBroker state ID
 - `format`: sprintf format (auto-detected: `%.1f` for numbers, `%s` for strings)
 - `unit`: display unit (auto-detected from ioBroker object metadata)
+- `colLabel`: sub-label color (defaults to device `defaultColor`)
+- `colData`: data value color (defaults to device `defaultColor`)
 
 **Empty** — no content:
 ```json
@@ -187,6 +191,27 @@ Available display colors: `white`, `green`, `cyan`, `blue`, `amber`, `red`, `mag
 
 Note: `blue` and `cyan` render identically on WinWing hardware.
 
+### Color Fields
+
+Each display config has two independent color fields:
+
+| Field | Controls | Default |
+|-------|----------|---------|
+| `colLabel` | Sub-label text on even rows | Device `defaultColor` |
+| `colData` | Data/value text on odd rows | Device `defaultColor` |
+
+The old single `color` field is no longer supported. Configs using `color` must be updated to use `colLabel`/`colData`.
+
+### Page-Level Color
+
+| Field | Controls | Default |
+|-------|----------|---------|
+| `pageNameColor` | Page name in status bar (row 1) | Device `defaultColor` |
+
+### Device Default Color
+
+The `defaultColor` is configured per-device in the Device tab of the Admin UI. It serves as the fallback for all color fields that are not explicitly set. Also exposed as a writable device state at `devices.{deviceId}.config.defaultColor`.
+
 ## Page Example (Current Format)
 
 ```json
@@ -195,17 +220,18 @@ Note: `blue` and `cyan` render identically on WinWing hardware.
   "name": "Wohnzimmer",
   "parent": "klima-main",
   "layoutType": "data",
+  "pageNameColor": "cyan",
   "lines": [
     {
       "row": 3,
       "left": {
         "label": "IST-TEMPERATUR",
-        "display": { "type": "datapoint", "source": "hm-rpc.0.T1.TEMPERATURE", "color": "green" },
+        "display": { "type": "datapoint", "source": "hm-rpc.0.T1.TEMPERATURE", "colLabel": "cyan", "colData": "green" },
         "button": { "type": "empty" }
       },
       "right": {
         "label": "SOLLWERT",
-        "display": { "type": "datapoint", "source": "hm-rpc.0.T1.SET_TEMPERATURE", "color": "amber" },
+        "display": { "type": "datapoint", "source": "hm-rpc.0.T1.SET_TEMPERATURE", "colLabel": "cyan", "colData": "amber" },
         "button": { "type": "empty" }
       }
     },
@@ -213,7 +239,7 @@ Note: `blue` and `cyan` render identically on WinWing hardware.
       "row": 5,
       "left": {
         "label": "LUFTFEUCHTE",
-        "display": { "type": "datapoint", "source": "hm-rpc.0.H1.HUMIDITY", "color": "white" },
+        "display": { "type": "datapoint", "source": "hm-rpc.0.H1.HUMIDITY", "colLabel": "cyan", "colData": "white" },
         "button": { "type": "empty" }
       },
       "right": {
@@ -265,6 +291,16 @@ Use these to test LSK interactions:
 - Type "22" + LSK on `setpoint_living` → writes 22.0
 - Type "999" + LSK on `setpoint_living` → "ENTRY OUT OF RANGE"
 - LSK on `temperature_living` → nothing (read-only)
+
+## BRT/DIM Brightness Control
+
+The BRT and DIM buttons on the MCDU adjust display brightness:
+
+- **BRT** increases both BACKLIGHT and SCREEN_BACKLIGHT by the configured step
+- **DIM** decreases both BACKLIGHT and SCREEN_BACKLIGHT by the configured step
+- Values are clamped to the 0-255 range
+- The step size is configurable per-device via `display.brightnessStep` (default: 20)
+- The step can be changed in the Admin UI (Device tab) or via the writable state `devices.{deviceId}.display.brightnessStep`
 
 ## Tips
 
