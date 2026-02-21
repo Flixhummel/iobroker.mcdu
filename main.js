@@ -1608,6 +1608,13 @@ class McduAdapter extends utils.Adapter {
                     lastSeen: Date.now()
                 });
 
+                // Ensure all device states exist (adds new states from code updates)
+                await this.stateManager.createDeviceObjects(deviceId, {
+                    hostname: native.hostname || 'unknown',
+                    ipAddress: native.ipAddress || 'unknown',
+                    version: native.version || 'unknown'
+                });
+
                 // Load device pages into active config
                 await this.loadDevicePagesIntoConfig(deviceId);
 
