@@ -30,6 +30,7 @@ const TemplateLoader = require('./lib/templates/TemplateLoader');
 
 // Line format conversion (flat ↔ nested for Admin UI)
 const { flattenPages, unflattenPages } = require('./lib/utils/lineNormalizer');
+const { slugifyPageId } = require('./lib/utils/slugify');
 
 class McduAdapter extends utils.Adapter {
     /**
@@ -1171,6 +1172,23 @@ class McduAdapter extends utils.Adapter {
 
             // Convert flat lines (from Admin UI) back to nested format for storage
             const nestedPages = unflattenPages(pages);
+
+            // Auto-generate IDs for pages that don't have one yet
+            const existingIds = new Set(nestedPages.filter(p => p.id).map(p => p.id));
+            for (const page of nestedPages) {
+                if (!page.id && page.name) {
+                    let slug = slugifyPageId(page.name);
+                    if (!slug) slug = 'page';
+                    let candidate = slug;
+                    let counter = 2;
+                    while (existingIds.has(candidate)) {
+                        candidate = `${slug}-${counter++}`;
+                    }
+                    page.id = candidate;
+                    existingIds.add(candidate);
+                    this.log.info(`Auto-generated page ID "${page.id}" from name "${page.name}"`);
+                }
+            }
 
             // Auto-resolve format/unit from ioBroker object metadata before storing
             await this.resolveDatapointDefaults(nestedPages);
