@@ -1615,6 +1615,9 @@ class McduAdapter extends utils.Adapter {
                     version: native.version || 'unknown'
                 });
 
+                // Sync adapter config to device states
+                await this.syncConfigToDeviceStates(deviceId);
+
                 // Load device pages into active config
                 await this.loadDevicePagesIntoConfig(deviceId);
 
@@ -1630,6 +1633,20 @@ class McduAdapter extends utils.Adapter {
         } catch (error) {
             this.log.warn(`Could not recover devices: ${error.message}`);
         }
+    }
+
+    /**
+     * Sync adapter config values to per-device object tree states.
+     * Called on startup so Admin UI changes are reflected in the object tree.
+     */
+    async syncConfigToDeviceStates(deviceId) {
+        const defaultColor = this.config.display?.defaultColor || 'white';
+        const brightnessStep = this.config.display?.brightnessStep || 20;
+
+        await this.setStateAsync(`devices.${deviceId}.config.defaultColor`, defaultColor, true);
+        await this.setStateAsync(`devices.${deviceId}.display.brightnessStep`, brightnessStep, true);
+
+        this.log.debug(`Synced config to device states: defaultColor=${defaultColor}, brightnessStep=${brightnessStep}`);
     }
 
     /**
