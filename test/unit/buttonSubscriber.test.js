@@ -346,7 +346,7 @@ describe('ButtonSubscriber', () => {
             const inputModeManager = {
                 getMode: () => 'edit',
                 setState: async () => {},
-                getScratchpad: () => ({ getContent: () => '', clear: () => {}, render: async () => {} })
+                getScratchpad: () => ({ getContent: () => '', clear: () => {} })
             };
             subscriber.setInputModeManager(inputModeManager);
 
@@ -362,7 +362,7 @@ describe('ButtonSubscriber', () => {
             const inputModeManager = {
                 getMode: () => 'edit',
                 setState: async () => {},
-                getScratchpad: () => ({ getContent: () => '', clear: () => {}, render: async () => {} })
+                getScratchpad: () => ({ getContent: () => '', clear: () => {} })
             };
             subscriber.setInputModeManager(inputModeManager);
 
