@@ -423,13 +423,12 @@ describe('PageRenderer', () => {
         });
     });
 
-    describe('Layout Types', () => {
-        it('should add < > indicators on menu layout lines with buttons', async () => {
+    describe('Navigation Indicators', () => {
+        it('should add < > indicators on lines with navigation buttons', async () => {
             const pages = [
                 {
-                    id: 'test-menu',
-                    name: 'Test Menu',
-                    layoutType: 'menu',
+                    id: 'test-nav',
+                    name: 'Test Nav',
                     lines: [
                         {
                             row: 3,
@@ -444,21 +443,20 @@ describe('PageRenderer', () => {
                 }
             ];
             adapter.config.pages = pages;
-            adapter.breadcrumb = [{ id: 'test-menu', name: 'Test Menu' }];
+            adapter.breadcrumb = [{ id: 'test-nav', name: 'Test Nav' }];
 
-            await renderer.renderPage('test-menu');
+            await renderer.renderPage('test-nav');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
             // Row 3 = index 2
             expect(display[2].text).to.match(/^</);
             expect(display[2].text).to.match(/>$/);
         });
 
-        it('should NOT add < > indicators on lines without buttons', async () => {
+        it('should NOT add < > indicators on lines without navigation buttons', async () => {
             const pages = [
                 {
-                    id: 'test-menu',
-                    name: 'Test Menu',
-                    layoutType: 'menu',
+                    id: 'test-no-nav',
+                    name: 'Test No Nav',
                     lines: [
                         {
                             row: 3,
@@ -473,27 +471,26 @@ describe('PageRenderer', () => {
                 }
             ];
             adapter.config.pages = pages;
-            adapter.breadcrumb = [{ id: 'test-menu', name: 'Test Menu' }];
+            adapter.breadcrumb = [{ id: 'test-no-nav', name: 'Test No Nav' }];
 
-            await renderer.renderPage('test-menu');
+            await renderer.renderPage('test-no-nav');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
             // Row 3 = index 2
             expect(display[2].text).to.not.match(/^</);
         });
 
-        it('should NOT add < > indicators on data layout', async () => {
+        it('should NOT add < > indicators on datapoint buttons', async () => {
             const pages = [
                 {
-                    id: 'test-data',
-                    name: 'Test Data',
-                    layoutType: 'data',
+                    id: 'test-dp',
+                    name: 'Test DP',
                     lines: [
                         {
                             row: 3,
                             left: {
                                 label: 'TEMP',
-                                display: { type: 'label', text: '21.5' },
-                                button: { type: 'navigation', action: 'goto', target: 'detail' }
+                                display: { type: 'datapoint', source: 'test.temp' },
+                                button: { type: 'datapoint', target: 'test.temp' }
                             },
                             right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                         }
@@ -501,43 +498,15 @@ describe('PageRenderer', () => {
                 }
             ];
             adapter.config.pages = pages;
-            adapter.breadcrumb = [{ id: 'test-data', name: 'Test Data' }];
+            adapter.breadcrumb = [{ id: 'test-dp', name: 'Test DP' }];
 
-            await renderer.renderPage('test-data');
+            await renderer.renderPage('test-dp');
             const display = displayPublisher._published[displayPublisher._published.length - 1];
             // Row 3 = index 2
             expect(display[2].text).to.not.match(/^</);
         });
 
-        it('should default to menu layout when layoutType is not set', async () => {
-            const pages = [
-                {
-                    id: 'test-default',
-                    name: 'Test Default',
-                    lines: [
-                        {
-                            row: 3,
-                            left: {
-                                label: '',
-                                display: { type: 'label', text: 'ITEM' },
-                                button: { type: 'navigation', action: 'goto', target: 'detail' }
-                            },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
-                        }
-                    ]
-                }
-            ];
-            adapter.config.pages = pages;
-            adapter.breadcrumb = [{ id: 'test-default', name: 'Test Default' }];
-
-            await renderer.renderPage('test-default');
-            const display = displayPublisher._published[displayPublisher._published.length - 1];
-            // Row 3 = index 2
-            expect(display[2].text).to.match(/^</);
-            expect(display[2].text).to.match(/>$/);
-        });
-
-        it('should add scroll indicators for list layout with pagination', async () => {
+        it('should add scroll indicators when paginated', async () => {
             const lines = [];
             for (let i = 1; i <= 9; i++) {
                 lines.push({
@@ -546,29 +515,21 @@ describe('PageRenderer', () => {
                     right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
                 });
             }
-            const pages = [{ id: 'test-list', name: 'Test List', layoutType: 'list', lines }];
+            const pages = [{ id: 'test-scroll', name: 'Test Scroll', lines }];
             adapter.config.pages = pages;
-            adapter.breadcrumb = [{ id: 'test-list', name: 'Test List' }];
+            adapter.breadcrumb = [{ id: 'test-scroll', name: 'Test Scroll' }];
 
             // Page 1: should show v indicator at bottom but no ^ at top
-            await renderer.renderPage('test-list');
+            await renderer.renderPage('test-scroll');
             let display = displayPublisher._published[displayPublisher._published.length - 1];
             expect(display[1].text).to.not.include('^');
             expect(display[11].text).to.include('v');
 
             // Page 2: should show ^ at top but no v at bottom
             renderer.currentPageOffset = 1;
-            await renderer.renderPage('test-list');
+            await renderer.renderPage('test-scroll');
             display = displayPublisher._published[displayPublisher._published.length - 1];
             expect(display[1].text).to.include('^');
-            expect(display[11].text).to.not.include('v');
-        });
-
-        it('should NOT add scroll indicators for non-list layouts', async () => {
-            // Use the existing long-page (no layoutType = defaults to menu)
-            await renderer.renderPage('long-page');
-            const display = displayPublisher._published[displayPublisher._published.length - 1];
-            // Row 12 (index 11) should not have v indicator
             expect(display[11].text).to.not.include('v');
         });
     });

@@ -219,22 +219,6 @@
               "help": "Page ID of parent page (leave empty for root page)"
             },
             {
-              "type": "select",
-              "attr": "layoutType",
-              "sm": 12,
-              "md": 4,
-              "label": "Layout Type",
-              "options": [
-                {"label": "Menu", "value": "menu"},
-                {"label": "Data Display", "value": "data"},
-                {"label": "Input Form", "value": "input"},
-                {"label": "Confirmation", "value": "confirmation"},
-                {"label": "List", "value": "list"}
-              ],
-              "default": "menu",
-              "help": "Determines how lines are rendered on the display"
-            },
-            {
               "type": "table",
               "attr": "lines",
               "label": "Segment Configuration",
