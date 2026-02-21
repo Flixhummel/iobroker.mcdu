@@ -17,7 +17,7 @@ describe('ButtonSubscriber', () => {
                     name: 'Home',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'LIGHTS' },
@@ -30,7 +30,7 @@ describe('ButtonSubscriber', () => {
                             }
                         },
                         {
-                            row: 3,
+                            row: 5,
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'CLIMATE' },
@@ -49,7 +49,7 @@ describe('ButtonSubscriber', () => {
                     name: 'Old Format',
                     lines: [
                         {
-                            row: 1,
+                            row: 3,
                             leftButton: { type: 'navigation', action: 'goto', target: 'lights-main' },
                             display: { type: 'label', label: 'LIGHTS' },
                             rightButton: { type: 'empty' }
@@ -67,16 +67,16 @@ describe('ButtonSubscriber', () => {
     });
 
     describe('Button Row Mapping', () => {
-        it('should map LSK1L to row 1', () => {
-            expect(subscriber.buttonRowMap.get('LSK1L')).to.equal(1);
+        it('should map LSK1L to row 3', () => {
+            expect(subscriber.buttonRowMap.get('LSK1L')).to.equal(3);
         });
 
-        it('should map LSK1R to row 1', () => {
-            expect(subscriber.buttonRowMap.get('LSK1R')).to.equal(1);
+        it('should map LSK1R to row 3', () => {
+            expect(subscriber.buttonRowMap.get('LSK1R')).to.equal(3);
         });
 
-        it('should map LSK6L to row 11', () => {
-            expect(subscriber.buttonRowMap.get('LSK6L')).to.equal(11);
+        it('should map LSK6L to row 13', () => {
+            expect(subscriber.buttonRowMap.get('LSK6L')).to.equal(13);
         });
 
         it('should map all 12 LSK buttons', () => {
@@ -85,7 +85,7 @@ describe('ButtonSubscriber', () => {
 
         it('should follow LSK-to-odd-row formula', () => {
             for (let i = 1; i <= 6; i++) {
-                const expectedRow = (i * 2) - 1;
+                const expectedRow = (i * 2) + 1;
                 expect(subscriber.buttonRowMap.get(`LSK${i}L`)).to.equal(expectedRow);
                 expect(subscriber.buttonRowMap.get(`LSK${i}R`)).to.equal(expectedRow);
             }

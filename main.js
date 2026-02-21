@@ -29,7 +29,7 @@ const ConfirmationDialog = require('./lib/input/ConfirmationDialog');
 const TemplateLoader = require('./lib/templates/TemplateLoader');
 
 // Line format conversion (flat ↔ nested for Admin UI)
-const { flattenPages, unflattenPages } = require('./lib/utils/lineNormalizer');
+const { flattenPages, unflattenPages, migrateOldRows } = require('./lib/utils/lineNormalizer');
 
 class McduAdapter extends utils.Adapter {
     /**
@@ -1464,8 +1464,19 @@ class McduAdapter extends utils.Adapter {
             if (state && state.val) {
                 const pages = JSON.parse(state.val);
                 if (Array.isArray(pages) && pages.length > 0) {
-                    this.config.pages = pages;
-                    this.log.info(`Loaded ${pages.length} pages from device ${deviceId}`);
+                    // Migrate old row numbers if needed
+                    const migratedPages = pages.map(page => {
+                        if (page.lines) {
+                            const migrated = migrateOldRows(page.lines);
+                            if (migrated !== page.lines) {
+                                this.log.info(`Migrated page ${page.id} lines from old row format`);
+                                return { ...page, lines: migrated };
+                            }
+                        }
+                        return page;
+                    });
+                    this.config.pages = migratedPages;
+                    this.log.info(`Loaded ${migratedPages.length} pages from device ${deviceId}`);
                 }
             }
 

@@ -242,12 +242,19 @@
               "items": [
                 {
                   "type": "number",
-                  "attr": "row",
-                  "title": "Row",
+                  "attr": "slot",
+                  "title": "Pos.",
                   "width": "50px",
                   "min": 1,
-                  "max": 13,
+                  "max": 6,
                   "default": 1
+                },
+                {
+                  "type": "text",
+                  "attr": "leftLabel",
+                  "title": "L-Sub",
+                  "width": "90px",
+                  "default": ""
                 },
                 {
                   "type": "text",
@@ -293,6 +300,13 @@
                   "command": "getPageList",
                   "freeSolo": true,
                   "width": "120px",
+                  "default": ""
+                },
+                {
+                  "type": "text",
+                  "attr": "rightLabel",
+                  "title": "R-Sub",
+                  "width": "90px",
                   "default": ""
                 },
                 {
