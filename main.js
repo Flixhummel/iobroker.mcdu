@@ -226,8 +226,13 @@ class McduAdapter extends utils.Adapter {
             }, 60000); // Update every minute
 
             // Live data re-render timer (status bar time + datapoint refresh)
+            // Skips re-render during active input to avoid display flicker
             const reRenderInterval = this.config.performance?.reRenderInterval || 30000;
             this.reRenderInterval = setInterval(() => {
+                if (this.inputModeManager && this.inputModeManager.getMode() !== 'normal') {
+                    this.log.debug('Skipping periodic re-render (input mode active)');
+                    return;
+                }
                 this.renderCurrentPage().catch(error => {
                     this.log.error(`Periodic re-render failed: ${error.message}`);
                 });
