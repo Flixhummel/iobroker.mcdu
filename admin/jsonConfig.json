@@ -250,8 +250,26 @@
                 },
                 {
                   "type": "select",
-                  "attr": "leftColor",
-                  "title": "L-Color",
+                  "attr": "leftColLabel",
+                  "title": "L-ColLabel",
+                  "width": "80px",
+                  "default": "",
+                  "options": [
+                    {"label": "-", "value": ""},
+                    {"label": "White", "value": "white"},
+                    {"label": "Green", "value": "green"},
+                    {"label": "Blue", "value": "blue"},
+                    {"label": "Amber", "value": "amber"},
+                    {"label": "Red", "value": "red"},
+                    {"label": "Magenta", "value": "magenta"},
+                    {"label": "Cyan", "value": "cyan"},
+                    {"label": "Yellow", "value": "yellow"}
+                  ]
+                },
+                {
+                  "type": "select",
+                  "attr": "leftColData",
+                  "title": "L-ColData",
                   "width": "80px",
                   "default": "",
                   "options": [
@@ -330,8 +348,26 @@
                 },
                 {
                   "type": "select",
-                  "attr": "rightColor",
-                  "title": "R-Color",
+                  "attr": "rightColLabel",
+                  "title": "R-ColLabel",
+                  "width": "80px",
+                  "default": "",
+                  "options": [
+                    {"label": "-", "value": ""},
+                    {"label": "White", "value": "white"},
+                    {"label": "Green", "value": "green"},
+                    {"label": "Blue", "value": "blue"},
+                    {"label": "Amber", "value": "amber"},
+                    {"label": "Red", "value": "red"},
+                    {"label": "Magenta", "value": "magenta"},
+                    {"label": "Cyan", "value": "cyan"},
+                    {"label": "Yellow", "value": "yellow"}
+                  ]
+                },
+                {
+                  "type": "select",
+                  "attr": "rightColData",
+                  "title": "R-ColData",
                   "width": "80px",
                   "default": "",
                   "options": [

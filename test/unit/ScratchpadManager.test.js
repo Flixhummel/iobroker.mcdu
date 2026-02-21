@@ -151,8 +151,8 @@ describe('ScratchpadManager', () => {
     
     describe('Display Representation', () => {
         describe('getDisplay()', () => {
-            it('should return placeholder when scratchpad is empty', () => {
-                expect(scratchpad.getDisplay()).to.equal('____________________');
+            it('should return empty string when scratchpad is empty', () => {
+                expect(scratchpad.getDisplay()).to.equal('');
             });
             
             it('should return content with asterisk when scratchpad has content', () => {
