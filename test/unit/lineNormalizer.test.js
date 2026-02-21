@@ -112,7 +112,7 @@ describe('lineNormalizer', () => {
             expect(nested.left.display.unit).to.equal('°C');
         });
 
-        it('should stay label type when buttonType=datapoint but no source', () => {
+        it('should set datapoint type even without source when buttonType=datapoint', () => {
             const flat = {
                 slot: 2,
                 leftLabel: '',
@@ -134,11 +134,12 @@ describe('lineNormalizer', () => {
             };
 
             const nested = unflattenLine(flat);
-            expect(nested.left.display.type).to.equal('label');
-            expect(nested.left.display).to.not.have.property('source');
+            expect(nested.left.display.type).to.equal('datapoint');
+            expect(nested.left.display.source).to.equal('');
+            expect(nested.left.display.text).to.equal('');
         });
 
-        it('should stay empty type when buttonType=datapoint, no source, no text', () => {
+        it('should set datapoint type when buttonType=datapoint, no source, no text', () => {
             const flat = {
                 slot: 3,
                 leftLabel: '',
@@ -160,8 +161,8 @@ describe('lineNormalizer', () => {
             };
 
             const nested = unflattenLine(flat);
-            expect(nested.left.display.type).to.equal('empty');
-            expect(nested.left.display).to.not.have.property('source');
+            expect(nested.left.display.type).to.equal('datapoint');
+            expect(nested.left.display.source).to.equal('');
         });
 
         it('should handle right-side datapoint', () => {

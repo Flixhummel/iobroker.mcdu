@@ -305,12 +305,12 @@
                   "hidden": "data.leftButtonType !== 'navigation'"
                 },
                 {
-                  "type": "objectId",
+                  "type": "text",
                   "attr": "leftSource",
                   "title": "L-Source",
-                  "types": ["state"],
                   "width": "140px",
                   "default": "",
+                  "placeholder": "0_userdata.0.mcdu_test.xxx",
                   "hidden": "data.leftButtonType !== 'datapoint'"
                 },
                 {
@@ -385,12 +385,12 @@
                   "hidden": "data.rightButtonType !== 'navigation'"
                 },
                 {
-                  "type": "objectId",
+                  "type": "text",
                   "attr": "rightSource",
                   "title": "R-Source",
-                  "types": ["state"],
                   "width": "140px",
                   "default": "",
+                  "placeholder": "0_userdata.0.mcdu_test.xxx",
                   "hidden": "data.rightButtonType !== 'datapoint'"
                 },
                 {
