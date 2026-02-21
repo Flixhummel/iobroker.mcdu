@@ -63,6 +63,14 @@ Per-device state trees under `mcdu.0.devices.{deviceId}/`. The adapter subscribe
 - 73 buttons (LSK 1-6 left/right, function keys, keypad, controls)
 - LSK buttons map to odd display rows (LSK1→row1, LSK2→row3, etc.)
 
+## Development Rules
+
+1. **No backward-compatibility migrations.** We are in active development. There is ONE current config format. If existing stored configuration doesn't match the current format, show a clear error message in the Admin UI — do NOT silently migrate. The developer will manually recreate configs when the format changes.
+
+2. **Keep code simple and clean.** No migration layers, no old-format detection, no backward-compat shims. One format, one code path.
+
+3. **Do NOT deploy to the Raspberry Pi** unless explicitly asked. We develop and test locally on Mac (MCDU plugged into Mac via USB). Only deploy to mcdu-pi when the user specifically requests it.
+
 ## Configuration
 
 - `io-package.json` — adapter metadata, native config defaults (MQTT broker, display/LED throttling, page definitions)

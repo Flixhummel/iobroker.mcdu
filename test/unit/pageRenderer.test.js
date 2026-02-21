@@ -241,34 +241,6 @@ describe('PageRenderer', () => {
         });
     });
 
-    describe('Backward Compatibility (Old Format)', () => {
-        it('should render old format lines with display.label (migrated to row 3)', async () => {
-            await renderer.renderPage('old-format-page');
-
-            const lines = displayPublisher._published[0];
-            // Old row 1 migrates to row 3 (index 2)
-            expect(lines[2].text).to.include('OLD FORMAT');
-        });
-
-        it('should render old format sub-labels', async () => {
-            // Add a page with old-format line on row 3 that has subLabel
-            // Row 3 is new-format (no row 1), so no migration needed
-            adapter.config.pages.push({
-                id: 'old-sub',
-                name: 'Old Sub',
-                lines: [
-                    { row: 3, subLabel: 'ALTFORMAT', display: { type: 'label', label: 'TEST' } }
-                ]
-            });
-
-            await renderer.renderPage('old-sub');
-
-            const lines = displayPublisher._published[0];
-            // Row 2 (index 1) should have sub-label for row 3
-            expect(lines[1].text).to.include('ALTFORMAT');
-        });
-    });
-
     describe('Status Bar (Row 1)', () => {
         it('should render status bar on row 1 (index 0)', async () => {
             await renderer.renderPage('home-main');

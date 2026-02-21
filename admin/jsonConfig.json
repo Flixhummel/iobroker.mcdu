@@ -188,6 +188,7 @@
           "label": "MCDU Pages",
           "titleAttr": "name",
           "clone": true,
+          "delete": true,
           "hidden": "!data.selectedDevice",
           "items": [
             {
@@ -237,7 +238,7 @@
             {
               "type": "table",
               "attr": "lines",
-              "label": "Lines Configuration",
+              "label": "Segment Configuration",
               "sm": 12,
               "items": [
                 {
