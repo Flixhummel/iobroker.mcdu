@@ -237,14 +237,14 @@
                   "type": "text",
                   "attr": "leftLabel",
                   "title": "L-Label",
-                  "width": "130px",
+                  "width": "160px",
                   "default": ""
                 },
                 {
                   "type": "text",
                   "attr": "leftText",
                   "title": "L-Data",
-                  "width": "130px",
+                  "width": "160px",
                   "default": "",
                   "hidden": "data.leftButtonType === 'datapoint'"
                 },
@@ -289,12 +289,11 @@
                   "hidden": "data.leftButtonType !== 'navigation'"
                 },
                 {
-                  "type": "autocompleteSendTo",
+                  "type": "objectId",
                   "attr": "leftSource",
                   "title": "L-Source",
-                  "command": "getStateList",
-                  "freeSolo": true,
-                  "width": "200px",
+                  "types": ["state"],
+                  "width": "250px",
                   "default": "",
                   "hidden": "data.leftButtonType !== 'datapoint'"
                 },
@@ -318,14 +317,14 @@
                   "type": "text",
                   "attr": "rightLabel",
                   "title": "R-Label",
-                  "width": "130px",
+                  "width": "160px",
                   "default": ""
                 },
                 {
                   "type": "text",
                   "attr": "rightText",
                   "title": "R-Data",
-                  "width": "130px",
+                  "width": "160px",
                   "default": "",
                   "hidden": "data.rightButtonType === 'datapoint'"
                 },
@@ -370,12 +369,11 @@
                   "hidden": "data.rightButtonType !== 'navigation'"
                 },
                 {
-                  "type": "autocompleteSendTo",
+                  "type": "objectId",
                   "attr": "rightSource",
                   "title": "R-Source",
-                  "command": "getStateList",
-                  "freeSolo": true,
-                  "width": "200px",
+                  "types": ["state"],
+                  "width": "250px",
                   "default": "",
                   "hidden": "data.rightButtonType !== 'datapoint'"
                 },
