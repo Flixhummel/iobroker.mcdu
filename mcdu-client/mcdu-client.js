@@ -128,7 +128,7 @@ function padOrTruncate(text, length = 24) {
  * Validate color name
  */
 function validateColor(color) {
-  const validColors = ['white', 'amber', 'cyan', 'green', 'magenta', 'red', 'yellow', 'grey'];
+  const validColors = ['white', 'amber', 'cyan', 'green', 'magenta', 'red', 'yellow', 'grey', 'blue'];
   return validColors.includes(color) ? color : 'white';
 }
 
@@ -295,8 +295,19 @@ function handleDisplaySet(data) {
   data.lines.forEach((line, i) => {
     const text = padOrTruncate(line.text, 24);
     const color = validateColor(line.color);
-    displayCache.lines[i] = {text, color};
-    if (!CONFIG.mockMode) mcdu.setLine(i, text, color);
+
+    if (line.segments && Array.isArray(line.segments)) {
+      // Per-side color segments
+      const validSegments = line.segments.map(seg => ({
+        text: seg.text || '',
+        color: validateColor(seg.color)
+      }));
+      displayCache.lines[i] = {text, color, segments: validSegments};
+      if (!CONFIG.mockMode) mcdu.setLine(i, validSegments);
+    } else {
+      displayCache.lines[i] = {text, color};
+      if (!CONFIG.mockMode) mcdu.setLine(i, text, color);
+    }
   });
 
   // Render directly — bypass throttle for explicit full-screen updates from adapter
@@ -565,8 +576,18 @@ async function renderInitialDisplay(displayData) {
     lines.forEach((line, i) => {
       const text = padOrTruncate(line.text, 24);
       const color = validateColor(line.color);
-      displayCache.lines[i] = {text, color};
-      mcdu.setLine(i, text, color);
+
+      if (line.segments && Array.isArray(line.segments)) {
+        const validSegments = line.segments.map(seg => ({
+          text: seg.text || '',
+          color: validateColor(seg.color)
+        }));
+        displayCache.lines[i] = {text, color, segments: validSegments};
+        mcdu.setLine(i, validSegments);
+      } else {
+        displayCache.lines[i] = {text, color};
+        mcdu.setLine(i, text, color);
+      }
     });
 
     // Display FIRST (no LED writes before — they may interfere with firmware display mode)

@@ -252,14 +252,14 @@
                 {
                   "type": "text",
                   "attr": "leftLabel",
-                  "title": "L-Sub",
+                  "title": "L-Label",
                   "width": "90px",
                   "default": ""
                 },
                 {
                   "type": "text",
                   "attr": "leftText",
-                  "title": "L-Text",
+                  "title": "L-Data",
                   "width": "120px",
                   "default": ""
                 },
@@ -305,14 +305,14 @@
                 {
                   "type": "text",
                   "attr": "rightLabel",
-                  "title": "R-Sub",
+                  "title": "R-Label",
                   "width": "90px",
                   "default": ""
                 },
                 {
                   "type": "text",
                   "attr": "rightText",
-                  "title": "R-Text",
+                  "title": "R-Data",
                   "width": "120px",
                   "default": ""
                 },

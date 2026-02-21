@@ -178,6 +178,49 @@ describe('PageRenderer', () => {
             expect(rightHalf).to.include('AN');
         });
 
+        it('should return segments when left and right colors differ', async () => {
+            await renderer.renderPage('left-right-page');
+
+            const lines = displayPublisher._published[0];
+            const row3 = lines[2]; // Row 3: left=white, right=green
+            expect(row3.segments).to.be.an('array').with.length(2);
+            expect(row3.segments[0].color).to.equal('white');
+            expect(row3.segments[1].color).to.equal('green');
+            expect(row3.segments[0].text).to.include('Decke');
+            expect(row3.segments[1].text).to.include('AN');
+        });
+
+        it('should not return segments when only one side has content', async () => {
+            await renderer.renderPage('left-right-page');
+
+            const lines = displayPublisher._published[0];
+            const row5 = lines[4]; // Row 5: only left
+            expect(row5.segments).to.be.undefined;
+            const row7 = lines[6]; // Row 7: only right
+            expect(row7.segments).to.be.undefined;
+        });
+
+        it('should not return segments when both sides have same color', async () => {
+            adapter.config.pages.push({
+                id: 'same-color-page',
+                name: 'Same Color',
+                lines: [
+                    {
+                        row: 3,
+                        left: { label: '', display: { type: 'label', text: 'LEFT', color: 'green' }, button: { type: 'empty' } },
+                        right: { label: '', display: { type: 'label', text: 'RIGHT', color: 'green' }, button: { type: 'empty' } }
+                    }
+                ]
+            });
+
+            await renderer.renderPage('same-color-page');
+
+            const lines = displayPublisher._published[displayPublisher._published.length - 1];
+            const row3 = lines[2];
+            expect(row3.segments).to.be.undefined;
+            expect(row3.color).to.equal('green');
+        });
+
         it('should use full width when only left has content', async () => {
             await renderer.renderPage('left-right-page');
 

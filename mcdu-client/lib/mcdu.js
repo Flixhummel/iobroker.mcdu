@@ -309,7 +309,7 @@ class MCDU {
     }
 
     _normalizeColor(color) {
-        const map = { white: 'W', amber: 'A', cyan: 'B', green: 'G', magenta: 'M', red: 'R', yellow: 'Y', grey: 'E', gray: 'E' };
+        const map = { white: 'W', amber: 'A', cyan: 'B', blue: 'B', green: 'G', magenta: 'M', red: 'R', yellow: 'Y', grey: 'E', gray: 'E' };
         const n = color.toString().toLowerCase();
         return map[n] || color.toUpperCase().charAt(0) || 'W';
     }
