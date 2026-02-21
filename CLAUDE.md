@@ -78,14 +78,42 @@ Tests use Mocha + Chai + Sinon. Test files are excluded from ESLint. The `@iobro
 ### ioBroker Dev-Server (LXC Container)
 - SSH: `iobroker-dev` (fhummel@10.10.5.65)
 - MCP Server: `iobroker-dev` (ssh-mcp)
-- Nutzt ioBroker dev-server (`dev-server watch` / `dev-server run`)
-- Adapter-Verzeichnis: `~/ioBroker.mcdu` (oder wo auch immer es liegt — beim ersten Zugriff prüfen)
-- Deploy: git pull → npm install → dev-server restart
+- Adapter directory: `~/ioBroker.mcdu`
+- Admin UI: http://10.10.5.65:8081/#tab-instances/config/system.adapter.mcdu.0
+- Logs: `~/ioBroker.mcdu/.dev-server/default/log/iobroker.current.log`
+
+#### Dev-Server Deploy Workflow (CRITICAL)
+
+**NEVER use `dev-server watch`** — it spawns two adapter processes that fight over MQTT.
+
+**Always use `dev-server run`** + the deploy script:
+
+1. **First start** (or after full restart):
+   ```bash
+   cd ~/ioBroker.mcdu && nohup dev-server run > /tmp/dev-server.log 2>&1 &
+   ```
+
+2. **After code changes** (git pull or file edits):
+   ```bash
+   cd ~/ioBroker.mcdu && git pull && ./deploy-to-devserver.sh
+   ```
+   This script copies `main.js`, `lib/`, `admin/jsonConfig.json`, `io-package.json`, `package.json` into `.dev-server/default/node_modules/iobroker.mcdu/` and restarts the adapter process.
+
+3. **Why this is needed**: `dev-server run` copies adapter files into `.dev-server/default/node_modules/iobroker.mcdu/` once at startup. After that, `git pull` only updates `~/ioBroker.mcdu/` — the running copy is NOT updated. You MUST use `deploy-to-devserver.sh` to sync changes.
+
+4. **Full restart** (only if js-controller is stuck):
+   ```bash
+   ps aux | grep -E '(io\.mcdu|js-controller|dev-server)' | grep -v grep | awk '{print $2}' | xargs kill
+   sleep 3 && rm -rf ~/ioBroker.mcdu/.dev-server/default/*.lock
+   cd ~/ioBroker.mcdu && nohup dev-server run > /tmp/dev-server.log 2>&1 &
+   ```
+
+5. **Verify**: Always confirm exactly ONE `io.mcdu.0` process. Multiple = MQTT flapping.
 
 ### Raspberry Pi (mcdu-client)
 - SSH: `mcdu-pi` (pi@10.10.2.190)
 - MCP Server: `mcdu-pi` (ssh-mcp)
-- Client-Verzeichnis: `/home/pi/mcdu-client`
+- Client directory: `/home/pi/mcdu-client`
 - Service: `mcdu-client.service` (systemd)
 - Logs: `sudo journalctl -u mcdu-client -f`
-- WICHTIG: Nur nach erfolgreichem Test auf iobroker-dev deployen
+- Deploy only after successful test on iobroker-dev
