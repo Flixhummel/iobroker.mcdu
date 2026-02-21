@@ -231,6 +231,26 @@
               "help": "Page ID of parent page (leave empty for root page)"
             },
             {
+              "type": "select",
+              "attr": "pageNameColor",
+              "label": "Page Name Color",
+              "sm": 12,
+              "md": 4,
+              "default": "",
+              "help": "Color of the page name in the status bar (default: device default color)",
+              "options": [
+                {"label": "Default", "value": ""},
+                {"label": "White", "value": "white"},
+                {"label": "Green", "value": "green"},
+                {"label": "Blue", "value": "blue"},
+                {"label": "Amber", "value": "amber"},
+                {"label": "Red", "value": "red"},
+                {"label": "Magenta", "value": "magenta"},
+                {"label": "Cyan", "value": "cyan"},
+                {"label": "Yellow", "value": "yellow"}
+              ]
+            },
+            {
               "type": "table",
               "attr": "lines",
               "label": "Segment Configuration",
