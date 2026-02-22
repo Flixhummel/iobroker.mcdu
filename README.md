@@ -51,6 +51,20 @@ The ioBroker adapter runs all business logic (page rendering, input handling, va
 
 191 tests passing (180 unit + 11 integration).
 
+### Recommended Hardware (mcdu-client)
+
+The mcdu-client is a lightweight Node.js process (~50-100MB RAM) that bridges MQTT to USB HID. It needs WiFi, a USB Host port with libusb support, and enough USB power for the MCDU (~500mA).
+
+| Board | Price | WiFi | USB Host | Verdict |
+|-------|-------|------|----------|---------|
+| **Raspberry Pi 4 (1-2GB)** | $35-45 | Dual-band | 4x USB-A | **Recommended** -- best balance of price, power, and simplicity |
+| Raspberry Pi 3B+ | ~$35 | Dual-band | 4x USB-A | Proven (current dev setup), slightly slower |
+| Raspberry Pi 5 | $50-80 | Dual-band | 4x USB-A | Good, but needs official 27W PSU for full USB power output |
+| Raspberry Pi Zero 2 W | ~$15 | 2.4GHz | OTG adapter needed | Cheap but fiddly single-port OTG setup |
+| ESP32-S3 | $5-15 | Yes | USB OTG | Cannot run Node.js -- would require full C++ rewrite |
+
+**Key constraint**: The WinWing MCDU firmware requires SET_REPORT control transfers (not interrupt OUT). On Linux, the mcdu-client uses the `usb` npm package (libusb) with `controlTransfer(0x21, 0x09, ...)` to achieve this. All Raspberry Pi models support this out of the box.
+
 ### Quick Start (Development)
 
 ```bash
