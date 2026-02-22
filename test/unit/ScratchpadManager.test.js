@@ -155,17 +155,17 @@ describe('ScratchpadManager', () => {
                 expect(scratchpad.getDisplay()).to.equal('');
             });
             
-            it('should return content with asterisk when scratchpad has content', () => {
+            it('should return content when scratchpad has content', () => {
                 scratchpad.append('2');
                 scratchpad.append('2');
                 scratchpad.append('.');
                 scratchpad.append('5');
-                expect(scratchpad.getDisplay()).to.equal('22.5*');
+                expect(scratchpad.getDisplay()).to.equal('22.5');
             });
-            
-            it('should show asterisk for single character', () => {
+
+            it('should return single character', () => {
                 scratchpad.append('5');
-                expect(scratchpad.getDisplay()).to.equal('5*');
+                expect(scratchpad.getDisplay()).to.equal('5');
             });
         });
         

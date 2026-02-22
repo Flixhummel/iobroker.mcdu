@@ -129,7 +129,7 @@ describe('ASCII-Safe Messages', () => {
             }
         });
 
-        it('should use asterisk indicator in scratchpad display', () => {
+        it('should show plain content in scratchpad display', () => {
             const adapter = createMockAdapter();
             const displayPublisher = createMockDisplayPublisher();
             const scratchpad = new ScratchpadManager(adapter, displayPublisher);
@@ -139,7 +139,7 @@ describe('ASCII-Safe Messages', () => {
             scratchpad.append('.');
             scratchpad.append('5');
 
-            expect(scratchpad.getDisplay()).to.equal('22.5*');
+            expect(scratchpad.getDisplay()).to.equal('22.5');
         });
     });
 });
