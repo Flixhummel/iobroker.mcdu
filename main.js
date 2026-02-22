@@ -1586,6 +1586,8 @@ class McduAdapter extends utils.Adapter {
                 return;
             }
 
+            let activeDeviceId = null;
+
             for (const row of devices.rows) {
                 const id = row.id || row.value?._id;
                 if (!id) {
@@ -1618,13 +1620,29 @@ class McduAdapter extends utils.Adapter {
                 // Sync adapter config to device states
                 await this.syncConfigToDeviceStates(deviceId);
 
-                // Load device pages into active config
-                await this.loadDevicePagesIntoConfig(deviceId);
-
-                // Set device for display publishing
-                this.displayPublisher.setDevice(deviceId);
+                // Track first device with stored pages as the active device
+                if (!activeDeviceId) {
+                    const pagesState = await this.getStateAsync(`devices.${deviceId}.config.pages`);
+                    if (pagesState && pagesState.val) {
+                        try {
+                            const pages = JSON.parse(pagesState.val);
+                            if (Array.isArray(pages) && pages.length > 0) {
+                                activeDeviceId = deviceId;
+                            }
+                        } catch (e) {
+                            // invalid JSON, skip
+                        }
+                    }
+                }
 
                 this.log.info(`♻️ Recovered device: ${deviceId} (${native.hostname || 'unknown'})`);
+            }
+
+            // Only load pages and set display for the active device
+            if (activeDeviceId) {
+                await this.loadDevicePagesIntoConfig(activeDeviceId);
+                this.displayPublisher.setDevice(activeDeviceId);
+                this.log.info(`Active device: ${activeDeviceId}`);
             }
 
             if (this.deviceRegistry.size > 0) {
