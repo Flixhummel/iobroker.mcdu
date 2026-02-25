@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "news": {
+      "0.1.5": {
+        "en": "Fix ioBroker repository checker errors and warnings",
+        "de": "Fix ioBroker Repository Checker Fehler und Warnungen",
+        "ru": "Исправьте ошибки и предупреждения в репозитории ioBroker",
+        "pt": "Corrigir erros e avisos do verificador de repositório ioBroker",
+        "nl": "Fix ioBroker repository checker fouten en waarschuwingen",
+        "fr": "Correction des erreurs et des avertissements du vérificateur de dépôt ioBroker",
+        "it": "Risolvere gli errori e gli avvisi di iBroker repository",
+        "es": "Corregir errores y advertencias del repositorio ioBroker",
+        "pl": "Naprawiono błędy i ostrzeżenia związane z sprawdzaniem repozytorium jOBroker",
+        "uk": "Виправлення помилок і попередження ioBroker",
+        "zh-cn": "修复 ioBroker 仓库检查器错误和警告"
+      },
       "0.1.4": {
         "en": "Switch to npm trusted publishing (OIDC) for automated releases",
         "de": "Wechseln Sie zu npm Trusted Publishing (OIDC) für automatisierte Versionen",
