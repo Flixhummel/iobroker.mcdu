@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "news": {
+      "0.1.2": {
+        "en": "Added NPM_TOKEN to GitHub Actions deploy workflow",
+        "de": "NPM_TOKEN zu GitHub-Aktionen hinzugefügt, die Workflow bereitstellen",
+        "ru": "Добавлен NPM_TOKEN в GitHub Actions для развертывания рабочего процесса",
+        "pt": "Adicionado NPM_TOKEN ao fluxo de trabalho de implantação de ações do GitHub",
+        "nl": "NPM_TOKEN toegevoegd aan GitHub Acties implementeren workflow",
+        "fr": "Ajout de NPM_TOKEN à GitHub Actions déployer le workflow",
+        "it": "Aggiunto NPM_TOKEN a GitHub Azioni distribuire flusso di lavoro",
+        "es": "Añadido NPM_TOKEN a GitHub Actions despliegue el flujo de trabajo",
+        "pl": "Dodano NPM _ TOKEN do działań GitHub rozmieszczanie przepływu pracy",
+        "uk": "Додано NPM_TOKEN до GitHub Дії розгортання робочого процесу",
+        "zh-cn": "添加到 GitHub 动作中的工作流程"
+      },
       "0.1.1": {
         "en": "Updated README with project backstory\nAdded research docs and UX concept overview",
         "de": "README mit Projektrückstand aktualisiert\nWeitere Forschungspunkte und UX-Konzeptübersicht",
