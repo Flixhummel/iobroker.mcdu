@@ -17,6 +17,7 @@
         "zh-cn": "初始版本，包含MQTT桥接、页面系统、管理界面和自动化状态"
       }
     },
+    "title": "MCDU Smart Home Control",
     "titleLang": {
       "en": "MCDU Smart Home Control",
       "de": "MCDU Smart Home Steuerung",
