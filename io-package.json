@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "news": {
+      "0.1.1": {
+        "en": "Updated README with project backstory\nAdded research docs and UX concept overview",
+        "de": "README mit Projektrückstand aktualisiert\nWeitere Forschungspunkte und UX-Konzeptübersicht",
+        "ru": "Обновленный README с предысторией проекта\nДобавлен обзор исследовательских документов и концепции UX",
+        "pt": "Actualizado README com história do projecto\nDocumentos de pesquisa adicionados e visão geral do conceito de UX",
+        "nl": "Bijgewerkt README met project backstory\nToegevoegd onderzoeksdocs en UX concept overzicht",
+        "fr": "Mise à jour du README avec backstory du projet\nAjout de documents de recherche et d'un aperçu du concept UX",
+        "it": "README aggiornato con il backstory del progetto\nAggiunti documenti di ricerca e UX concept panoramica",
+        "es": "README actualizado con el backstory del proyecto\nPuntos de investigación añadidos y visión general del concepto UX",
+        "pl": "Aktualizacja README z backstory projektu\nDodano dokumenty badawcze i przegląd koncepcji UX",
+        "uk": "Оновлено README з базою проекту\nОгляд концепції UX",
+        "zh-cn": "更新带有项目背面故事的 README\n添加研究文件和 UX 概念概览"
+      },
       "0.1.0": {
         "en": "Initial release with MQTT bridge, page system, admin UI, and automation states",
         "de": "Erstveröffentlichung mit MQTT-Bridge, Seitensystem, Admin UI und Automatisierungs-States",
@@ -109,17 +122,72 @@
     "selectedDevice": "",
     "selectedTemplate": "",
     "functionKeys": [
-      { "key": "MENU", "enabled": true, "action": "navigateHome", "targetPageId": "" },
-      { "key": "DIR", "enabled": false, "action": "gotoPage", "targetPageId": "" },
-      { "key": "PROG", "enabled": true, "action": "gotoPage", "targetPageId": "status-main" },
-      { "key": "PERF", "enabled": true, "action": "gotoPage", "targetPageId": "szenen-main" },
-      { "key": "INIT", "enabled": true, "action": "gotoPage", "targetPageId": "einstellungen-main" },
-      { "key": "FPLN", "enabled": true, "action": "gotoPage", "targetPageId": "zeitplan-main" },
-      { "key": "FUEL", "enabled": true, "action": "gotoPage", "targetPageId": "energie-main" },
-      { "key": "RAD", "enabled": true, "action": "gotoPage", "targetPageId": "klima-main" },
-      { "key": "SEC", "enabled": true, "action": "gotoPage", "targetPageId": "sicherheit-main" },
-      { "key": "ATC", "enabled": true, "action": "gotoPage", "targetPageId": "meldungen-main" },
-      { "key": "AIRPORT", "enabled": true, "action": "gotoPage", "targetPageId": "raeume-main" }
+      {
+        "key": "MENU",
+        "enabled": true,
+        "action": "navigateHome",
+        "targetPageId": ""
+      },
+      {
+        "key": "DIR",
+        "enabled": false,
+        "action": "gotoPage",
+        "targetPageId": ""
+      },
+      {
+        "key": "PROG",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "status-main"
+      },
+      {
+        "key": "PERF",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "szenen-main"
+      },
+      {
+        "key": "INIT",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "einstellungen-main"
+      },
+      {
+        "key": "FPLN",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "zeitplan-main"
+      },
+      {
+        "key": "FUEL",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "energie-main"
+      },
+      {
+        "key": "RAD",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "klima-main"
+      },
+      {
+        "key": "SEC",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "sicherheit-main"
+      },
+      {
+        "key": "ATC",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "meldungen-main"
+      },
+      {
+        "key": "AIRPORT",
+        "enabled": true,
+        "action": "gotoPage",
+        "targetPageId": "raeume-main"
+      }
     ],
     "pages": []
   },
