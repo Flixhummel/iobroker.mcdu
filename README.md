@@ -108,8 +108,13 @@ For detailed documentation, see [docs/](docs/README.md).
     ### **WORK IN PROGRESS**
 -->
 
-### 0.1.0 (2026-02-25)
-* (Flixhummel) initial release
+### 0.1.4 (2026-02-25)
+* (Flixhummel) Switch to npm trusted publishing (OIDC) for automated releases
+
+### 0.1.3 (2026-02-25)
+* (Flixhummel) Initial npm release with MQTT bridge, page system, admin UI, and automation states
+
+For detailed changelog see [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 MIT License
