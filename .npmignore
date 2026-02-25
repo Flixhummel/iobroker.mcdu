@@ -8,3 +8,10 @@ test/
 eslint.config.mjs
 prettier.config.mjs
 tsconfig.json
+dev-docs/
+PRPs/
+memory/
+mcdu-client/
+.claude/
+.create-adapter.json
+mcdu.code-workspace
