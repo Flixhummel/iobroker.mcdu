@@ -1,5 +1,5 @@
 # Changelog
-## **WORK IN PROGRESS**
+## 0.1.6 (2026-02-25)
 * Re-add mocha as direct devDependency (needed for CI)
 
 ## 0.1.5 (2026-02-25)

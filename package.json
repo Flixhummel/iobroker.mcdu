@@ -1,6 +1,6 @@
 {
   "name": "iobroker.mcdu",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "ioBroker adapter for WINWING MCDU smart home control",
   "author": {
     "name": "Kira Holt",

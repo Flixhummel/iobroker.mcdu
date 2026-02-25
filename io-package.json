@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "news": {
+      "0.1.6": {
+        "en": "Re-add mocha as direct devDependency (needed for CI)",
+        "de": "Re-add mocha als direkte devDependency (gefordert für CI)",
+        "ru": "Повторное добавление mocha в качестве прямой зависимости (необходимо для CI)",
+        "pt": "Readicionar mocha como devDependência direta (necessária para IC)",
+        "nl": "Mokka opnieuw toevoegen als direct devDependency (nodig voor CI)",
+        "fr": "Réajouter le moka comme devDependency direct (nécessaire pour l'IC)",
+        "it": "Mocha re-add come devDependency diretto (necessario per CI)",
+        "es": "Readd mocha as direct devDependency (necesidad para CI)",
+        "pl": "Ponownie dodać mocha jako bezpośredni devendendency (potrzebne do CI)",
+        "uk": "Re-add mocha як прямий devDependency",
+        "zh-cn": "重新添加Mocha作为直接依赖性(CI需要)"
+      },
       "0.1.5": {
         "en": "Fix ioBroker repository checker errors and warnings",
         "de": "Fix ioBroker Repository Checker Fehler und Warnungen",
