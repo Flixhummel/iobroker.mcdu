@@ -1,5 +1,5 @@
 # Changelog
-## **WORK IN PROGRESS**
+## 0.1.3 (2026-02-25)
 * Added NPM_TOKEN with mfa to GitHub Actions deploy workflow
 
 ## 0.1.2 (2026-02-25)

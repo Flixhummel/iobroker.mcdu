@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "news": {
+      "0.1.3": {
+        "en": "Added NPM_TOKEN with mfa to GitHub Actions deploy workflow",
+        "de": "NPM_TOKEN mit mfa zu GitHub Aktionen zur Bereitstellung von Workflow",
+        "ru": "Добавлен NPM_TOKEN с mfa в GitHub Actions",
+        "pt": "Adicionado NPM_TOKEN com mfa ao GitHub Actions implante fluxo de trabalho",
+        "nl": "NPM_TOKEN met mfa toegevoegd aan GitHub Acties implementeren workflow",
+        "fr": "Ajout de NPM_TOKEN avec mfa à GitHub Actions déployer le flux de travail",
+        "it": "Aggiunto NPM_TOKEN con mfa a GitHub Azioni dispiegare il flusso di lavoro",
+        "es": "Añadido NPM_TOKEN con mfa a GitHub Actions despliegue el flujo de trabajo",
+        "pl": "Dodano NPM _ TOKEN z mfa do działania GitHub rozmieszczanie przepływu pracy",
+        "uk": "Додано NPM_TOKEN з mfa до GitHub Дії розгортання робочого процесу",
+        "zh-cn": "用 mfa 添加到 GitHub 的 NPU_ TOKEN 动作部署工作流程"
+      },
       "0.1.2": {
         "en": "Added NPM_TOKEN to GitHub Actions deploy workflow",
         "de": "NPM_TOKEN zu GitHub-Aktionen hinzugefügt, die Workflow bereitstellen",
