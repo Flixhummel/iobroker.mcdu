@@ -5,16 +5,43 @@
     "news": {
       "0.1.0": {
         "en": "Initial release with MQTT bridge, page system, admin UI, and automation states",
-        "de": "Erstveröffentlichung mit MQTT-Bridge, Seitensystem, Admin UI und Automatisierungs-States"
+        "de": "Erstveröffentlichung mit MQTT-Bridge, Seitensystem, Admin UI und Automatisierungs-States",
+        "ru": "Первый выпуск с MQTT-мостом, системой страниц, интерфейсом администратора и состояниями автоматизации",
+        "pt": "Lançamento inicial com ponte MQTT, sistema de páginas, interface de administração e estados de automação",
+        "nl": "Eerste release met MQTT-bridge, paginasysteem, admin-UI en automatiseringsstatussen",
+        "fr": "Version initiale avec pont MQTT, système de pages, interface d'administration et états d'automatisation",
+        "it": "Versione iniziale con bridge MQTT, sistema di pagine, interfaccia di amministrazione e stati di automazione",
+        "es": "Versión inicial con puente MQTT, sistema de páginas, interfaz de administración y estados de automatización",
+        "pl": "Wersja początkowa z mostem MQTT, systemem stron, interfejsem administracyjnym i stanami automatyzacji",
+        "uk": "Початковий випуск з MQTT-мостом, системою сторінок, інтерфейсом адміністратора та станами автоматизації",
+        "zh-cn": "初始版本，包含MQTT桥接、页面系统、管理界面和自动化状态"
       }
     },
     "titleLang": {
       "en": "MCDU Smart Home Control",
-      "de": "MCDU Smart Home Steuerung"
+      "de": "MCDU Smart Home Steuerung",
+      "ru": "MCDU управление умным домом",
+      "pt": "Controle de casa inteligente MCDU",
+      "nl": "MCDU Smart Home Besturing",
+      "fr": "Contrôle domotique MCDU",
+      "it": "Controllo domotica MCDU",
+      "es": "Control domótico MCDU",
+      "pl": "MCDU sterowanie inteligentnym domem",
+      "uk": "MCDU керування розумним домом",
+      "zh-cn": "MCDU智能家居控制"
     },
     "desc": {
       "en": "Control your smart home with WINWING MCDU hardware via MQTT",
-      "de": "Steuern Sie Ihr Smart Home mit WINWING MCDU Hardware über MQTT"
+      "de": "Steuern Sie Ihr Smart Home mit WINWING MCDU Hardware über MQTT",
+      "ru": "Управляйте умным домом с помощью оборудования WINWING MCDU через MQTT",
+      "pt": "Controle sua casa inteligente com hardware WINWING MCDU via MQTT",
+      "nl": "Bedien uw smart home met WINWING MCDU hardware via MQTT",
+      "fr": "Contrôlez votre maison intelligente avec le matériel WINWING MCDU via MQTT",
+      "it": "Controlla la tua casa intelligente con hardware WINWING MCDU tramite MQTT",
+      "es": "Controle su hogar inteligente con hardware WINWING MCDU a través de MQTT",
+      "pl": "Steruj inteligentnym domem za pomocą sprzętu WINWING MCDU przez MQTT",
+      "uk": "Керуйте розумним домом за допомогою обладнання WINWING MCDU через MQTT",
+      "zh-cn": "通过MQTT使用WINWING MCDU硬件控制您的智能家居"
     },
     "authors": [
       "Kira Holt <kiraholtvi@gmail.com>"
@@ -47,12 +74,12 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=5.0.19"
+        "js-controller": ">=6.0.11"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=6.17.14"
+        "admin": ">=7.6.17"
       }
     ]
   },

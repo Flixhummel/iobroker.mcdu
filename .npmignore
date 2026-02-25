@@ -7,3 +7,4 @@ test/
 .releaseconfig.json
 eslint.config.mjs
 prettier.config.mjs
+tsconfig.json
