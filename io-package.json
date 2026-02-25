@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "news": {
+      "0.1.7": {
+        "en": "Fix package test for titleLang (title field was deprecated)",
+        "de": "Fix-Pakettest für TitelLang (Titelfeld wurde abgeschrieben)",
+        "ru": "Тест пакета исправления для titleLang (поле заголовка было амортизировано)",
+        "pt": "Fix package test for titleLang (o campo de título foi desactualizado)",
+        "nl": "Pakkettest voor titel Lang herstellen (titelveld is verouderd)",
+        "fr": "Correction du test d'emballage pour le titreLang (le champ de titre a été déprécié)",
+        "it": "Prova di pacchetto fisso per il titoloLang (campo di tiro è stato deprecato)",
+        "es": "Prueba de paquete fijo para titulo Lang (campo de derecho fue deprecado)",
+        "pl": "Napraw test pakietu dla titleLang (pole tytułu zostało zdeprecjonowane)",
+        "uk": "Перевірка пакету для назви",
+        "zh-cn": "标题Lang的固定包测试(标题字段已贬值)"
+      },
       "0.1.6": {
         "en": "Re-add mocha as direct devDependency (needed for CI)",
         "de": "Re-add mocha als direkte devDependency (gefordert für CI)",

@@ -1,5 +1,5 @@
 # Changelog
-## **WORK IN PROGRESS**
+## 0.1.7 (2026-02-25)
 * Fix package test for titleLang (title field was deprecated)
 
 ## 0.1.6 (2026-02-25)
