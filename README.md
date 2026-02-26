@@ -108,6 +108,9 @@ For detailed documentation, see [docs/](docs/README.md).
     ### **WORK IN PROGRESS**
 -->
 
+### 0.1.8 (2026-02-26)
+* (Flixhummel) Remove unpublished news entries and add missing jsonConfig size attributes
+
 ### 0.1.7 (2026-02-25)
 * (Flixhummel) Fix ioBroker repository checker errors and warnings
 

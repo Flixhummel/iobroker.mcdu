@@ -1,4 +1,6 @@
 # Changelog
+## **WORK IN PROGRESS**
+
 ## 0.1.8 (2026-02-26)
 * Remove unpublished news entries (0.1.5, 0.1.6) from io-package.json
 * Add missing responsive size attributes (xs, lg, xl) to Admin UI jsonConfig
