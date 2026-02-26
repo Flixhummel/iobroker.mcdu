@@ -1,5 +1,6 @@
 # Changelog
 ## **WORK IN PROGRESS**
+* Rewrite GETTING-STARTED.md with full installation instructions for adapter and mcdu-client
 
 ## 0.1.8 (2026-02-26)
 * Remove unpublished news entries (0.1.5, 0.1.6) from io-package.json
