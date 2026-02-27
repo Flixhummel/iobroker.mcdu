@@ -1,23 +1,35 @@
 #!/bin/bash
 #
 # MCDU MQTT Client - Installation Script
-# For Raspberry Pi 1 Model B Rev 2
+# For Raspberry Pi 4 (64-bit) with Pi OS Lite
 #
 
-set -e  # Exit on error
+set -e
 
 echo "=== MCDU MQTT Client Installation ==="
 echo ""
 
-# Check Node.js version
+# Check Node.js >= 18
 if ! command -v node &> /dev/null; then
     echo "ERROR: Node.js not found!"
-    echo "Install with: curl -sL https://deb.nodesource.com/setup_12.x | sudo bash - && sudo apt-get install -y nodejs"
+    echo ""
+    echo "Install Node.js 20 LTS:"
+    echo "  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -"
+    echo "  sudo apt-get install -y nodejs"
     exit 1
 fi
 
-NODE_VERSION=$(node --version)
-echo "✓ Node.js detected: $NODE_VERSION"
+NODE_MAJOR=$(node --version | sed 's/^v//' | cut -d. -f1)
+if [ "$NODE_MAJOR" -lt 18 ]; then
+    echo "ERROR: Node.js >= 18 required (found $(node --version))"
+    echo ""
+    echo "Install Node.js 20 LTS:"
+    echo "  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -"
+    echo "  sudo apt-get install -y nodejs"
+    exit 1
+fi
+
+echo "Node.js $(node --version)"
 
 # Check we're in the right directory
 if [ ! -f "mcdu-client.js" ]; then
@@ -26,81 +38,69 @@ if [ ! -f "mcdu-client.js" ]; then
     exit 1
 fi
 
-# Install build dependencies for node-hid libusb backend
-# (hidraw backend silently fails for WinWing display writes on Pi)
-if [ "$(uname)" = "Linux" ]; then
-    echo ""
-    echo "Installing build dependencies for node-hid (libusb)..."
-    sudo apt-get install -y libusb-1.0-0-dev libudev-dev build-essential python3
-fi
-
-# Install npm dependencies
-# .npmrc sets driver=libusb so node-hid is built with libusb backend on Linux
+# Install npm dependencies (prebuilds for node-hid, no compile needed)
 echo ""
 echo "Installing npm dependencies..."
-npm install --build-from-source
-
-# Create symlinks to hardware driver (from Phase 2)
-echo ""
-echo "Creating symlinks to hardware driver..."
-
-if [ ! -f "../nodejs-test/mcdu.js" ]; then
-    echo "ERROR: ../nodejs-test/mcdu.js not found!"
-    echo "Make sure you have the complete project directory structure"
-    exit 1
-fi
-
-ln -sf ../nodejs-test/mcdu.js ./mcdu.js
-ln -sf ../nodejs-test/button-map.json ./button-map.json
-
-echo "✓ Symlinks created"
+npm install
 
 # Create config.env if it doesn't exist
 if [ ! -f "config.env" ]; then
     echo ""
     echo "Creating config.env from template..."
     cp config.env.template config.env
-    echo "✓ config.env created"
-    echo ""
-    echo "⚠️  IMPORTANT: Edit config.env and set MQTT_BROKER at minimum!"
-    echo "   nano config.env"
+    echo "config.env created -- edit it to set MQTT_BROKER"
 else
     echo ""
-    echo "✓ config.env already exists (not overwriting)"
+    echo "config.env already exists (not overwriting)"
 fi
 
-# Install udev rule for WinWing MCDU USB access (needed for libusb without root)
+# Install udev rule for WinWing MCDU hidraw access
 if [ "$(uname)" = "Linux" ]; then
     echo ""
     echo "Installing udev rule for WinWing MCDU..."
-    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="4098", ATTRS{idProduct}=="bb36", MODE="0666", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/99-winwing-mcdu.rules > /dev/null
+    cat <<'UDEV' | sudo tee /etc/udev/rules.d/99-winwing-mcdu.rules > /dev/null
+# WinWing MCDU-32-CAPTAIN: allow plugdev group access to hidraw device
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="4098", ATTRS{idProduct}=="bb36", MODE="0660", GROUP="plugdev"
+UDEV
     sudo udevadm control --reload-rules
     sudo udevadm trigger
-    echo "✓ udev rule installed"
+    echo "udev rule installed"
+
+    # Ensure current user is in plugdev group
+    if ! id -nG | grep -qw plugdev; then
+        echo ""
+        echo "Adding $(whoami) to plugdev group..."
+        sudo usermod -aG plugdev "$(whoami)"
+        echo "Group added -- log out and back in for it to take effect"
+    fi
 fi
 
-# Check if systemd service should be installed
+# Offer systemd service installation
 echo ""
 read -p "Install systemd service (auto-start on boot)? [y/N] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Installing systemd service..."
-    
-    # Update WorkingDirectory in service file to current directory
+
     CURRENT_DIR=$(pwd)
-    sed "s|WorkingDirectory=.*|WorkingDirectory=$CURRENT_DIR|g" mcdu-client.service > /tmp/mcdu-client.service
-    sed -i "s|EnvironmentFile=.*|EnvironmentFile=$CURRENT_DIR/config.env|g" /tmp/mcdu-client.service
-    sed -i "s|ExecStart=.*|ExecStart=$(which node) $CURRENT_DIR/mcdu-client.js|g" /tmp/mcdu-client.service
-    
+    NODE_PATH=$(which node)
+
+    sed \
+        -e "s|WorkingDirectory=.*|WorkingDirectory=$CURRENT_DIR|" \
+        -e "s|EnvironmentFile=.*|EnvironmentFile=$CURRENT_DIR/config.env|" \
+        -e "s|ExecStart=.*|ExecStart=$NODE_PATH $CURRENT_DIR/mcdu-client.js|" \
+        -e "s|User=.*|User=$(whoami)|" \
+        mcdu-client.service > /tmp/mcdu-client.service
+
     sudo cp /tmp/mcdu-client.service /etc/systemd/system/
     sudo systemctl daemon-reload
     sudo systemctl enable mcdu-client
-    
-    echo "✓ Service installed and enabled"
+
+    echo "Service installed and enabled"
     echo ""
-    echo "Start with: sudo systemctl start mcdu-client"
-    echo "Status: sudo systemctl status mcdu-client"
-    echo "Logs: sudo journalctl -u mcdu-client -f"
+    echo "  Start:  sudo systemctl start mcdu-client"
+    echo "  Status: sudo systemctl status mcdu-client"
+    echo "  Logs:   sudo journalctl -u mcdu-client -f"
 else
     echo "Skipping systemd installation"
 fi
@@ -109,8 +109,7 @@ echo ""
 echo "=== Installation Complete ==="
 echo ""
 echo "Next steps:"
-echo "1. Edit config.env (set MQTT_BROKER at minimum)"
-echo "2. Test in mock mode: MOCK_MODE=true node mcdu-client.js"
-echo "3. Run with hardware: node mcdu-client.js"
-echo "4. Test MQTT: mosquitto_pub -h localhost -t mcdu/display/line -m '{\"lineNumber\":1,\"text\":\"HELLO\",\"color\":\"amber\"}'"
+echo "  1. Edit config.env -- set MQTT_BROKER to your ioBroker IP"
+echo "  2. Test: node mcdu-client.js"
+echo "  3. Start service: sudo systemctl start mcdu-client"
 echo ""

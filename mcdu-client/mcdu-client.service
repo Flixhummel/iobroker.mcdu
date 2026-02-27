@@ -1,23 +1,21 @@
 [Unit]
 Description=MCDU MQTT Client
-Documentation=https://github.com/Flixhummel/kira/tree/main/coding-projects/mcdu-smarthome
-After=network.target mosquitto.service
+Documentation=https://github.com/Flixhummel/ioBroker.mcdu
+After=network.target
 
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/mcdu-client
-EnvironmentFile=/home/pi/mcdu-client/config.env
-ExecStart=/usr/local/bin/node /home/pi/mcdu-client/mcdu-client.js
+WorkingDirectory=/home/pi/ioBroker.mcdu/mcdu-client
+EnvironmentFile=/home/pi/ioBroker.mcdu/mcdu-client/config.env
+ExecStart=/usr/bin/node /home/pi/ioBroker.mcdu/mcdu-client/mcdu-client.js
 Restart=always
 RestartSec=10
 
-# Logging
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=mcdu-client
 
-# Security hardening (optional)
 NoNewPrivileges=true
 PrivateTmp=true
 
