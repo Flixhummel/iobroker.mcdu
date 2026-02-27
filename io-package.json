@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mcdu",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Fix release-script npm commands to use positional arguments",
+        "de": "Legen Sie npm-Befehle für die Verwendung von Positionsargumenten fest",
+        "ru": "Исправьте npm команды релиз-скрипта для использования позиционных аргументов",
+        "pt": "Corrigir os comandos npm de versão- script para usar argumentos posicionais",
+        "nl": "Fix release-script npm commando's om positionele argumenten te gebruiken",
+        "fr": "Correction des commandes release-script npm pour utiliser des arguments positionnels",
+        "it": "Risolvere i comandi npm del rilascio per usare gli argomenti posizionali",
+        "es": "Arreglar comandos de npm-script para usar argumentos posicionales",
+        "pl": "Fix release- script npm komendy używać argumentów pozycyjnych",
+        "uk": "Виправлення помилок npm для використання позиційних аргументів",
+        "zh-cn": "固定释放标记 npm 命令以使用位置参数"
+      },
       "0.1.9": {
         "en": "Rewrite GETTING-STARTED.md with full installation instructions for adapter and mcdu-client",
         "de": "Rewrite GETTING-STARTED.md mit vollständigen Installationsanweisungen für Adapter und mcdu-client",

@@ -1,5 +1,5 @@
 # Changelog
-## **WORK IN PROGRESS**
+## 0.2.0 (2026-02-27)
 * Fix release-script npm commands to use positional arguments
 
 ## 0.1.9 (2026-02-26)
