@@ -1,11 +1,11 @@
 /**
- * MCDU Driver - Dual-backend (Mac: node-hid, Linux: usb control transfers)
+ * MCDU Driver - unified node-hid backend (Mac + Linux)
  *
- * Root cause discovery: WinWing firmware requires SET_REPORT control transfers.
- * - Mac IOHIDManager uses IOHIDDeviceSetReport() = control transfers (works)
- * - Linux hidraw/libusb uses interrupt OUT transfers (firmware ignores them)
+ * node-hid uses platform-native HID APIs:
+ * - Mac: IOHIDManager → IOHIDDeviceSetReport() (control transfers)
+ * - Linux: hidraw → kernel sends SET_REPORT control transfers for output reports
  *
- * Fix: on Linux, use the `usb` npm package to send control transfers directly.
+ * Both paths result in the SET_REPORT control transfers the WinWing firmware requires.
  */
 
 const PAGE_LINES = 14;
@@ -62,15 +62,8 @@ const INIT_PACKETS = [
 
 class MCDU {
     constructor() {
-        this._platform = process.platform;
-        // Mac backend (node-hid)
         this._hidDevice = null;
         this._buttonPollInterval = null;
-        // Linux backend (usb package, control transfers)
-        this._usbDevice = null;
-        this._usbIface = null;
-        this._inEndpoint = null;
-        // Shared state
         this.buttonCallback = null;
         this.page = this._createEmptyPage();
         this.colors = this._createEmptyColorBuffer();
@@ -93,43 +86,10 @@ class MCDU {
     // -------------------------------------------------------------------------
 
     connect() {
-        if (this._platform === 'linux') {
-            return this._connectLinux();
-        } else {
-            return this._connectMac();
-        }
-    }
-
-    _connectMac() {
         try {
             const HID = require('node-hid');
             this._hidDevice = new HID.HID(VENDOR_ID, PRODUCT_ID);
-            console.log('✓ Connected (Mac/node-hid)');
-            return true;
-        } catch (err) {
-            console.error('✗ Connect failed:', err.message);
-            return false;
-        }
-    }
-
-    _connectLinux() {
-        try {
-            const usb = require('usb');
-            this._usbDevice = usb.findByIds(VENDOR_ID, PRODUCT_ID);
-            if (!this._usbDevice) throw new Error('Device not found');
-
-            this._usbDevice.open();
-            this._usbIface = this._usbDevice.interface(0);
-
-            if (this._usbIface.isKernelDriverActive()) {
-                this._usbIface.detachKernelDriver();
-            }
-            this._usbIface.claim();
-
-            // Interrupt IN endpoint for button reads
-            this._inEndpoint = this._usbIface.endpoint(0x81);
-
-            console.log('✓ Connected (Linux/usb control-transfer)');
+            console.log(`✓ Connected (node-hid on ${process.platform})`);
             return true;
         } catch (err) {
             console.error('✗ Connect failed:', err.message);
@@ -138,27 +98,10 @@ class MCDU {
     }
 
     // -------------------------------------------------------------------------
-    // Low-level write: SET_REPORT control transfer (Linux) or node-hid (Mac)
+    // Low-level write (node-hid, synchronous on all platforms)
     // -------------------------------------------------------------------------
 
-    /**
-     * Write one HID output packet — synchronous on Mac, async on Linux.
-     * packet[0] = report ID, packet[1..] = payload (total 64 bytes)
-     * Returns a Promise on Linux, undefined on Mac (sync).
-     */
     _write(packet) {
-        if (this._platform === 'linux') {
-            if (!this._usbDevice) return Promise.resolve();
-            return this._ctrlTransfer(packet);
-        } else {
-            return this._writeSync(packet);
-        }
-    }
-
-    /**
-     * Synchronous write on Mac (node-hid). Always returns undefined.
-     */
-    _writeSync(packet) {
         if (!this._hidDevice) {
             console.error('[HID] write skipped — no device handle');
             return;
@@ -179,42 +122,22 @@ class MCDU {
         console.log(`[HID] write result: ${result}`);
     }
 
-    _ctrlTransfer(packet) {
-        return new Promise((resolve, reject) => {
-            const reportId = packet[0];
-            const data = Buffer.from(packet.slice(1)); // 63 bytes, no report ID
-            // wValue = (Output=0x02 << 8) | reportId — mirrors IOHIDDeviceSetReport
-            const wValue = (0x02 << 8) | reportId;
-            this._usbDevice.controlTransfer(
-                0x21,    // bmRequestType: Host→Device, Class, Interface
-                0x09,    // bRequest: SET_REPORT
-                wValue,  // wValue
-                0,       // wIndex: interface 0
-                data,
-                (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                }
-            );
-        });
-    }
-
     // -------------------------------------------------------------------------
     // Display
     // -------------------------------------------------------------------------
 
-    async initDisplay() {
+    initDisplay() {
         console.log(`[INIT] Starting display init — ${INIT_PACKETS.length} packets`);
         for (let i = 0; i < INIT_PACKETS.length; i++) {
             console.log(`[INIT] Sending packet ${i + 1}/${INIT_PACKETS.length}`);
-            await this._write(INIT_PACKETS[i]);
-            await new Promise(r => setTimeout(r, 10));
+            this._write(INIT_PACKETS[i]);
+            this._sleepMs(10);
             console.log(`[INIT] Packet ${i + 1} done`);
         }
         console.log('✓ Display initialized');
     }
 
-    async updateDisplay() {
+    updateDisplay() {
         const tmpArray = [];
         for (let lineIdx = 0; lineIdx < this.page.length; lineIdx++) {
             const line = this.page[lineIdx];
@@ -241,14 +164,19 @@ class MCDU {
             const pktNum = i / 63 + 1;
             console.log(`[DISPLAY] packet ${pktNum}/${totalPackets}`);
             try {
-                await this._write([0xf2, ...tmpArray.slice(i, i + 63)]);
+                this._write([0xf2, ...tmpArray.slice(i, i + 63)]);
             } catch (err) {
                 console.error(`[DISPLAY] packet ${pktNum}/${totalPackets} FAILED: ${err.message}`);
                 throw err;
             }
-            await new Promise(r => setTimeout(r, 40));
+            this._sleepMs(40);
         }
         console.log('[DISPLAY] updateDisplay done');
+    }
+
+    _sleepMs(ms) {
+        const end = Date.now() + ms;
+        while (Date.now() < end) { /* busy-wait */ }
     }
 
     clear() {
@@ -326,27 +254,23 @@ class MCDU {
     setLED(ledId, brightness) {
         if (typeof ledId === 'string') ledId = LEDS[ledId.toUpperCase()] || 0;
         const data = [0x02, 0x32, 0xbb, 0, 0, 3, 0x49, ledId, brightness, 0, 0, 0, 0, 0];
-        return this._write(data);
+        this._write(data);
     }
 
     setAllLEDs(ledsObj) {
-        const promises = [];
         if (typeof ledsObj === 'object') {
             for (const [name, value] of Object.entries(ledsObj)) {
                 let brightness;
                 if (typeof value === 'boolean') brightness = value ? 255 : 0;
                 else if (typeof value === 'number') brightness = Math.max(0, Math.min(255, value));
                 else brightness = 0;
-                const p = this.setLED(name, brightness);
-                if (p) promises.push(p);
+                this.setLED(name, brightness);
             }
         } else {
             for (const id of Object.values(LEDS)) {
-                const p = this.setLED(id, ledsObj);
-                if (p) promises.push(p);
+                this.setLED(id, ledsObj);
             }
         }
-        return Promise.all(promises);
     }
 
     // -------------------------------------------------------------------------
@@ -355,16 +279,8 @@ class MCDU {
 
     startButtonReading(callback, pollIntervalMs) {
         this.buttonCallback = callback;
-        if (this._platform === 'linux') {
-            this._startButtonReadingLinux();
-        } else {
-            this._startButtonReadingMac(pollIntervalMs || 50);
-        }
-    }
-
-    _startButtonReadingMac(pollIntervalMs) {
         // readTimeout(0): returns immediately, does NOT set O_NONBLOCK on the fd
-        // (avoids EAGAIN during updateDisplay bursts — see memory notes)
+        // (avoids EAGAIN during updateDisplay bursts)
         this._buttonPollInterval = setInterval(() => {
             try {
                 const data = this._hidDevice.readTimeout(0);
@@ -376,19 +292,7 @@ class MCDU {
                     console.error('[HID] button read error:', e.message);
                 }
             }
-        }, pollIntervalMs);
-    }
-
-    _startButtonReadingLinux() {
-        this._inEndpoint.on('data', (data) => {
-            if (data && data.length >= 13 && data[0] === 0x01) {
-                this._processButtonData(data);
-            }
-        });
-        this._inEndpoint.on('error', (err) => {
-            console.error('Button read error:', err.message);
-        });
-        this._inEndpoint.startPoll(2, 64);
+        }, pollIntervalMs || 50);
     }
 
     _processButtonData(data) {
@@ -411,9 +315,6 @@ class MCDU {
             clearInterval(this._buttonPollInterval);
             this._buttonPollInterval = null;
         }
-        if (this._inEndpoint) {
-            try { this._inEndpoint.stopPoll(); } catch (e) { /* ignore */ }
-        }
         this.buttonCallback = null;
     }
 
@@ -426,17 +327,6 @@ class MCDU {
         if (this._hidDevice) {
             this._hidDevice.close();
             this._hidDevice = null;
-        }
-        if (this._usbIface) {
-            try {
-                this._usbIface.release(true, () => {
-                    try { this._usbIface.attachKernelDriver(); } catch (e) { /* ignore */ }
-                    if (this._usbDevice) { this._usbDevice.close(); this._usbDevice = null; }
-                });
-            } catch (e) {
-                if (this._usbDevice) { this._usbDevice.close(); this._usbDevice = null; }
-            }
-            this._usbIface = null;
         }
         console.log('Device closed');
     }

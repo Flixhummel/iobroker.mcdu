@@ -312,14 +312,15 @@ function handleDisplaySet(data) {
 
   // Render directly — bypass throttle for explicit full-screen updates from adapter
   if (!CONFIG.mockMode && mcdu) {
-    mcdu.updateDisplay().then(() => {
+    try {
+      mcdu.updateDisplay();
       displayCache.lastUpdate = Date.now();
       stats.displaysRendered++;
-    }).catch(err => {
+    } catch (err) {
       log.error('Display update error:', err.message);
       log.error('Display update error stack:', err.stack);
       stats.errors++;
-    });
+    }
   }
 }
 
@@ -495,23 +496,21 @@ function updateDisplay() {
 
   displayUpdateRunning = true;
   if (!CONFIG.mockMode && mcdu) {
-    mcdu.updateDisplay().then(() => {
+    try {
+      mcdu.updateDisplay();
       displayCache.lastUpdate = Date.now();
       stats.displaysRendered++;
-      displayUpdateRunning = false;
-
-      // If a new update was requested while we were rendering, do it now
-      if (displayUpdatePending) {
-        displayUpdatePending = false;
-        updateDisplay();
-      }
-    }).catch(err => {
+    } catch (err) {
       log.error('Display update error:', err.message);
       stats.errors++;
-      displayUpdateRunning = false;
-    });
-  } else {
-    displayUpdateRunning = false;
+    }
+  }
+  displayUpdateRunning = false;
+
+  // If a new update was requested while we were rendering, do it now
+  if (displayUpdatePending) {
+    displayUpdatePending = false;
+    updateDisplay();
   }
 }
 
@@ -569,7 +568,7 @@ function handleButtonCodes(buttonCodes) {
  * Connect to hardware and initialize display immediately.
  * Called before MQTT to hit any firmware timing window after USB enumeration.
  */
-async function connectHardwareEarly() {
+function connectHardwareEarly() {
   if (CONFIG.mockMode) return;
   try {
     mcdu = new MCDU();
@@ -580,14 +579,14 @@ async function connectHardwareEarly() {
     }
     log.info('MCDU connected');
     log.info('Initializing display (early, before MQTT)...');
-    await mcdu.initDisplay();
+    mcdu.initDisplay();
     log.info('Display init done');
   } catch (err) {
     log.error('Hardware early-connect failed:', err.message);
   }
 }
 
-async function renderInitialDisplay(displayData) {
+function renderInitialDisplay(displayData) {
   if (CONFIG.mockMode) {
     startMockButtonEvents();
     return;
@@ -615,13 +614,13 @@ async function renderInitialDisplay(displayData) {
     });
 
     // Display FIRST (no LED writes before — they may interfere with firmware display mode)
-    await mcdu.updateDisplay();
+    mcdu.updateDisplay();
     stats.displaysRendered = 1;
     displayCache.lastUpdate = Date.now();
     log.info('Display rendered');
 
     // LEDs after display (safe to write LED state now)
-    await mcdu.setAllLEDs(ledCache);
+    mcdu.setAllLEDs(ledCache);
   } catch (err) {
     log.error('Initial display render failed:', err.message);
     log.error('Initial display render stack:', err.stack);
@@ -805,7 +804,7 @@ async function main() {
   log.info('===============================');
 
   // 1. Init hardware (just init, no wait yet)
-  await connectHardwareEarly();
+  connectHardwareEarly();
 
   // 2. Set up display data capture BEFORE connecting MQTT to avoid race condition:
   //    The broker delivers retained display/set immediately on subscribe.
@@ -825,7 +824,7 @@ async function main() {
   const initialDisplay = await displayDataPromise;
 
   // 6. Render initial display + LEDs
-  await renderInitialDisplay(initialDisplay);
+  renderInitialDisplay(initialDisplay);
   displayCache.lastUpdate = 0; // reset throttle so next display/set always renders
 
   // 5. Start button polling AFTER display is rendered

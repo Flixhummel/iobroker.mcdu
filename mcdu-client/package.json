@@ -20,8 +20,7 @@
   "dependencies": {
     "dotenv": "^16.0.0",
     "mqtt": "^5.0.0",
-    "node-hid": "^2.1.2",
-    "usb": "^2.11.0"
+    "node-hid": "^2.1.2"
   },
   "engines": {
     "node": ">=18.0.0"
