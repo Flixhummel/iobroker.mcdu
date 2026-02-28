@@ -1107,6 +1107,7 @@ class McduAdapter extends utils.Adapter {
      * @param {object} obj - Message object
      */
     async handleGetPageList(obj) {
+        this.log.debug(`getPageList message: ${JSON.stringify(obj.message)}`);
         const deviceId = obj.message?.deviceId;
         let pages = [];
 
