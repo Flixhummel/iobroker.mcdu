@@ -284,9 +284,11 @@ class MCDU {
         // (avoids EAGAIN during updateDisplay bursts)
         this._buttonPollInterval = setInterval(() => {
             try {
-                const data = this._hidDevice.readTimeout(0);
-                if (data && data.length >= 13 && data[0] === 0x01) {
-                    this._processButtonData(data);
+                let data;
+                while ((data = this._hidDevice.readTimeout(0)) && data.length >= 13) {
+                    if (data[0] === 0x01) {
+                        this._processButtonData(data);
+                    }
                 }
             } catch (e) {
                 if (e.message && !e.message.includes('timeout')) {
