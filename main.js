@@ -1306,11 +1306,20 @@ class McduAdapter extends utils.Adapter {
                 this.log.info(`loadDevicePages: Using adapter config FK (${functionKeys.length} keys) for device ${deviceId}`);
             }
 
+            // Load per-device display settings from device state
+            const defaultColorState = await this.getStateAsync(`devices.${deviceId}.config.defaultColor`);
+            const brightnessStepState = await this.getStateAsync(`devices.${deviceId}.display.brightnessStep`);
+            const startPageState = await this.getStateAsync(`devices.${deviceId}.config.startPage`);
+
             this.log.info(`loadDevicePages: Loaded ${pages.length} pages for device ${deviceId}`);
-            // Return data in response — jsonConfig sendTo shows this as result
-            // Also return as native-shaped object so admin can merge it
             this.sendTo(obj.from, obj.command, {
-                native: { pages: flatPages, functionKeys }
+                native: {
+                    pages: flatPages,
+                    functionKeys,
+                    'display.defaultColor': defaultColorState?.val || 'white',
+                    'display.brightnessStep': brightnessStepState?.val || 20,
+                    'display.startPage': startPageState?.val || ''
+                }
             }, obj.callback);
         } catch (error) {
             this.log.error(`Error in loadDevicePages: ${error.message}`);
@@ -1395,17 +1404,37 @@ class McduAdapter extends utils.Adapter {
                 this.log.info(`saveDevicePages: Also saved ${functionKeys.length} function keys for device ${deviceId}`);
             }
 
-            // Save startPage if present in form data
-            if (msg.display?.startPage !== undefined) {
-                await this.setStateAsync(`devices.${deviceId}.config.startPage`, msg.display.startPage, true);
+            // Save per-device display settings
+            const displayDefaultColor = msg['display.defaultColor'];
+            const displayBrightnessStep = msg['display.brightnessStep'];
+            const displayStartPage = msg['display.startPage'];
+
+            if (displayDefaultColor !== undefined) {
+                await this.setStateAsync(`devices.${deviceId}.config.defaultColor`, displayDefaultColor, true);
+            }
+            if (displayBrightnessStep !== undefined) {
+                await this.setStateAsync(`devices.${deviceId}.display.brightnessStep`, displayBrightnessStep, true);
+            }
+            if (displayStartPage !== undefined) {
+                await this.setStateAsync(`devices.${deviceId}.config.startPage`, displayStartPage, true);
                 if (this.displayPublisher && this.displayPublisher.deviceId === deviceId) {
-                    this.config.startPage = msg.display.startPage;
+                    this.config.startPage = displayStartPage;
                 }
-                this.log.info(`saveDevicePages: Saved startPage="${msg.display.startPage}" for device ${deviceId}`);
             }
 
             this.log.info(`saveDevicePages: Saved ${nestedPages.length} pages for device ${deviceId}`);
-            this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
+
+            // Clear form after save — prevents stale data on next settings open
+            this.sendTo(obj.from, obj.command, {
+                native: {
+                    pages: [],
+                    functionKeys: [],
+                    selectedDevice: '',
+                    'display.defaultColor': 'white',
+                    'display.brightnessStep': 20,
+                    'display.startPage': ''
+                }
+            }, obj.callback);
         } catch (error) {
             this.log.error(`Error in saveDevicePages: ${error.message}`);
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
