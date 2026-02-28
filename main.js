@@ -1318,7 +1318,8 @@ class McduAdapter extends utils.Adapter {
                     functionKeys,
                     'display.defaultColor': defaultColorState?.val || 'white',
                     'display.brightnessStep': brightnessStepState?.val || 20,
-                    'display.startPage': startPageState?.val || ''
+                    'display.startPage': startPageState?.val || '',
+                    _deviceConfigLoaded: true
                 }
             }, obj.callback);
         } catch (error) {

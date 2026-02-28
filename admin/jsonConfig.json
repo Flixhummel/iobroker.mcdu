@@ -200,18 +200,18 @@
               "md": 3,
               "lg": 3,
               "xl": 3,
-              "disabled": "!data.selectedDevice"
+              "disabled": "!data._deviceConfigLoaded"
             }
           }
         },
         "_dividerDisplay": {
           "type": "divider",
           "text": "Display",
-          "hidden": "!data.selectedDevice"
+          "hidden": "!data._deviceConfigLoaded"
         },
         "displayDeviceSettings": {
           "type": "panel",
-          "hidden": "!data.selectedDevice",
+          "hidden": "!data._deviceConfigLoaded",
           "items": {
             "display.defaultColor": {
               "type": "select",
@@ -258,14 +258,14 @@
         "_dividerPages": {
           "type": "divider",
           "text": "Pages",
-          "hidden": "!data.selectedDevice"
+          "hidden": "!data._deviceConfigLoaded"
         },
         "pages": {
           "type": "accordion",
           "label": "MCDU Pages",
           "titleAttr": "name",
           "clone": true,
-          "hidden": "!data.selectedDevice",
+          "hidden": "!data._deviceConfigLoaded",
           "items": [
             {
               "type": "text",
@@ -533,14 +533,14 @@
         "_dividerFunctionKeys": {
           "type": "divider",
           "text": "Function Keys",
-          "hidden": "!data.selectedDevice"
+          "hidden": "!data._deviceConfigLoaded"
         },
         "functionKeys": {
           "type": "table",
           "label": "Function Key Assignments",
           "sm": 12,
           "noDelete": true,
-          "hidden": "!data.selectedDevice",
+          "hidden": "!data._deviceConfigLoaded",
           "items": [
             {
               "type": "text",
@@ -577,11 +577,11 @@
         "_dividerTemplate": {
           "type": "divider",
           "text": "Templates",
-          "hidden": "!data.selectedDevice"
+          "hidden": "!data._deviceConfigLoaded"
         },
         "templateSection": {
           "type": "panel",
-          "hidden": "!data.selectedDevice",
+          "hidden": "!data._deviceConfigLoaded",
           "items": {
             "selectedTemplate": {
               "type": "select",
