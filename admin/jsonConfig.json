@@ -192,7 +192,6 @@
               "type": "sendTo",
               "command": "saveDevicePages",
               "jsonData": "${JSON.stringify(data)}",
-              "useNative": true,
               "variant": "contained",
               "label": "Save Config",
               "showProcess": true,

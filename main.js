@@ -1426,16 +1426,7 @@ class McduAdapter extends utils.Adapter {
 
             this.log.info(`saveDevicePages: Saved ${nestedPages.length} pages for device ${deviceId}`);
 
-            this.sendTo(obj.from, obj.command, {
-                native: {
-                    pages: flattenPages(nestedPages),
-                    functionKeys: functionKeys || [],
-                    'display.defaultColor': displayDefaultColor,
-                    'display.brightnessStep': displayBrightnessStep,
-                    'display.startPage': displayStartPage,
-                    _deviceConfigLoaded: true
-                }
-            }, obj.callback);
+            this.sendTo(obj.from, obj.command, { saveConfig: true }, obj.callback);
         } catch (error) {
             this.log.error(`Error in saveDevicePages: ${error.message}`);
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
