@@ -244,6 +244,16 @@
               "sm": 12,
               "md": 4,
               "help": "Amount added/subtracted per BRT/DIM button press (0-255 range)"
+            },
+            "display.startPage": {
+              "type": "selectSendTo",
+              "command": "getPageList",
+              "manual": false,
+              "label": "Start Page",
+              "sm": 12,
+              "md": 4,
+              "default": "",
+              "help": "Page shown on device connect (default: first page)"
             }
           }
         },

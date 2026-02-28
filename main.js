@@ -330,11 +330,14 @@ class McduAdapter extends utils.Adapter {
         const currentPageExists = currentPageId && pages.some(p => p.id === currentPageId);
 
         if (!currentPageExists) {
-            const firstPage = pages[0];
-            if (firstPage) {
-                await this.setStateAsync('runtime.currentPage', firstPage.id, true);
-                await this.setStateAsync(`pages.${firstPage.id}.active`, true, true);
-                this.log.info(`Reset current page to ${firstPage.id} (previous "${currentPageId || ''}" not found in ${pages.length} pages)`);
+            const startPage = this.config.startPage;
+            const targetPage = (startPage && pages.some(p => p.id === startPage))
+                ? startPage
+                : pages[0]?.id;
+            if (targetPage) {
+                await this.setStateAsync('runtime.currentPage', targetPage, true);
+                await this.setStateAsync(`pages.${targetPage}.active`, true, true);
+                this.log.info(`Set current page to ${targetPage} (startPage=${startPage || 'none'}, previous "${currentPageId || ''}" not found in ${pages.length} pages)`);
             }
         }
         
@@ -1392,6 +1395,15 @@ class McduAdapter extends utils.Adapter {
                 this.log.info(`saveDevicePages: Also saved ${functionKeys.length} function keys for device ${deviceId}`);
             }
 
+            // Save startPage if present in form data
+            if (msg.display?.startPage !== undefined) {
+                await this.setStateAsync(`devices.${deviceId}.config.startPage`, msg.display.startPage, true);
+                if (this.displayPublisher && this.displayPublisher.deviceId === deviceId) {
+                    this.config.startPage = msg.display.startPage;
+                }
+                this.log.info(`saveDevicePages: Saved startPage="${msg.display.startPage}" for device ${deviceId}`);
+            }
+
             this.log.info(`saveDevicePages: Saved ${nestedPages.length} pages for device ${deviceId}`);
             this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
         } catch (error) {
@@ -1643,8 +1655,6 @@ class McduAdapter extends utils.Adapter {
                 return;
             }
 
-            let activeDeviceId = null;
-
             for (const row of devices.rows) {
                 const id = row.id || row.value?._id;
                 if (!id) {
@@ -1677,30 +1687,10 @@ class McduAdapter extends utils.Adapter {
                 // Sync adapter config to device states
                 await this.syncConfigToDeviceStates(deviceId);
 
-                // Track first device with stored pages as the active device
-                if (!activeDeviceId) {
-                    const pagesState = await this.getStateAsync(`devices.${deviceId}.config.pages`);
-                    if (pagesState && pagesState.val) {
-                        try {
-                            const pages = JSON.parse(pagesState.val);
-                            if (Array.isArray(pages) && pages.length > 0) {
-                                activeDeviceId = deviceId;
-                            }
-                        } catch (e) {
-                            // invalid JSON, skip
-                        }
-                    }
-                }
-
                 this.log.info(`♻️ Recovered device: ${deviceId} (${native.hostname || 'unknown'})`);
             }
 
-            // Only load pages and set display for the active device
-            if (activeDeviceId) {
-                await this.loadDevicePagesIntoConfig(activeDeviceId);
-                this.displayPublisher.setDevice(activeDeviceId);
-                this.log.info(`Active device: ${activeDeviceId}`);
-            }
+            // Don't preload any device's pages on startup — wait for button/announcement
 
             if (this.deviceRegistry.size > 0) {
                 this.log.info(`✅ Recovered ${this.deviceRegistry.size} device(s) from object tree`);
@@ -1717,11 +1707,13 @@ class McduAdapter extends utils.Adapter {
     async syncConfigToDeviceStates(deviceId) {
         const defaultColor = this.config.display?.defaultColor || 'white';
         const brightnessStep = this.config.display?.brightnessStep || 20;
+        const startPage = this.config.display?.startPage || '';
 
         await this.setStateAsync(`devices.${deviceId}.config.defaultColor`, defaultColor, true);
         await this.setStateAsync(`devices.${deviceId}.display.brightnessStep`, brightnessStep, true);
+        await this.setStateAsync(`devices.${deviceId}.config.startPage`, startPage, true);
 
-        this.log.debug(`Synced config to device states: defaultColor=${defaultColor}, brightnessStep=${brightnessStep}`);
+        this.log.debug(`Synced config to device states: defaultColor=${defaultColor}, brightnessStep=${brightnessStep}, startPage=${startPage}`);
     }
 
     /**
@@ -1754,6 +1746,7 @@ class McduAdapter extends utils.Adapter {
 
                 // Load device pages into active config
                 await this.loadDevicePagesIntoConfig(deviceId);
+                await this.initializeRuntime();
 
                 // Set device for display publishing and show splash
                 this.displayPublisher.setDevice(deviceId);
@@ -1791,6 +1784,7 @@ class McduAdapter extends utils.Adapter {
 
                 // Load device pages into active config
                 await this.loadDevicePagesIntoConfig(deviceId);
+                await this.initializeRuntime();
 
                 // Set device for display publishing and show splash
                 this.displayPublisher.setDevice(deviceId);
@@ -1867,6 +1861,14 @@ class McduAdapter extends utils.Adapter {
                     this.config.pages = pages;
                     this.log.info(`Loaded ${pages.length} pages from device ${deviceId}`);
                 }
+            }
+
+            // Load start page preference
+            const startPageState = await this.getStateAsync(`devices.${deviceId}.config.startPage`);
+            if (startPageState?.val) {
+                this.config.startPage = startPageState.val;
+            } else {
+                this.config.startPage = '';
             }
 
             // Also load function keys (fall back to native if device has none)
