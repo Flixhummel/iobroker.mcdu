@@ -1144,9 +1144,17 @@ class McduAdapter extends utils.Adapter {
             }
         }
 
+        // Deduplicate by page ID (multiple devices may share the same pages)
+        const seen = new Set();
+        const uniquePages = pages.filter(p => {
+            if (seen.has(p.id)) return false;
+            seen.add(p.id);
+            return true;
+        });
+
         const pageList = [
             { label: '---', value: '' },
-            ...pages.map(p => ({ label: p.name || p.id, value: p.id }))
+            ...uniquePages.map(p => ({ label: p.name || p.id, value: p.id }))
         ];
 
         this.sendTo(obj.from, obj.command, pageList, obj.callback);
