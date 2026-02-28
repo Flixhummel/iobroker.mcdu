@@ -203,15 +203,15 @@ describe('InputModeManager', () => {
     });
 
     describe('Read-Only Datapoints', () => {
-        it('should ignore LSK on read-only datapoint', async () => {
+        it('should show error on LSK for read-only datapoint', async () => {
             scratchpad.set('99');
 
             await inputManager.handleLSK('left', 9);
 
             // Sensor value should remain unchanged
             expect(adapter._foreignStates['test.sensor'].val).to.equal(19.8);
-            // Scratchpad should NOT be cleared (no action taken)
-            expect(scratchpad.getContent()).to.equal('99');
+            // Scratchpad should show error message
+            expect(scratchpad.getContent()).to.equal('SCHREIBGESCHUETZT');
         });
     });
 
