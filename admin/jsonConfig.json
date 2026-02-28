@@ -248,6 +248,8 @@
             "display.startPage": {
               "type": "selectSendTo",
               "command": "getPageList",
+              "jsonData": "{\"deviceId\": \"${data.selectedDevice}\"}",
+              "alsoDependsOn": ["selectedDevice"],
               "manual": false,
               "label": "Start Page",
               "sm": 12,
