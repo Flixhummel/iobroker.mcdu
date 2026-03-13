@@ -34,7 +34,7 @@
     "@alcalzone/release-script-plugin-manual-review": "^5.1.1",
     "@iobroker/testing": "^5.2.2",
     "eslint": "^8.57.1",
-    "mocha": "^10.2.0"
+    "mocha": "^11.7.3"
   },
   "files": [
     "admin/",
