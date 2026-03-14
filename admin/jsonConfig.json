@@ -693,8 +693,11 @@
           "label": "Create Test Data",
           "command": "createSampleData",
           "variant": "outlined",
+          "xs": 12,
           "sm": 12,
-          "md": 4
+          "md": 4,
+          "lg": 4,
+          "xl": 4
         },
         "_dividerAbout": {
           "type": "divider",
@@ -702,19 +705,31 @@
         },
         "_description": {
           "type": "staticText",
+          "xs": 12,
           "text": "<h3>ioBroker MCDU Adapter</h3><p>Aviation-inspired smart home controller using authentic MCDU interface patterns.</p><h4>Display Model</h4><p>Each row has independent <strong>left</strong> and <strong>right</strong> columns, like a real MCDU. Left content is left-aligned (chars 1-12), right content is right-aligned (chars 13-24). Sub-labels appear on even rows in cyan.</p><h4>Per-Device Pages</h4><p>Page configurations are stored per device. Select a device in the Device & Pages tab, load its config, edit, and save back.</p>",
-          "sm": 12
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "_version": {
           "type": "staticText",
           "text": "Version: 2.0.0",
-          "sm": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
         "_github": {
           "type": "staticLink",
           "text": "GitHub Repository",
           "href": "https://github.com/Flixhummel/ioBroker.mcdu",
-          "sm": 12
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         }
       }
     }
