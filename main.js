@@ -2,10 +2,10 @@
 
 /**
  * MCDU Smart Home Control Adapter
- * 
+ *
  * Controls smart home devices using WINWING MCDU hardware via MQTT.
  * Architecture: ioBroker Adapter ↔ MQTT Broker ↔ RasPi Client ↔ MCDU Hardware
- * 
+ *
  * @author Kira Holt <kiraholtvi@gmail.com>
  * @license MIT
  */
@@ -34,87 +34,77 @@ const { slugifyPageId } = require('./lib/utils/slugify');
 
 class McduAdapter extends utils.Adapter {
     /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
+     * @param {Partial<utils.AdapterOptions>} [options]
      */
     constructor(options) {
         super({
             ...options,
             name: 'mcdu',
         });
-        
-        /** @type {MqttClient|null} */
+
         this.mqttClient = null;
-        
-        /** @type {StateTreeManager|null} */
+
         this.stateManager = null;
-        
-        /** @type {PageRenderer|null} */
+
         this.pageRenderer = null;
-        
-        /** @type {DisplayPublisher|null} */
+
         this.displayPublisher = null;
-        
-        /** @type {ButtonSubscriber|null} */
+
         this.buttonSubscriber = null;
-        
-        /** @type {ScratchpadManager|null} */
+
         this.scratchpadManager = null;
-        
-        /** @type {InputModeManager|null} */
+
         this.inputModeManager = null;
-        
-        /** @type {ValidationEngine|null} */
+
         this.validationEngine = null;
-        
-        /** @type {ConfirmationDialog|null} */
+
         this.confirmationDialog = null;
-        
-        /** @type {TemplateLoader|null} */
+
         this.templateLoader = null;
-        
-        /** @type {Map<string, any>} Page cache */
+
+        /** Page cache */
         this.pageCache = new Map();
-        
-        /** @type {Set<string>} Subscribed state IDs */
+
+        /** Subscribed state IDs */
         this.subscriptions = new Set();
-        
-        /** @type {Map<string, object>} Device registry */
+
+        /** Device registry */
         this.deviceRegistry = new Map();
 
-        /** @type {Map<string, object>} Datapoint metadata cache (source → {write, type, min, max, unit, states}) */
+        /** Datapoint metadata cache (source → {write, type, min, max, unit, states}) */
         this.datapointMeta = new Map();
 
-        /** @type {Array<{id: string, name: string}>} Current breadcrumb path */
+        /** Current breadcrumb path */
         this.breadcrumb = [];
 
-        /** @type {NodeJS.Timeout|null} Timeout check interval */
+        /** Timeout check interval */
         this.timeoutCheckInterval = null;
 
-        /** @type {NodeJS.Timeout|null} Splash screen timeout */
+        /** Splash screen timeout */
         this.splashTimeout = null;
 
-        /** @type {NodeJS.Timeout|null} Notification auto-clear timeout */
+        /** Notification auto-clear timeout */
         this.notificationTimeout = null;
-        
+
         // Bind event handlers
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
-    
+
     /**
      * Called when adapter is started
      */
     async onReady() {
         this.log.info('MCDU Adapter starting...');
-        
+
         // Prevent duplicate initialization if onReady() is called multiple times
         if (this.mqttClient && this.mqttClient.connected) {
             this.log.warn('Adapter already initialized, skipping duplicate onReady()');
             return;
         }
-        
+
         try {
             // Restore function keys from io-package.json defaults if adapter config has none
             // (can happen when Admin UI previously saved empty function keys via useNative)
@@ -131,57 +121,57 @@ class McduAdapter extends utils.Adapter {
             this.log.debug('Setting up object tree...');
             this.stateManager = new StateTreeManager(this);
             await this.stateManager.setupObjectTree();
-            
+
             // Phase 2: Connect to MQTT broker
             this.log.debug('Connecting to MQTT broker...');
             if (!this.mqttClient) {
                 this.mqttClient = new MqttClient(this, this.config.mqtt);
             }
             await this.mqttClient.connect();
-            
+
             // Phase 3: Initialize rendering components
             this.log.debug('Initializing rendering components...');
             this.displayPublisher = new DisplayPublisher(this, this.mqttClient);
             this.pageRenderer = new PageRenderer(this, this.displayPublisher);
-            
+
             // Phase 3.1: Initialize confirmation system (Phase 3)
             this.log.debug('Initializing confirmation system...');
             this.confirmationDialog = new ConfirmationDialog(this, this.displayPublisher);
             this.log.info('✅ Confirmation system initialized');
-            
+
             // Phase 3.5: Initialize input system (Phase 2)
             this.log.debug('Initializing input system...');
-            
+
             // Create ScratchpadManager
             this.scratchpadManager = new ScratchpadManager(this, this.displayPublisher);
-            
+
             // Create ValidationEngine
             this.validationEngine = new ValidationEngine(this);
-            
+
             // Create InputModeManager
             this.inputModeManager = new InputModeManager(this, this.scratchpadManager, this.validationEngine);
-            
+
             // Inject scratchpadManager into PageRenderer
             this.pageRenderer.setScratchpadManager(this.scratchpadManager);
-            
+
             this.log.info('✅ Input system initialized');
-            
+
             // Phase 4: Initialize template system
             this.log.debug('Initializing template system...');
             this.templateLoader = new TemplateLoader(this);
             this.log.info('✅ Template system initialized');
-            
+
             // Phase 3.6: Setup periodic timeout check (5 seconds)
-            this.timeoutCheckInterval = setInterval(() => {
+            this.timeoutCheckInterval = this.setInterval(() => {
                 if (this.inputModeManager) {
-                    this.inputModeManager.checkTimeout().catch(error => {
+                    this.inputModeManager.checkTimeout().catch((error) => {
                         this.log.error(`Timeout check failed: ${error.message}`);
                     });
                 }
             }, 5000);
-            
+
             this.log.debug('Timeout check interval started');
-            
+
             // Recover known devices from ioBroker object tree (survives adapter restarts)
             await this.recoverKnownDevices();
 
@@ -189,36 +179,36 @@ class McduAdapter extends utils.Adapter {
             this.log.debug('Subscribing to device announcements...');
             // Wildcard pattern: mcdu/+/status/announce
             await this.mqttClient.subscribe('+/status/announce', (topic, message) => {
-                this.handleDeviceAnnouncement(message).catch(error => {
+                this.handleDeviceAnnouncement(message).catch((error) => {
                     this.log.error(`Failed to handle device announcement: ${error.message}`);
                 });
             });
             this.log.info('✅ Device announcement subscription active (all devices)');
-            
+
             // Phase 4: Setup button event handling
             this.log.debug('Setting up button event handling...');
             this.buttonSubscriber = new ButtonSubscriber(this, this.mqttClient);
-            
+
             // Inject InputModeManager into ButtonSubscriber
             this.buttonSubscriber.setInputModeManager(this.inputModeManager);
-            
+
             // Inject ConfirmationDialog into ButtonSubscriber
             this.buttonSubscriber.setConfirmationDialog(this.confirmationDialog);
-            
+
             await this.buttonSubscriber.subscribe();
-            
+
             // Phase 5: Subscribe to data sources
             this.log.debug('Subscribing to data sources...');
             await this.subscribeToDataSources();
-            
+
             // Phase 6: Initialize runtime state
             this.log.debug('Initializing runtime state...');
             await this.initializeRuntime();
-            
+
             // Phase 7: Render initial display
             this.log.info('Rendering initial display...');
             await this.renderCurrentPage();
-            
+
             // Phase 4.1: Subscribe to automation states (per-device)
             this.log.debug('Subscribing to automation states (all devices)...');
             this.subscribeStates('devices.*.leds.*');
@@ -229,29 +219,28 @@ class McduAdapter extends utils.Adapter {
             this.subscribeStates('devices.*.config.*');
             this.subscribeStates('devices.*.display.brightness');
             this.subscribeStates('devices.*.display.brightnessStep');
-            
+
             // Live data re-render timer (status bar time + datapoint refresh)
             // Skips re-render during active input to avoid display flicker
             const reRenderInterval = this.config.performance?.reRenderInterval || 30000;
-            this.reRenderInterval = setInterval(() => {
+            this.reRenderInterval = this.setInterval(() => {
                 if (this.inputModeManager && this.inputModeManager.getMode() !== 'normal') {
                     this.log.debug('Skipping periodic re-render (input mode active)');
                     return;
                 }
-                this.renderCurrentPage().catch(error => {
+                this.renderCurrentPage().catch((error) => {
                     this.log.error(`Periodic re-render failed: ${error.message}`);
                 });
             }, reRenderInterval);
             this.log.debug(`Live re-render interval started (${reRenderInterval}ms)`);
-            
+
             this.log.info('✅ MCDU Adapter ready!');
-            
         } catch (error) {
             this.log.error(`❌ Startup failed: ${error.message}`);
             this.log.error(error.stack);
         }
     }
-    
+
     /**
      * Subscribe to all data sources configured in pages
      * Supports both old (leftButton/display/rightButton) and new (left/right) line format
@@ -277,7 +266,7 @@ class McduAdapter extends utils.Adapter {
                                 min: obj.common.min,
                                 max: obj.common.max,
                                 unit: obj.common.unit,
-                                states: obj.common.states
+                                states: obj.common.states,
                             });
                         }
                     } catch (e) {
@@ -293,7 +282,9 @@ class McduAdapter extends utils.Adapter {
                 // New format: left/right sides
                 if (line.left || line.right) {
                     for (const side of [line.left, line.right]) {
-                        if (!side) continue;
+                        if (!side) {
+                            continue;
+                        }
                         if (side.display?.type === 'datapoint' && side.display.source) {
                             await subscribeTo(side.display.source);
                         }
@@ -318,7 +309,7 @@ class McduAdapter extends utils.Adapter {
 
         this.log.info(`Subscribed to ${count} data sources`);
     }
-    
+
     /**
      * Initialize runtime state
      */
@@ -327,24 +318,24 @@ class McduAdapter extends utils.Adapter {
         const currentPageState = await this.getStateAsync('runtime.currentPage');
         const currentPageId = currentPageState?.val;
         const pages = this.config.pages || [];
-        const currentPageExists = currentPageId && pages.some(p => p.id === currentPageId);
+        const currentPageExists = currentPageId && pages.some((p) => p.id === currentPageId);
 
         if (!currentPageExists) {
             const startPage = this.config.startPage;
-            const targetPage = (startPage && pages.some(p => p.id === startPage))
-                ? startPage
-                : pages[0]?.id;
+            const targetPage = startPage && pages.some((p) => p.id === startPage) ? startPage : pages[0]?.id;
             if (targetPage) {
                 await this.setStateAsync('runtime.currentPage', targetPage, true);
                 await this.setStateAsync(`pages.${targetPage}.active`, true, true);
-                this.log.info(`Set current page to ${targetPage} (startPage=${startPage || 'none'}, previous "${currentPageId || ''}" not found in ${pages.length} pages)`);
+                this.log.info(
+                    `Set current page to ${targetPage} (startPage=${startPage || 'none'}, previous "${currentPageId || ''}" not found in ${pages.length} pages)`
+                );
             }
         }
-        
+
         // Runtime state initialization removed — these states were write-only debug telemetry
         // that generated "has no existing object" warnings. Mode/scratchpad state lives in-memory.
     }
-    
+
     /**
      * Render current page and send to MCDU
      * Error boundary: Catches and logs rendering errors without crashing
@@ -353,23 +344,22 @@ class McduAdapter extends utils.Adapter {
         try {
             const currentPageState = await this.getStateAsync('runtime.currentPage');
             const currentPageId = currentPageState?.val;
-            
+
             if (!currentPageId) {
                 this.log.warn('No current page to render');
                 return;
             }
-            
+
             if (!this.pageRenderer) {
                 this.log.error('PageRenderer not initialized');
                 return;
             }
-            
+
             await this.pageRenderer.renderPage(currentPageId);
-            
         } catch (error) {
             this.log.error(`Failed to render current page: ${error.message}`);
             this.log.error(error.stack);
-            
+
             // Fallback: Try to render a blank display to avoid frozen screen
             try {
                 if (this.displayPublisher) {
@@ -382,32 +372,33 @@ class McduAdapter extends utils.Adapter {
             }
         }
     }
-    
+
     /**
      * Switch to a different page
      * Error boundary: Handles page switch errors gracefully
+     *
      * @param {string} pageId - Target page ID
      */
     async switchToPage(pageId) {
         try {
             this.log.info(`Switching to page: ${pageId}`);
-            
+
             // Validate page exists
-            const pageConfig = this.config.pages?.find(p => p.id === pageId);
+            const pageConfig = this.config.pages?.find((p) => p.id === pageId);
             if (!pageConfig) {
                 this.log.error(`Page not found: ${pageId}`);
                 return;
             }
-            
+
             // Store previous page for back navigation
             const currentPageState = await this.getStateAsync('runtime.currentPage');
             const previousPage = currentPageState?.val;
-            
+
             if (previousPage && previousPage !== pageId) {
                 await this.setStateAsync('runtime.previousPage', previousPage, true);
                 await this.setStateAsync(`pages.${previousPage}.active`, false, true);
             }
-            
+
             // Set new page
             await this.setStateAsync('runtime.currentPage', pageId, true);
             await this.setStateAsync(`pages.${pageId}.active`, true, true);
@@ -427,19 +418,19 @@ class McduAdapter extends utils.Adapter {
 
             // Clear page cache to force re-render
             this.pageCache.delete(pageId);
-            
+
             // Render new page
             await this.renderCurrentPage();
-            
         } catch (error) {
             this.log.error(`Failed to switch to page ${pageId}: ${error.message}`);
             this.log.error(error.stack);
         }
     }
-    
+
     /**
      * Execute button action
      * Error boundary: Handles action execution errors gracefully
+     *
      * @param {object} buttonConfig - Button configuration
      */
     async executeButtonAction(buttonConfig) {
@@ -448,7 +439,7 @@ class McduAdapter extends utils.Adapter {
                 this.log.warn('No button config provided');
                 return;
             }
-            
+
             const { type, action, target } = buttonConfig;
 
             if (type === 'navigation') {
@@ -458,8 +449,7 @@ class McduAdapter extends utils.Adapter {
                 } else {
                     this.log.warn('Navigation button has no target page');
                 }
-            }
-            else if (type === 'datapoint') {
+            } else if (type === 'datapoint') {
                 if (!target) {
                     this.log.error('Button action missing target');
                     return;
@@ -474,42 +464,40 @@ class McduAdapter extends utils.Adapter {
                     const newVal = !state?.val;
                     await this.setForeignStateAsync(target, newVal);
                     this.log.debug(`Toggled ${target}: ${newVal}`);
-                }
-                else if (dpAction === 'increment') {
+                } else if (dpAction === 'increment') {
                     // Increment numeric state
                     const state = await this.getForeignStateAsync(target);
                     const newVal = (parseFloat(state?.val) || 0) + 1;
                     await this.setForeignStateAsync(target, newVal);
                     this.log.debug(`Incremented ${target}: ${newVal}`);
-                }
-                else if (dpAction === 'decrement') {
+                } else if (dpAction === 'decrement') {
                     // Decrement numeric state
                     const state = await this.getForeignStateAsync(target);
                     const newVal = (parseFloat(state?.val) || 0) - 1;
                     await this.setForeignStateAsync(target, newVal);
                     this.log.debug(`Decremented ${target}: ${newVal}`);
-                }
-                else {
+                } else {
                     this.log.warn(`Unknown action: ${dpAction}`);
                 }
-            }
-            else {
+            } else {
                 this.log.warn(`Unknown button type: ${type}`);
             }
-            
         } catch (error) {
             this.log.error(`Failed to execute button action: ${error.message}`);
             this.log.error(error.stack);
         }
     }
-    
+
     /**
      * State change handler
+     *
      * @param {string} id - State ID
      * @param {ioBroker.State | null | undefined} state - State object
      */
     async onStateChange(id, state) {
-        if (!state) return;
+        if (!state) {
+            return;
+        }
 
         // Handle data source changes regardless of ack (sensor data always has ack=true)
         if (this.subscriptions.has(id)) {
@@ -518,7 +506,9 @@ class McduAdapter extends utils.Adapter {
         }
 
         // Control states only handle non-ack changes
-        if (state.ack) return;
+        if (state.ack) {
+            return;
+        }
 
         // Extract device state info: devices.{deviceId}.{channel}.{state}
         let deviceId = null;
@@ -537,111 +527,88 @@ class McduAdapter extends utils.Adapter {
             if (id === `${this.namespace}.control.switchPage`) {
                 await this.switchToPage(state.val);
                 await this.setStateAsync('control.switchPage', state.val, true);
-            }
-            else if (id === `${this.namespace}.control.goBack`) {
+            } else if (id === `${this.namespace}.control.goBack`) {
                 const previousPageState = await this.getStateAsync('runtime.previousPage');
                 if (previousPageState?.val) {
                     await this.switchToPage(previousPageState.val);
                 }
                 await this.setStateAsync('control.goBack', false, true);
-            }
-            else if (id === `${this.namespace}.control.refresh`) {
+            } else if (id === `${this.namespace}.control.refresh`) {
                 await this.renderCurrentPage();
                 await this.setStateAsync('control.refresh', false, true);
-            }
-            
-            // Phase 4.1: Extended navigation controls
-            else if (id === `${this.namespace}.control.nextPage`) {
+            } else if (id === `${this.namespace}.control.nextPage`) {
+                // Phase 4.1: Extended navigation controls
                 if (state.val === true) {
                     await this.navigateNext();
                     await this.setStateAsync('control.nextPage', false, true);
                 }
-            }
-            else if (id === `${this.namespace}.control.previousPage`) {
+            } else if (id === `${this.namespace}.control.previousPage`) {
                 if (state.val === true) {
                     await this.navigatePrevious();
                     await this.setStateAsync('control.previousPage', false, true);
                 }
-            }
-            else if (id === `${this.namespace}.control.homePage`) {
+            } else if (id === `${this.namespace}.control.homePage`) {
                 if (state.val === true) {
                     await this.navigateHome();
                     await this.setStateAsync('control.homePage', false, true);
                 }
-            }
-            
-            // Phase 4.1: LED changes (per-device)
-            else if (deviceId && deviceStatePath && deviceStatePath.startsWith('leds.')) {
+            } else if (deviceId && deviceStatePath && deviceStatePath.startsWith('leds.')) {
+                // Phase 4.1: LED changes (per-device)
                 const ledName = deviceStatePath.split('.').pop();
                 await this.handleLEDChange(deviceId, ledName, state.val);
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
-            }
-
-            // Per-device control states
-            else if (deviceId && deviceStatePath === 'control.switchPage') {
+            } else if (deviceId && deviceStatePath === 'control.switchPage') {
+                // Per-device control states
                 await this.switchToPage(state.val);
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
-            }
-            else if (deviceId && deviceStatePath === 'control.goBack') {
+            } else if (deviceId && deviceStatePath === 'control.goBack') {
                 const prev = await this.getStateAsync('runtime.previousPage');
-                if (prev?.val) await this.switchToPage(prev.val);
+                if (prev?.val) {
+                    await this.switchToPage(prev.val);
+                }
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
-            }
-            else if (deviceId && deviceStatePath === 'control.refresh') {
+            } else if (deviceId && deviceStatePath === 'control.refresh') {
                 await this.renderCurrentPage();
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
-            }
-
-            // Per-device actions states
-            else if (deviceId && deviceStatePath === 'actions.pressButton') {
+            } else if (deviceId && deviceStatePath === 'actions.pressButton') {
+                // Per-device actions states
                 if (state.val) {
                     await this.triggerButton(state.val);
                     await this.setStateAsync(id.replace(`${this.namespace}.`, ''), '', true);
                 }
-            }
-            else if (deviceId && deviceStatePath === 'actions.confirmAction') {
+            } else if (deviceId && deviceStatePath === 'actions.confirmAction') {
                 if (state.val === true) {
                     await this.triggerOVFY();
                     await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
                 }
-            }
-            else if (deviceId && deviceStatePath === 'actions.cancelAction') {
+            } else if (deviceId && deviceStatePath === 'actions.cancelAction') {
                 if (state.val === true) {
                     await this.triggerCLR();
                     await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
                 }
-            }
-
-            // Per-device notification states
-            else if (deviceId && deviceStatePath === 'notifications.message') {
+            } else if (deviceId && deviceStatePath === 'notifications.message') {
+                // Per-device notification states
                 if (state.val) {
                     await this.showNotificationForDevice(deviceId, state.val);
                     await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
                 }
-            }
-            else if (deviceId && deviceStatePath === 'notifications.clear') {
+            } else if (deviceId && deviceStatePath === 'notifications.clear') {
                 if (state.val === true) {
                     await this.clearNotification();
                     await this.setStateAsync(id.replace(`${this.namespace}.`, ''), false, true);
                 }
-            }
-
-            // Per-device display brightness
-            else if (deviceId && deviceStatePath === 'display.brightness') {
+            } else if (deviceId && deviceStatePath === 'display.brightness') {
+                // Per-device display brightness
                 await this.handleLEDChange(deviceId, 'SCREEN_BACKLIGHT', state.val);
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), state.val, true);
-            }
-
-            // Per-device display brightnessStep
-            else if (deviceId && deviceStatePath === 'display.brightnessStep') {
+            } else if (deviceId && deviceStatePath === 'display.brightnessStep') {
+                // Per-device display brightnessStep
                 const step = Math.max(1, Math.min(255, parseInt(state.val, 10) || 20));
                 this.config.display.brightnessStep = step;
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), step, true);
                 this.log.info(`BRT/DIM step for ${deviceId} set to ${step}`);
-            }
-
-            // Per-device config.defaultColor
-            else if (deviceId && deviceStatePath === 'config.defaultColor') {
+            } else if (deviceId && deviceStatePath === 'config.defaultColor') {
+                // Per-device config.defaultColor
                 const validColors = ['white', 'green', 'blue', 'amber', 'red', 'magenta', 'cyan', 'yellow'];
                 const color = validColors.includes(state.val) ? state.val : 'white';
                 this.config.display.defaultColor = color;
@@ -651,16 +618,13 @@ class McduAdapter extends utils.Adapter {
                 await this.setStateAsync(id.replace(`${this.namespace}.`, ''), color, true);
                 await this.renderCurrentPage();
                 this.log.info(`Default color for ${deviceId} set to ${color}`);
-            }
-
-            // Phase 4.1: Scratchpad changes
-            else if (id === `${this.namespace}.scratchpad.content`) {
+            } else if (id === `${this.namespace}.scratchpad.content`) {
+                // Phase 4.1: Scratchpad changes
                 this.scratchpadManager.set(state.val);
                 await this.setStateAsync(id, state.val, true);
                 // Update validation states
                 await this.updateScratchpadValidation();
-            }
-            else if (id === `${this.namespace}.scratchpad.clear`) {
+            } else if (id === `${this.namespace}.scratchpad.clear`) {
                 if (state.val === true) {
                     this.scratchpadManager.clear();
                     await this.setStateAsync('scratchpad.content', '', true);
@@ -668,47 +632,39 @@ class McduAdapter extends utils.Adapter {
                     await this.setStateAsync('scratchpad.validationError', '', true);
                     await this.setStateAsync(id, false, true);
                 }
-            }
-            
-            // Phase 4.1: Notification changes
-            else if (id === `${this.namespace}.notifications.message`) {
+            } else if (id === `${this.namespace}.notifications.message`) {
+                // Phase 4.1: Notification changes
                 if (state.val) {
                     await this.showNotification();
                     await this.setStateAsync(id, state.val, true);
                 }
-            }
-            else if (id === `${this.namespace}.notifications.clear`) {
+            } else if (id === `${this.namespace}.notifications.clear`) {
                 if (state.val === true) {
                     await this.clearNotification();
                     await this.setStateAsync(id, false, true);
                 }
-            }
-            
-            // Phase 4.1: Button triggers
-            else if (id === `${this.namespace}.actions.pressButton`) {
+            } else if (id === `${this.namespace}.actions.pressButton`) {
+                // Phase 4.1: Button triggers
                 if (state.val) {
                     await this.triggerButton(state.val);
                     await this.setStateAsync(id, '', true);
                 }
-            }
-            else if (id === `${this.namespace}.actions.confirmAction`) {
+            } else if (id === `${this.namespace}.actions.confirmAction`) {
                 if (state.val === true) {
                     await this.triggerOVFY();
                     await this.setStateAsync(id, false, true);
                 }
-            }
-            else if (id === `${this.namespace}.actions.cancelAction`) {
+            } else if (id === `${this.namespace}.actions.cancelAction`) {
                 if (state.val === true) {
                     await this.triggerCLR();
                     await this.setStateAsync(id, false, true);
                 }
             }
-            
         } catch (error) {
             this.log.error(`Error handling state change ${id}: ${error.message}`);
         }
     }
-    
+
     /**
      * Navigate to next page in sequence
      */
@@ -716,17 +672,21 @@ class McduAdapter extends utils.Adapter {
         const pages = this.config.pages || [];
         const currentPageState = await this.getStateAsync('runtime.currentPage');
         const currentPageId = currentPageState?.val;
-        const currentPage = pages.find(p => p.id === currentPageId);
+        const currentPage = pages.find((p) => p.id === currentPageId);
 
-        if (!currentPage) return;
+        if (!currentPage) {
+            return;
+        }
 
         // Find siblings (pages with same parent)
         const parentId = currentPage.parent || null;
-        const siblings = pages.filter(p => (p.parent || null) === parentId);
+        const siblings = pages.filter((p) => (p.parent || null) === parentId);
 
-        if (siblings.length <= 1) return; // No siblings to navigate to
+        if (siblings.length <= 1) {
+            return;
+        } // No siblings to navigate to
 
-        const currentIndex = siblings.findIndex(p => p.id === currentPageId);
+        const currentIndex = siblings.findIndex((p) => p.id === currentPageId);
         // Circular: wrap from last to first
         const nextIndex = (currentIndex + 1) % siblings.length;
         await this.switchToPage(siblings[nextIndex].id);
@@ -739,22 +699,26 @@ class McduAdapter extends utils.Adapter {
         const pages = this.config.pages || [];
         const currentPageState = await this.getStateAsync('runtime.currentPage');
         const currentPageId = currentPageState?.val;
-        const currentPage = pages.find(p => p.id === currentPageId);
+        const currentPage = pages.find((p) => p.id === currentPageId);
 
-        if (!currentPage) return;
+        if (!currentPage) {
+            return;
+        }
 
         // Find siblings (pages with same parent)
         const parentId = currentPage.parent || null;
-        const siblings = pages.filter(p => (p.parent || null) === parentId);
+        const siblings = pages.filter((p) => (p.parent || null) === parentId);
 
-        if (siblings.length <= 1) return; // No siblings
+        if (siblings.length <= 1) {
+            return;
+        } // No siblings
 
-        const currentIndex = siblings.findIndex(p => p.id === currentPageId);
+        const currentIndex = siblings.findIndex((p) => p.id === currentPageId);
         // Circular: wrap from first to last
         const prevIndex = (currentIndex - 1 + siblings.length) % siblings.length;
         await this.switchToPage(siblings[prevIndex].id);
     }
-    
+
     /**
      * Navigate to home page (first page)
      */
@@ -767,6 +731,7 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Build breadcrumb path for a page by walking parent chain
+     *
      * @param {string} pageId - Current page ID
      * @returns {Array<{id: string, name: string}>} Breadcrumb path from root to current
      */
@@ -778,8 +743,10 @@ class McduAdapter extends utils.Adapter {
 
         while (currentId && !visited.has(currentId)) {
             visited.add(currentId);
-            const page = pages.find(p => p.id === currentId);
-            if (!page) break;
+            const page = pages.find((p) => p.id === currentId);
+            if (!page) {
+                break;
+            }
             breadcrumb.unshift({ id: page.id, name: page.name || page.id });
             currentId = page.parent || null;
         }
@@ -790,11 +757,14 @@ class McduAdapter extends utils.Adapter {
     /**
      * Show startup splash screen on device connect
      * Displays for 3 seconds, then navigates to home page
+     *
      * @param {string} deviceId - Device ID
      * @returns {Promise<void>}
      */
     async showSplashScreen(deviceId) {
-        if (!this.displayPublisher) return;
+        if (!this.displayPublisher) {
+            return;
+        }
 
         const version = require('./package.json').version || '0.0.0';
         const now = new Date();
@@ -802,27 +772,27 @@ class McduAdapter extends utils.Adapter {
 
         const blank = { text: ' '.repeat(24), color: 'white' };
         const lines = [
-            { text: '    MCDU SMART HOME     ', color: 'cyan' },    // 1
-            blank,                                                     // 2
-            blank,                                                     // 3
-            blank,                                                     // 4
-            blank,                                                     // 5
-            blank,                                                     // 6
-            { text: '     INITIALIZING       ', color: 'amber' },   // 7
-            blank,                                                     // 8
-            blank,                                                     // 9
-            blank,                                                     // 10
-            blank,                                                     // 11
-            blank,                                                     // 12
+            { text: '    MCDU SMART HOME     ', color: 'cyan' }, // 1
+            blank, // 2
+            blank, // 3
+            blank, // 4
+            blank, // 5
+            blank, // 6
+            { text: '     INITIALIZING       ', color: 'amber' }, // 7
+            blank, // 8
+            blank, // 9
+            blank, // 10
+            blank, // 11
+            blank, // 12
             { text: `   v${version}   ${time}  `.substring(0, 24).padEnd(24), color: 'white' }, // 13
-            { text: '________________________', color: 'white' },   // 14
+            { text: '________________________', color: 'white' }, // 14
         ];
 
         await this.displayPublisher.publishFullDisplay(lines);
         this.log.info(`Splash screen shown on ${deviceId}`);
 
         // After 3 seconds, render home page
-        this.splashTimeout = setTimeout(async () => {
+        this.splashTimeout = this.setTimeout(async () => {
             this.splashTimeout = null;
             try {
                 this.displayPublisher.lastContent = null; // Force re-render
@@ -835,19 +805,21 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Handle LED state change
+     *
+     * @param deviceId
      * @param {string} ledName - LED name
      * @param {boolean|number} value - New value
      */
     async handleLEDChange(deviceId, ledName, value) {
         // Convert value to number
         let brightness = value;
-        
+
         // Handle booleans
         if (typeof value === 'boolean') {
+            // Handle booleans
             brightness = value ? 255 : 0;
-        }
-        // Handle strings (from UI)
-        else if (typeof value === 'string') {
+        } else if (typeof value === 'string') {
+            // Handle strings (from UI)
             if (value === 'true' || value === '1') {
                 brightness = 255;
             } else if (value === 'false' || value === '0') {
@@ -855,27 +827,26 @@ class McduAdapter extends utils.Adapter {
             } else {
                 brightness = parseInt(value, 10) || 0;
             }
-        }
-        // Ensure it's a number
-        else {
+        } else {
+            // Ensure it's a number
             brightness = parseInt(value, 10) || 0;
         }
-        
+
         // Clamp to 0-255
         brightness = Math.max(0, Math.min(255, brightness));
-        
+
         // Publish to MQTT (device-specific topic)
         const topic = `${this.config.mqtt.topicPrefix}/${deviceId}/leds/single`;
         const payload = {
             name: ledName,
             brightness: brightness,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
-        
+
         this.mqttClient.publish(topic, JSON.stringify(payload), { qos: 1 });
         this.log.info(`LED ${ledName} on device ${deviceId} set to ${brightness}`);
     }
-    
+
     /**
      * Update scratchpad validation states
      */
@@ -883,13 +854,13 @@ class McduAdapter extends utils.Adapter {
         // Basic validation - content exists and is within limits
         const content = this.scratchpadManager.getContent();
         const isValid = content.length > 0 && content.length <= this.scratchpadManager.maxLength;
-        const error = !isValid && content.length > 0 ? 
-            `Content too long (max ${this.scratchpadManager.maxLength})` : '';
-        
+        const error =
+            !isValid && content.length > 0 ? `Content too long (max ${this.scratchpadManager.maxLength})` : '';
+
         await this.setStateAsync('scratchpad.valid', isValid, true);
         await this.setStateAsync('scratchpad.validationError', error, true);
     }
-    
+
     /**
      * Show notification on display
      */
@@ -898,37 +869,38 @@ class McduAdapter extends utils.Adapter {
         const type = await this.getStateAsync('notifications.type');
         const duration = await this.getStateAsync('notifications.duration');
         const line = await this.getStateAsync('notifications.line');
-        
+
         // Color mapping
         const colorMap = {
-            'info': 'white',
-            'warning': 'amber',
-            'error': 'red',
-            'success': 'green'
+            info: 'white',
+            warning: 'amber',
+            error: 'red',
+            success: 'green',
         };
-        
+
         const color = colorMap[type?.val] || 'white';
         const lineNum = line?.val || 13;
         const durationMs = duration?.val || 3000;
-        
+
         // Publish notification line via DisplayPublisher (device-scoped topic)
         await this.displayPublisher.publishLine(lineNum, message.val, color);
-        
+
         this.log.info(`Notification shown: ${message.val} (${type?.val})`);
 
         // Auto-clear after duration
         if (this.notificationTimeout) {
-            clearTimeout(this.notificationTimeout);
+            this.clearTimeout(this.notificationTimeout);
         }
-        this.notificationTimeout = setTimeout(() => {
+        this.notificationTimeout = this.setTimeout(() => {
             this.notificationTimeout = null;
             this.clearNotification();
         }, durationMs);
     }
-    
+
     /**
      * Show notification on display for a specific device
      * Reads type/duration from the device's notification states
+     *
      * @param {string} deviceId - Device ID
      * @param {string} message - Notification message text
      */
@@ -937,10 +909,10 @@ class McduAdapter extends utils.Adapter {
         const duration = await this.getStateAsync(`devices.${deviceId}.notifications.duration`);
 
         const colorMap = {
-            'info': 'white',
-            'warning': 'amber',
-            'error': 'red',
-            'success': 'green'
+            info: 'white',
+            warning: 'amber',
+            error: 'red',
+            success: 'green',
         };
 
         const color = colorMap[type?.val] || 'white';
@@ -950,9 +922,9 @@ class McduAdapter extends utils.Adapter {
         this.log.info(`Notification shown on ${deviceId}: ${message} (${type?.val || 'info'})`);
 
         if (this.notificationTimeout) {
-            clearTimeout(this.notificationTimeout);
+            this.clearTimeout(this.notificationTimeout);
         }
-        this.notificationTimeout = setTimeout(() => {
+        this.notificationTimeout = this.setTimeout(() => {
             this.notificationTimeout = null;
             this.clearNotification();
         }, durationMs);
@@ -965,9 +937,10 @@ class McduAdapter extends utils.Adapter {
         await this.setStateAsync('notifications.message', '', true);
         await this.renderCurrentPage(); // Restore normal page
     }
-    
+
     /**
      * Trigger button press programmatically
+     *
      * @param {string} buttonName - Button name (e.g., "LSK1L")
      */
     async triggerButton(buttonName) {
@@ -976,18 +949,18 @@ class McduAdapter extends utils.Adapter {
             button: buttonName,
             action: 'press',
             deviceId: 'script-trigger',
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
-        
+
         // Convert to MQTT message format
         const message = Buffer.from(JSON.stringify(event));
         const activeDeviceId = this.displayPublisher.deviceId || 'script-trigger';
         const topic = `${this.config.mqtt?.topicPrefix || 'mcdu'}/${activeDeviceId}/buttons/event`;
-        
+
         await this.buttonSubscriber.handleButtonEvent(topic, message);
         this.log.debug(`Button triggered: ${buttonName}`);
     }
-    
+
     /**
      * Trigger OVFY (confirm) key
      */
@@ -999,36 +972,37 @@ class McduAdapter extends utils.Adapter {
             this.log.warn('No confirmation pending - OVFY ignored');
         }
     }
-    
+
     /**
      * Trigger CLR (cancel) key
      */
     async triggerCLR() {
         await this.inputModeManager.handleCLR();
     }
-    
+
     /**
      * Handle messages from admin UI (sendTo commands)
+     *
      * @param {object} obj - Message object
      */
     onMessage(obj) {
         if (!obj || !obj.command) {
             return;
         }
-        
+
         this.log.debug(`Received admin message: ${obj.command}`);
-        
+
         try {
             switch (obj.command) {
                 case 'loadTemplate':
                     this.handleLoadTemplate(obj);
                     break;
-                    
+
                 case 'getPageList':
                 case 'browsePages':
                     this.handleGetPageList(obj);
                     break;
-                
+
                 case 'browseDevices':
                     this.handleBrowseDevices(obj);
                     break;
@@ -1069,9 +1043,10 @@ class McduAdapter extends utils.Adapter {
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
         }
     }
-    
+
     /**
      * Handle loadTemplate command from admin UI
+     *
      * @param {object} obj - Message object with templateId
      */
     async handleLoadTemplate(obj) {
@@ -1098,15 +1073,21 @@ class McduAdapter extends utils.Adapter {
         const flatPages = flattenPages(template.pages || []);
 
         // Return as native-shaped object so admin can merge it
-        this.sendTo(obj.from, obj.command, {
-            native: { pages: flatPages }
-        }, obj.callback);
+        this.sendTo(
+            obj.from,
+            obj.command,
+            {
+                native: { pages: flatPages },
+            },
+            obj.callback
+        );
 
         this.log.info(`Template '${template.name}' loaded successfully`);
     }
-    
+
     /**
      * Handle getPageList command from admin UI (for parent page dropdown)
+     *
      * @param {object} obj - Message object
      */
     async handleGetPageList(obj) {
@@ -1128,7 +1109,7 @@ class McduAdapter extends utils.Adapter {
             // Collect pages from all devices
             const devicesObj = await this.getObjectViewAsync('system', 'state', {
                 startkey: `${this.namespace}.devices.`,
-                endkey: `${this.namespace}.devices.\u9999`
+                endkey: `${this.namespace}.devices.\u9999`,
             });
             if (devicesObj && devicesObj.rows) {
                 for (const row of devicesObj.rows) {
@@ -1149,24 +1130,27 @@ class McduAdapter extends utils.Adapter {
 
         // Deduplicate by page ID (multiple devices may share the same pages)
         const seen = new Set();
-        const uniquePages = pages.filter(p => {
-            if (seen.has(p.id)) return false;
+        const uniquePages = pages.filter((p) => {
+            if (seen.has(p.id)) {
+                return false;
+            }
             seen.add(p.id);
             return true;
         });
 
         const pageList = [
             { label: '---', value: '' },
-            ...uniquePages.map(p => ({ label: p.name || p.id, value: p.id }))
+            ...uniquePages.map((p) => ({ label: p.name || p.id, value: p.id })),
         ];
 
         this.sendTo(obj.from, obj.command, pageList, obj.callback);
         this.log.debug(`Returned page list: ${pageList.length} pages`);
     }
-    
+
     /**
      * Handle browseDevices command from admin UI
      * Returns list of all registered MCDU devices
+     *
      * @param {object} obj - Message object
      */
     async handleBrowseDevices(obj) {
@@ -1174,7 +1158,7 @@ class McduAdapter extends utils.Adapter {
             // Query device-type objects (not channels — sub-channels are type channel, devices are type device)
             const devices = await this.getObjectViewAsync('system', 'device', {
                 startkey: `${this.namespace}.devices`,
-                endkey: `${this.namespace}.devices\u9999`
+                endkey: `${this.namespace}.devices\u9999`,
             });
 
             const deviceList = [];
@@ -1192,24 +1176,24 @@ class McduAdapter extends utils.Adapter {
 
                     deviceList.push({
                         label: `${deviceId} (${hostname})`,
-                        value: deviceId
+                        value: deviceId,
                     });
                 }
             }
 
             this.log.info(`browseDevices: Found ${deviceList.length} devices: ${JSON.stringify(deviceList)}`);
             this.sendTo(obj.from, obj.command, deviceList, obj.callback);
-            
         } catch (error) {
             this.log.error(`Error in browseDevices: ${error.message}`);
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
         }
     }
-    
+
     /**
      * Resolve default format/unit for datapoint displays by looking up ioBroker object metadata.
      * Fills in empty format and unit fields based on the object's common properties.
      * Operates on nested (storage) format pages.
+     *
      * @param {Array} pages - Pages in nested format
      * @returns {Promise<Array>} Pages with resolved defaults
      */
@@ -1218,13 +1202,21 @@ class McduAdapter extends utils.Adapter {
             const lines = page.lines || [];
             for (const line of lines) {
                 for (const side of [line.left, line.right]) {
-                    if (!side?.display) continue;
-                    if (side.display.type !== 'datapoint' || !side.display.source) continue;
-                    if (side.display.format && side.display.unit) continue; // both already set
+                    if (!side?.display) {
+                        continue;
+                    }
+                    if (side.display.type !== 'datapoint' || !side.display.source) {
+                        continue;
+                    }
+                    if (side.display.format && side.display.unit) {
+                        continue;
+                    } // both already set
 
                     try {
                         const obj = await this.getForeignObjectAsync(side.display.source);
-                        if (!obj || !obj.common) continue;
+                        if (!obj || !obj.common) {
+                            continue;
+                        }
 
                         // Cache datapoint metadata for LSK interaction
                         this.datapointMeta.set(side.display.source, {
@@ -1233,7 +1225,7 @@ class McduAdapter extends utils.Adapter {
                             min: obj.common.min,
                             max: obj.common.max,
                             unit: obj.common.unit,
-                            states: obj.common.states
+                            states: obj.common.states,
                         });
 
                         if (!side.display.unit && obj.common.unit) {
@@ -1247,9 +1239,13 @@ class McduAdapter extends utils.Adapter {
                                 side.display.format = '%s';
                             }
                         }
-                        this.log.debug(`resolveDatapointDefaults: ${side.display.source} → fmt="${side.display.format}", unit="${side.display.unit}"`);
+                        this.log.debug(
+                            `resolveDatapointDefaults: ${side.display.source} → fmt="${side.display.format}", unit="${side.display.unit}"`
+                        );
                     } catch (e) {
-                        this.log.debug(`resolveDatapointDefaults: Could not look up ${side.display.source}: ${e.message}`);
+                        this.log.debug(
+                            `resolveDatapointDefaults: Could not look up ${side.display.source}: ${e.message}`
+                        );
                     }
                 }
             }
@@ -1260,6 +1256,7 @@ class McduAdapter extends utils.Adapter {
     /**
      * Handle loadDevicePages command from admin UI
      * Reads per-device page config from ioBroker object and returns it
+     *
      * @param {object} obj - Message object with deviceId
      */
     async handleLoadDevicePages(obj) {
@@ -1303,7 +1300,9 @@ class McduAdapter extends utils.Adapter {
             // Fall back to adapter config if device has no FK
             if (!Array.isArray(functionKeys) || functionKeys.length === 0) {
                 functionKeys = this.config.functionKeys || [];
-                this.log.info(`loadDevicePages: Using adapter config FK (${functionKeys.length} keys) for device ${deviceId}`);
+                this.log.info(
+                    `loadDevicePages: Using adapter config FK (${functionKeys.length} keys) for device ${deviceId}`
+                );
             }
 
             // Load per-device display settings from device state
@@ -1312,16 +1311,21 @@ class McduAdapter extends utils.Adapter {
             const startPageState = await this.getStateAsync(`devices.${deviceId}.config.startPage`);
 
             this.log.info(`loadDevicePages: Loaded ${pages.length} pages for device ${deviceId}`);
-            this.sendTo(obj.from, obj.command, {
-                native: {
-                    pages: flatPages,
-                    functionKeys,
-                    'display.defaultColor': defaultColorState?.val || 'white',
-                    'display.brightnessStep': brightnessStepState?.val || 20,
-                    'display.startPage': startPageState?.val || '',
-                    _deviceConfigLoaded: true
-                }
-            }, obj.callback);
+            this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                    native: {
+                        pages: flatPages,
+                        functionKeys,
+                        'display.defaultColor': defaultColorState?.val || 'white',
+                        'display.brightnessStep': brightnessStepState?.val || 20,
+                        'display.startPage': startPageState?.val || '',
+                        _deviceConfigLoaded: true,
+                    },
+                },
+                obj.callback
+            );
         } catch (error) {
             this.log.error(`Error in loadDevicePages: ${error.message}`);
             this.sendTo(obj.from, obj.command, { error: error.message }, obj.callback);
@@ -1331,6 +1335,7 @@ class McduAdapter extends utils.Adapter {
     /**
      * Handle saveDevicePages command from admin UI
      * Writes page config to per-device ioBroker object
+     *
      * @param {object} obj - Message object with deviceId and pages
      */
     async handleSaveDevicePages(obj) {
@@ -1352,7 +1357,9 @@ class McduAdapter extends utils.Adapter {
                 functionKeys = msg.functionKeys;
             }
 
-            this.log.info(`saveDevicePages: deviceId=${deviceId}, pages=${Array.isArray(pages) ? pages.length : 'N/A'}, fk=${Array.isArray(functionKeys) ? functionKeys.length : 'N/A'}`);
+            this.log.info(
+                `saveDevicePages: deviceId=${deviceId}, pages=${Array.isArray(pages) ? pages.length : 'N/A'}, fk=${Array.isArray(functionKeys) ? functionKeys.length : 'N/A'}`
+            );
 
             if (!deviceId) {
                 this.sendTo(obj.from, obj.command, { error: 'No device selected' }, obj.callback);
@@ -1367,11 +1374,13 @@ class McduAdapter extends utils.Adapter {
             const nestedPages = unflattenPages(pages);
 
             // Auto-generate IDs for pages that don't have one yet
-            const existingIds = new Set(nestedPages.filter(p => p.id).map(p => p.id));
+            const existingIds = new Set(nestedPages.filter((p) => p.id).map((p) => p.id));
             for (const page of nestedPages) {
                 if (!page.id && page.name) {
                     let slug = slugifyPageId(page.name);
-                    if (!slug) slug = 'page';
+                    if (!slug) {
+                        slug = 'page';
+                    }
                     let candidate = slug;
                     let counter = 2;
                     while (existingIds.has(candidate)) {
@@ -1392,7 +1401,7 @@ class McduAdapter extends utils.Adapter {
             // Update active config if this is the active device
             if (this.displayPublisher && this.displayPublisher.deviceId === deviceId) {
                 this.config.pages = nestedPages;
-                await this.subscribeToDataSources();  // picks up new/changed sources
+                await this.subscribeToDataSources(); // picks up new/changed sources
                 await this.renderCurrentPage();
             }
 
@@ -1403,7 +1412,9 @@ class McduAdapter extends utils.Adapter {
                 if (this.displayPublisher && this.displayPublisher.deviceId === deviceId) {
                     this.config.functionKeys = functionKeys;
                 }
-                this.log.info(`saveDevicePages: Also saved ${functionKeys.length} function keys for device ${deviceId}`);
+                this.log.info(
+                    `saveDevicePages: Also saved ${functionKeys.length} function keys for device ${deviceId}`
+                );
             }
 
             // Save per-device display settings
@@ -1435,6 +1446,7 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Handle loadFunctionKeys command from admin UI
+     *
      * @param {object} obj - Message object with deviceId
      */
     async handleLoadFunctionKeys(obj) {
@@ -1464,6 +1476,7 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Handle saveFunctionKeys command from admin UI
+     *
      * @param {object} obj - Message object with deviceId and functionKeys
      */
     async handleSaveFunctionKeys(obj) {
@@ -1500,25 +1513,26 @@ class McduAdapter extends utils.Adapter {
     /**
      * Handle browseStates command from admin UI
      * Returns list of all ioBroker states for selection in UI
+     *
      * @param {object} obj - Message object with optional filter
      */
     async handleBrowseStates(obj) {
         try {
             const { filter, type } = obj.message || {};
-            
+
             this.log.debug(`Browsing states with filter: ${filter || 'none'}, type: ${type || 'all'}`);
-            
+
             // Get all objects from ioBroker
             const allObjects = await this.getForeignObjectsAsync('*', 'state');
-            
+
             let states = [];
-            
+
             for (const [id, stateObj] of Object.entries(allObjects)) {
                 // Skip adapter's own states
                 if (id.startsWith(`${this.namespace}.`)) {
                     continue;
                 }
-                
+
                 // Build state info
                 const stateInfo = {
                     id: id,
@@ -1530,57 +1544,69 @@ class McduAdapter extends utils.Adapter {
                     write: stateObj.common?.write !== false,
                     min: stateObj.common?.min,
                     max: stateObj.common?.max,
-                    states: stateObj.common?.states
+                    states: stateObj.common?.states,
                 };
-                
+
                 // Apply type filter if specified
                 if (type && stateObj.common?.type !== type) {
                     continue;
                 }
-                
+
                 // Apply text filter if specified
                 if (filter) {
                     const searchText = filter.toLowerCase();
-                    if (!id.toLowerCase().includes(searchText) && 
-                        !(stateInfo.name && stateInfo.name.toLowerCase().includes(searchText))) {
+                    if (
+                        !id.toLowerCase().includes(searchText) &&
+                        !(stateInfo.name && stateInfo.name.toLowerCase().includes(searchText))
+                    ) {
                         continue;
                     }
                 }
-                
+
                 states.push(stateInfo);
             }
-            
+
             // Sort by ID
             states.sort((a, b) => a.id.localeCompare(b.id));
-            
+
             // Limit results to prevent UI overload
             const maxResults = 500;
             if (states.length > maxResults) {
                 this.log.debug(`Limiting results from ${states.length} to ${maxResults}`);
                 states = states.slice(0, maxResults);
             }
-            
+
             this.log.debug(`Returning ${states.length} states`);
-            
-            this.sendTo(obj.from, obj.command, {
-                success: true,
-                states: states,
-                total: states.length,
-                limited: states.length >= maxResults
-            }, obj.callback);
-            
+
+            this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                    success: true,
+                    states: states,
+                    total: states.length,
+                    limited: states.length >= maxResults,
+                },
+                obj.callback
+            );
         } catch (error) {
             this.log.error(`Error browsing states: ${error.message}`);
-            this.sendTo(obj.from, obj.command, { 
-                success: false,
-                error: error.message 
-            }, obj.callback);
+            this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                    success: false,
+                    error: error.message,
+                },
+                obj.callback
+            );
         }
     }
-    
+
     /**
      * Handle getStateList command from admin UI autocomplete
      * Returns [{label, value}] filtered by typed text for autocompleteSendTo
+     *
      * @param {object} obj - Message object with value (typed text)
      */
     async handleGetStateList(obj) {
@@ -1590,15 +1616,21 @@ class McduAdapter extends utils.Adapter {
             const results = [];
 
             for (const [id, stateObj] of Object.entries(allObjects)) {
-                if (id.startsWith(`${this.namespace}.`)) continue;
-                if (filter && !id.toLowerCase().includes(filter)) continue;
+                if (id.startsWith(`${this.namespace}.`)) {
+                    continue;
+                }
+                if (filter && !id.toLowerCase().includes(filter)) {
+                    continue;
+                }
 
                 const unit = stateObj.common?.unit || '';
                 const type = stateObj.common?.type || '';
                 const label = unit ? `${id} (${type}, ${unit})` : `${id} (${type})`;
                 results.push({ label, value: id });
 
-                if (results.length >= 100) break;
+                if (results.length >= 100) {
+                    break;
+                }
             }
 
             results.sort((a, b) => a.value.localeCompare(b.value));
@@ -1611,23 +1643,126 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Handle createSampleData command — creates test states under 0_userdata.0.mcdu_test
+     *
      * @param {object} obj - Message object
      */
     async handleCreateSampleData(obj) {
         const BASE = '0_userdata.0.mcdu_test';
         const testStates = [
-            { id: 'temperature_living', type: 'number', role: 'value.temperature', unit: '°C', val: 21.5, name: 'Temperatur Wohnzimmer', write: false },
-            { id: 'temperature_bedroom', type: 'number', role: 'value.temperature', unit: '°C', val: 19.8, name: 'Temperatur Schlafzimmer', write: false },
-            { id: 'humidity_living', type: 'number', role: 'value.humidity', unit: '%', val: 55, name: 'Luftfeuchte Wohnzimmer', write: false },
-            { id: 'light_kitchen', type: 'boolean', role: 'switch.light', unit: '', val: true, name: 'Licht Kueche', write: true },
-            { id: 'light_living_dimmer', type: 'number', role: 'level.dimmer', unit: '%', val: 75, name: 'Dimmer Wohnzimmer', write: true, min: 0, max: 100 },
-            { id: 'window_bedroom', type: 'boolean', role: 'sensor.window', unit: '', val: false, name: 'Fenster Schlafzimmer', write: false },
-            { id: 'door_front', type: 'boolean', role: 'sensor.door', unit: '', val: false, name: 'Haustuer', write: false },
-            { id: 'power_total', type: 'number', role: 'value.power', unit: 'W', val: 2450, name: 'Gesamtleistung', write: false },
-            { id: 'energy_today', type: 'number', role: 'value.energy', unit: 'kWh', val: 12.7, name: 'Energie heute', write: false },
-            { id: 'text_status', type: 'string', role: 'text', unit: '', val: 'Alles OK', name: 'Status Text', write: true },
-            { id: 'setpoint_living', type: 'number', role: 'level.temperature', unit: '°C', val: 21.0, name: 'Sollwert Wohnzimmer', write: true, min: 5, max: 30 },
-            { id: 'setpoint_bedroom', type: 'number', role: 'level.temperature', unit: '°C', val: 19.0, name: 'Sollwert Schlafzimmer', write: true, min: 5, max: 30 }
+            {
+                id: 'temperature_living',
+                type: 'number',
+                role: 'value.temperature',
+                unit: '°C',
+                val: 21.5,
+                name: 'Temperatur Wohnzimmer',
+                write: false,
+            },
+            {
+                id: 'temperature_bedroom',
+                type: 'number',
+                role: 'value.temperature',
+                unit: '°C',
+                val: 19.8,
+                name: 'Temperatur Schlafzimmer',
+                write: false,
+            },
+            {
+                id: 'humidity_living',
+                type: 'number',
+                role: 'value.humidity',
+                unit: '%',
+                val: 55,
+                name: 'Luftfeuchte Wohnzimmer',
+                write: false,
+            },
+            {
+                id: 'light_kitchen',
+                type: 'boolean',
+                role: 'switch.light',
+                unit: '',
+                val: true,
+                name: 'Licht Kueche',
+                write: true,
+            },
+            {
+                id: 'light_living_dimmer',
+                type: 'number',
+                role: 'level.dimmer',
+                unit: '%',
+                val: 75,
+                name: 'Dimmer Wohnzimmer',
+                write: true,
+                min: 0,
+                max: 100,
+            },
+            {
+                id: 'window_bedroom',
+                type: 'boolean',
+                role: 'sensor.window',
+                unit: '',
+                val: false,
+                name: 'Fenster Schlafzimmer',
+                write: false,
+            },
+            {
+                id: 'door_front',
+                type: 'boolean',
+                role: 'sensor.door',
+                unit: '',
+                val: false,
+                name: 'Haustuer',
+                write: false,
+            },
+            {
+                id: 'power_total',
+                type: 'number',
+                role: 'value.power',
+                unit: 'W',
+                val: 2450,
+                name: 'Gesamtleistung',
+                write: false,
+            },
+            {
+                id: 'energy_today',
+                type: 'number',
+                role: 'value.energy',
+                unit: 'kWh',
+                val: 12.7,
+                name: 'Energie heute',
+                write: false,
+            },
+            {
+                id: 'text_status',
+                type: 'string',
+                role: 'text',
+                unit: '',
+                val: 'Alles OK',
+                name: 'Status Text',
+                write: true,
+            },
+            {
+                id: 'setpoint_living',
+                type: 'number',
+                role: 'level.temperature',
+                unit: '°C',
+                val: 21.0,
+                name: 'Sollwert Wohnzimmer',
+                write: true,
+                min: 5,
+                max: 30,
+            },
+            {
+                id: 'setpoint_bedroom',
+                type: 'number',
+                role: 'level.temperature',
+                unit: '°C',
+                val: 19.0,
+                name: 'Sollwert Schlafzimmer',
+                write: true,
+                min: 5,
+                max: 30,
+            },
         ];
 
         try {
@@ -1639,14 +1774,18 @@ class McduAdapter extends utils.Adapter {
                     role: s.role,
                     unit: s.unit,
                     read: true,
-                    write: s.write !== undefined ? s.write : (s.role.startsWith('switch') || s.role.startsWith('level'))
+                    write: s.write !== undefined ? s.write : s.role.startsWith('switch') || s.role.startsWith('level'),
                 };
-                if (s.min !== undefined) common.min = s.min;
-                if (s.max !== undefined) common.max = s.max;
+                if (s.min !== undefined) {
+                    common.min = s.min;
+                }
+                if (s.max !== undefined) {
+                    common.max = s.max;
+                }
                 await this.setForeignObjectNotExistsAsync(fullId, {
                     type: 'state',
                     common,
-                    native: {}
+                    native: {},
                 });
                 await this.setForeignStateAsync(fullId, s.val, true);
             }
@@ -1668,7 +1807,7 @@ class McduAdapter extends utils.Adapter {
             const endkey = `${this.namespace}.devices\u9999`;
             const devices = await this.getObjectViewAsync('system', 'device', {
                 startkey,
-                endkey
+                endkey,
             });
             this.log.info(`recoverKnownDevices: got ${devices?.rows?.length || 0} device objects`);
 
@@ -1695,14 +1834,14 @@ class McduAdapter extends utils.Adapter {
                     ipAddress: native.ipAddress || 'unknown',
                     version: native.version || 'unknown',
                     firstSeen: native.firstSeen || Date.now(),
-                    lastSeen: Date.now()
+                    lastSeen: Date.now(),
                 });
 
                 // Ensure all device states exist (adds new states from code updates)
                 await this.stateManager.createDeviceObjects(deviceId, {
                     hostname: native.hostname || 'unknown',
                     ipAddress: native.ipAddress || 'unknown',
-                    version: native.version || 'unknown'
+                    version: native.version || 'unknown',
                 });
 
                 // Sync adapter config to device states
@@ -1724,6 +1863,8 @@ class McduAdapter extends utils.Adapter {
     /**
      * Sync adapter config values to per-device object tree states.
      * Called on startup so Admin UI changes are reflected in the object tree.
+     *
+     * @param deviceId
      */
     async syncConfigToDeviceStates(deviceId) {
         const defaultColor = this.config.display?.defaultColor || 'white';
@@ -1734,35 +1875,38 @@ class McduAdapter extends utils.Adapter {
         await this.setStateAsync(`devices.${deviceId}.display.brightnessStep`, brightnessStep, true);
         await this.setStateAsync(`devices.${deviceId}.config.startPage`, startPage, true);
 
-        this.log.debug(`Synced config to device states: defaultColor=${defaultColor}, brightnessStep=${brightnessStep}, startPage=${startPage}`);
+        this.log.debug(
+            `Synced config to device states: defaultColor=${defaultColor}, brightnessStep=${brightnessStep}, startPage=${startPage}`
+        );
     }
 
     /**
      * Handle device announcement from MCDU client
+     *
      * @param {Buffer} message - MQTT message buffer
      */
     async handleDeviceAnnouncement(message) {
         try {
             const announcement = JSON.parse(message.toString());
             const { deviceId, hostname, ipAddress, version } = announcement;
-            
+
             if (!deviceId) {
                 this.log.warn('Device announcement missing deviceId');
                 return;
             }
-            
+
             this.log.info(`📡 Device announcement: ${deviceId} (${hostname || 'unknown'} @ ${ipAddress || 'unknown'})`);
-            
+
             // Check if device is already registered
             const existingDevice = this.deviceRegistry.get(deviceId);
-            
+
             if (existingDevice) {
                 // Update existing device
                 existingDevice.lastSeen = Date.now();
                 existingDevice.hostname = hostname || existingDevice.hostname;
                 existingDevice.ipAddress = ipAddress || existingDevice.ipAddress;
                 existingDevice.version = version || existingDevice.version;
-                
+
                 this.log.debug(`Updated existing device: ${deviceId}`);
 
                 // Load device pages into active config
@@ -1776,7 +1920,6 @@ class McduAdapter extends utils.Adapter {
 
                 // Update lastSeen state
                 await this.setStateAsync(`devices.${deviceId}.lastSeen`, Date.now(), true);
-                
             } else {
                 // Register new device
                 this.deviceRegistry.set(deviceId, {
@@ -1785,18 +1928,18 @@ class McduAdapter extends utils.Adapter {
                     ipAddress: ipAddress || 'unknown',
                     version: version || 'unknown',
                     firstSeen: Date.now(),
-                    lastSeen: Date.now()
+                    lastSeen: Date.now(),
                 });
-                
+
                 this.log.info(`✅ New device registered: ${deviceId}`);
-                
+
                 // Create ioBroker objects for device
                 await this.stateManager.createDeviceObjects(deviceId, {
                     hostname: hostname || 'unknown',
                     ipAddress: ipAddress || 'unknown',
-                    version: version || 'unknown'
+                    version: version || 'unknown',
                 });
-                
+
                 this.log.debug(`Created ioBroker objects for device ${deviceId}`);
 
                 // Migration: if device has no pages yet, copy from native.pages
@@ -1812,20 +1955,20 @@ class McduAdapter extends utils.Adapter {
                 this.displayPublisher.lastContent = null;
                 await this.showSplashScreen(deviceId);
             }
-            
+
             // Update devices online count
             const onlineCount = this.deviceRegistry.size;
             await this.setStateAsync('info.devicesOnline', onlineCount, true);
             this.log.debug(`Devices online: ${onlineCount}`);
-            
         } catch (error) {
             this.log.error(`Error handling device announcement: ${error.message}`);
             this.log.debug(error.stack);
         }
     }
-    
+
     /**
      * Migrate native.pages to device's config.pages (one-time migration)
+     *
      * @param {string} deviceId - Device ID
      */
     async migrateDevicePages(deviceId) {
@@ -1837,11 +1980,7 @@ class McduAdapter extends utils.Adapter {
                 // native.pages may be flat format (from Admin UI) — convert to nested for storage
                 const nestedPages = unflattenPages(this.config.pages);
                 this.log.info(`Migrating ${nestedPages.length} pages from native.pages to device ${deviceId}`);
-                await this.setStateAsync(
-                    `devices.${deviceId}.config.pages`,
-                    JSON.stringify(nestedPages),
-                    true
-                );
+                await this.setStateAsync(`devices.${deviceId}.config.pages`, JSON.stringify(nestedPages), true);
             }
         } catch (error) {
             this.log.error(`Migration failed for device ${deviceId}: ${error.message}`);
@@ -1850,6 +1989,7 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Migrate native.functionKeys to device's config.functionKeys (one-time migration)
+     *
      * @param {string} deviceId - Device ID
      */
     async migrateDeviceFunctionKeys(deviceId) {
@@ -1871,6 +2011,7 @@ class McduAdapter extends utils.Adapter {
 
     /**
      * Load device's pages into active config
+     *
      * @param {string} deviceId - Device ID
      */
     async loadDevicePagesIntoConfig(deviceId) {
@@ -1924,59 +2065,59 @@ class McduAdapter extends utils.Adapter {
     /**
      * Called when adapter shuts down
      * Comprehensive cleanup to prevent memory leaks
+     *
      * @param {() => void} callback
      */
     onUnload(callback) {
         try {
             this.log.info('Shutting down MCDU Adapter...');
-            
+
             // Phase 1: Clear all intervals and timeouts
             if (this.timeoutCheckInterval) {
-                clearInterval(this.timeoutCheckInterval);
+                this.clearInterval(this.timeoutCheckInterval);
                 this.timeoutCheckInterval = null;
                 this.log.debug('Timeout check interval cleared');
             }
             if (this.splashTimeout) {
-                clearTimeout(this.splashTimeout);
+                this.clearTimeout(this.splashTimeout);
                 this.splashTimeout = null;
             }
             if (this.notificationTimeout) {
-                clearTimeout(this.notificationTimeout);
+                this.clearTimeout(this.notificationTimeout);
                 this.notificationTimeout = null;
             }
-            
 
             if (this.reRenderInterval) {
-                clearInterval(this.reRenderInterval);
+                this.clearInterval(this.reRenderInterval);
                 this.reRenderInterval = null;
                 this.log.debug('Re-render interval cleared');
             }
-            
+
             // Phase 2: Clear confirmation dialog countdown timers
             if (this.confirmationDialog) {
-                this.confirmationDialog.clear().catch(error => {
+                this.confirmationDialog.clear().catch((error) => {
                     this.log.error(`Failed to clear confirmation dialog: ${error.message}`);
                 });
             }
-            
+
             // Phase 3: Disconnect MQTT client gracefully
             if (this.mqttClient) {
                 this.mqttClient.disconnect();
                 this.log.debug('MQTT client disconnected');
             }
-            
+
             // Phase 4: Clear page cache to free memory
             if (this.pageCache) {
                 this.pageCache.clear();
                 this.log.debug('Page cache cleared');
             }
-            
+
             // Phase 5: Clear subscriptions set
             if (this.subscriptions) {
                 this.subscriptions.clear();
                 this.log.debug('Subscriptions cleared');
             }
-            
+
             // Phase 6: Clear device registry
             if (this.deviceRegistry) {
                 this.deviceRegistry.clear();
@@ -1988,10 +2129,9 @@ class McduAdapter extends utils.Adapter {
                 this.datapointMeta.clear();
                 this.log.debug('Datapoint metadata cache cleared');
             }
-            
+
             this.log.info('✅ MCDU Adapter shut down complete');
             callback();
-            
         } catch (e) {
             this.log.error(`Error during shutdown: ${e.message}`);
             callback();

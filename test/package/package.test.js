@@ -78,9 +78,7 @@ describe('Package files', () => {
         });
 
         it('should have version matching package.json', () => {
-            const packageJson = JSON.parse(
-                fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
-            );
+            const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
             expect(ioPackageJson.common.version).to.equal(packageJson.version);
         });
 

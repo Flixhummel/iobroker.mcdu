@@ -16,15 +16,15 @@ describe('lineNormalizer', () => {
                         colData: 'green',
                         source: '0_userdata.0.mcdu_test.temperature_living',
                         format: '%.1f',
-                        unit: '°C'
+                        unit: '°C',
                     },
-                    button: { type: 'datapoint', target: '' }
+                    button: { type: 'datapoint', target: '' },
                 },
                 right: {
                     label: '',
                     display: { type: 'empty' },
-                    button: { type: 'empty' }
-                }
+                    button: { type: 'empty' },
+                },
             };
 
             const flat = flattenLine(line);
@@ -39,7 +39,7 @@ describe('lineNormalizer', () => {
                 left: {
                     label: '',
                     display: { type: 'empty' },
-                    button: { type: 'empty' }
+                    button: { type: 'empty' },
                 },
                 right: {
                     label: 'POWER',
@@ -49,10 +49,10 @@ describe('lineNormalizer', () => {
                         colData: 'amber',
                         source: '0_userdata.0.mcdu_test.power_total',
                         format: '%d',
-                        unit: 'W'
+                        unit: 'W',
                     },
-                    button: { type: 'datapoint', target: '' }
-                }
+                    button: { type: 'datapoint', target: '' },
+                },
             };
 
             const flat = flattenLine(line);
@@ -67,13 +67,13 @@ describe('lineNormalizer', () => {
                 left: {
                     label: 'MENU',
                     display: { type: 'label', text: 'KLIMA' },
-                    button: { type: 'navigation', target: 'klima-main' }
+                    button: { type: 'navigation', target: 'klima-main' },
                 },
                 right: {
                     label: '',
                     display: { type: 'empty' },
-                    button: { type: 'empty' }
-                }
+                    button: { type: 'empty' },
+                },
             };
 
             const flat = flattenLine(line);
@@ -102,7 +102,7 @@ describe('lineNormalizer', () => {
                 rightTarget: '',
                 rightSource: '',
                 rightFormat: '',
-                rightUnit: ''
+                rightUnit: '',
             };
 
             const nested = unflattenLine(flat);
@@ -130,7 +130,7 @@ describe('lineNormalizer', () => {
                 rightTarget: '',
                 rightSource: '',
                 rightFormat: '',
-                rightUnit: ''
+                rightUnit: '',
             };
 
             const nested = unflattenLine(flat);
@@ -157,7 +157,7 @@ describe('lineNormalizer', () => {
                 rightTarget: '',
                 rightSource: '',
                 rightFormat: '',
-                rightUnit: ''
+                rightUnit: '',
             };
 
             const nested = unflattenLine(flat);
@@ -183,7 +183,7 @@ describe('lineNormalizer', () => {
                 rightTarget: '',
                 rightSource: '0_userdata.0.mcdu_test.power_total',
                 rightFormat: '%d',
-                rightUnit: 'W'
+                rightUnit: 'W',
             };
 
             const nested = unflattenLine(flat);
@@ -213,7 +213,7 @@ describe('lineNormalizer', () => {
                 rightTarget: '',
                 rightSource: '',
                 rightFormat: '',
-                rightUnit: ''
+                rightUnit: '',
             };
 
             const nested = unflattenLine(original);
@@ -244,7 +244,7 @@ describe('lineNormalizer', () => {
                 rightTarget: '',
                 rightSource: '',
                 rightFormat: '',
-                rightUnit: ''
+                rightUnit: '',
             };
 
             const nested = unflattenLine(original);

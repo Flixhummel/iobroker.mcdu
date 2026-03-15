@@ -88,12 +88,7 @@ describe('ASCII-Safe Messages', () => {
         });
 
         it('should not contain emoji in warning text', async () => {
-            await dialog.showHardConfirmation(
-                'TEST',
-                'WARNING TEXT',
-                ['Details'],
-                async () => {}
-            );
+            await dialog.showHardConfirmation('TEST', 'WARNING TEXT', ['Details'], async () => {});
 
             const lines = displayPublisher._published[0];
             const warningLine = lines[1];

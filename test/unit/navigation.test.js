@@ -10,8 +10,10 @@ describe('Navigation', () => {
         const visited = new Set();
         while (currentId && !visited.has(currentId)) {
             visited.add(currentId);
-            const page = pages.find(p => p.id === currentId);
-            if (!page) break;
+            const page = pages.find((p) => p.id === currentId);
+            if (!page) {
+                break;
+            }
             breadcrumb.unshift({ id: page.id, name: page.name || page.id });
             currentId = page.parent || null;
         }
@@ -22,7 +24,7 @@ describe('Navigation', () => {
         const pages = [
             { id: 'home-main', name: 'Home', parent: null },
             { id: 'klima-main', name: 'Klima', parent: 'home-main' },
-            { id: 'klima-wohn', name: 'Wohnzimmer', parent: 'klima-main' }
+            { id: 'klima-wohn', name: 'Wohnzimmer', parent: 'klima-main' },
         ];
 
         it('should return full path for deeply nested page', () => {
@@ -54,7 +56,7 @@ describe('Navigation', () => {
         it('should prevent infinite loops with circular parents', () => {
             const circularPages = [
                 { id: 'a', name: 'A', parent: 'b' },
-                { id: 'b', name: 'B', parent: 'a' }
+                { id: 'b', name: 'B', parent: 'a' },
             ];
             const result = buildBreadcrumb(circularPages, 'a');
             // Should not hang, should return partial path
@@ -68,28 +70,34 @@ describe('Navigation', () => {
             { id: 'lights-main', name: 'Lights', parent: 'home-main' },
             { id: 'klima-main', name: 'Klima', parent: 'home-main' },
             { id: 'security-main', name: 'Security', parent: 'home-main' },
-            { id: 'klima-wohn', name: 'Wohnzimmer', parent: 'klima-main' }
+            { id: 'klima-wohn', name: 'Wohnzimmer', parent: 'klima-main' },
         ];
 
         function getSiblings(pages, pageId) {
-            const page = pages.find(p => p.id === pageId);
-            if (!page) return [];
+            const page = pages.find((p) => p.id === pageId);
+            if (!page) {
+                return [];
+            }
             const parentId = page.parent || null;
-            return pages.filter(p => (p.parent || null) === parentId);
+            return pages.filter((p) => (p.parent || null) === parentId);
         }
 
         function navigateNext(pages, currentPageId) {
             const siblings = getSiblings(pages, currentPageId);
-            if (siblings.length <= 1) return currentPageId;
-            const currentIndex = siblings.findIndex(p => p.id === currentPageId);
+            if (siblings.length <= 1) {
+                return currentPageId;
+            }
+            const currentIndex = siblings.findIndex((p) => p.id === currentPageId);
             const nextIndex = (currentIndex + 1) % siblings.length;
             return siblings[nextIndex].id;
         }
 
         function navigatePrevious(pages, currentPageId) {
             const siblings = getSiblings(pages, currentPageId);
-            if (siblings.length <= 1) return currentPageId;
-            const currentIndex = siblings.findIndex(p => p.id === currentPageId);
+            if (siblings.length <= 1) {
+                return currentPageId;
+            }
+            const currentIndex = siblings.findIndex((p) => p.id === currentPageId);
             const prevIndex = (currentIndex - 1 + siblings.length) % siblings.length;
             return siblings[prevIndex].id;
         }
@@ -129,22 +137,20 @@ describe('Navigation', () => {
         it('should navigate to parent page', () => {
             const pages = [
                 { id: 'home-main', name: 'Home', parent: null },
-                { id: 'klima-main', name: 'Klima', parent: 'home-main' }
+                { id: 'klima-main', name: 'Klima', parent: 'home-main' },
             ];
 
-            const currentPage = pages.find(p => p.id === 'klima-main');
-            const parentPage = pages.find(p => p.id === currentPage.parent);
+            const currentPage = pages.find((p) => p.id === 'klima-main');
+            const parentPage = pages.find((p) => p.id === currentPage.parent);
 
             expect(parentPage).to.not.be.undefined;
             expect(parentPage.id).to.equal('home-main');
         });
 
         it('should not navigate when on root page', () => {
-            const pages = [
-                { id: 'home-main', name: 'Home', parent: null }
-            ];
+            const pages = [{ id: 'home-main', name: 'Home', parent: null }];
 
-            const currentPage = pages.find(p => p.id === 'home-main');
+            const currentPage = pages.find((p) => p.id === 'home-main');
             expect(currentPage.parent).to.be.null;
         });
     });

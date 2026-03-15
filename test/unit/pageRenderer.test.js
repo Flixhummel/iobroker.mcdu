@@ -18,35 +18,83 @@ describe('PageRenderer', () => {
                     lines: [
                         {
                             row: 3,
-                            left: { label: '', display: { type: 'label', text: 'WELCOME', colData: 'white' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            left: {
+                                label: '',
+                                display: { type: 'label', text: 'WELCOME', colData: 'white' },
+                                button: { type: 'empty' },
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 5,
-                            left: { label: 'TEMPERATUR', display: { type: 'label', text: '21.5 C', colData: 'white' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            left: {
+                                label: 'TEMPERATUR',
+                                display: { type: 'label', text: '21.5 C', colData: 'white' },
+                                button: { type: 'empty' },
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 7,
-                            left: { label: '', display: { type: 'label', text: 'LIGHTS', colData: 'white' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
-                        }
-                    ]
+                            left: {
+                                label: '',
+                                display: { type: 'label', text: 'LIGHTS', colData: 'white' },
+                                button: { type: 'empty' },
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                    ],
                 },
                 {
                     id: 'long-page',
                     name: 'Long List',
                     lines: [
-                        { row: 101, left: { label: '', display: { type: 'label', text: 'ITEM 1' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 102, left: { label: '', display: { type: 'label', text: 'ITEM 2' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 103, left: { label: '', display: { type: 'label', text: 'ITEM 3' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 104, left: { label: '', display: { type: 'label', text: 'ITEM 4' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 105, left: { label: '', display: { type: 'label', text: 'ITEM 5' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 106, left: { label: '', display: { type: 'label', text: 'ITEM 6' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 107, left: { label: '', display: { type: 'label', text: 'ITEM 7' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 108, left: { label: '', display: { type: 'label', text: 'ITEM 8' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } },
-                        { row: 109, left: { label: '', display: { type: 'label', text: 'ITEM 9' }, button: { type: 'empty' } }, right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } } }
-                    ]
+                        {
+                            row: 101,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 1' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 102,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 2' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 103,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 3' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 104,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 4' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 105,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 5' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 106,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 6' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 107,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 7' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 108,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 8' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                        {
+                            row: 109,
+                            left: { label: '', display: { type: 'label', text: 'ITEM 9' }, button: { type: 'empty' } },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                    ],
                 },
                 {
                     id: 'sub-labels-page',
@@ -55,24 +103,32 @@ describe('PageRenderer', () => {
                         {
                             row: 3,
                             left: { label: '', display: { type: 'label', text: 'TITLE' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 5,
-                            left: { label: 'WOHNZIMMER', display: { type: 'label', text: '21.5 C' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            left: {
+                                label: 'WOHNZIMMER',
+                                display: { type: 'label', text: '21.5 C' },
+                                button: { type: 'empty' },
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 7,
-                            left: { label: 'KUECHE', display: { type: 'label', text: '19.0 C' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            left: {
+                                label: 'KUECHE',
+                                display: { type: 'label', text: '19.0 C' },
+                                button: { type: 'empty' },
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 9,
                             left: { label: '', display: { type: 'label', text: 'NO SUB' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
-                        }
-                    ]
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                    ],
                 },
                 {
                     id: 'left-right-page',
@@ -80,20 +136,36 @@ describe('PageRenderer', () => {
                     lines: [
                         {
                             row: 3,
-                            left: { label: 'LINKS', display: { type: 'label', text: 'Decke', colData: 'white' }, button: { type: 'empty' } },
-                            right: { label: 'RECHTS', display: { type: 'label', text: 'AN', colData: 'green' }, button: { type: 'empty' } }
+                            left: {
+                                label: 'LINKS',
+                                display: { type: 'label', text: 'Decke', colData: 'white' },
+                                button: { type: 'empty' },
+                            },
+                            right: {
+                                label: 'RECHTS',
+                                display: { type: 'label', text: 'AN', colData: 'green' },
+                                button: { type: 'empty' },
+                            },
                         },
                         {
                             row: 5,
-                            left: { label: '', display: { type: 'label', text: 'Only Left', colData: 'white' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            left: {
+                                label: '',
+                                display: { type: 'label', text: 'Only Left', colData: 'white' },
+                                button: { type: 'empty' },
+                            },
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 7,
                             left: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
-                            right: { label: '', display: { type: 'label', text: 'Only Right', colData: 'amber' }, button: { type: 'empty' } }
-                        }
-                    ]
+                            right: {
+                                label: '',
+                                display: { type: 'label', text: 'Only Right', colData: 'amber' },
+                                button: { type: 'empty' },
+                            },
+                        },
+                    ],
                 },
                 {
                     id: 'old-format-page',
@@ -104,11 +176,11 @@ describe('PageRenderer', () => {
                             subLabel: 'LEGACY',
                             display: { type: 'label', label: 'OLD FORMAT' },
                             leftButton: { type: 'empty' },
-                            rightButton: { type: 'empty' }
-                        }
-                    ]
-                }
-            ]
+                            rightButton: { type: 'empty' },
+                        },
+                    ],
+                },
+            ],
         });
         displayPublisher = createMockDisplayPublisher();
         renderer = new PageRenderer(adapter, displayPublisher);
@@ -207,10 +279,18 @@ describe('PageRenderer', () => {
                 lines: [
                     {
                         row: 3,
-                        left: { label: '', display: { type: 'label', text: 'LEFT', colData: 'green' }, button: { type: 'empty' } },
-                        right: { label: '', display: { type: 'label', text: 'RIGHT', colData: 'green' }, button: { type: 'empty' } }
-                    }
-                ]
+                        left: {
+                            label: '',
+                            display: { type: 'label', text: 'LEFT', colData: 'green' },
+                            button: { type: 'empty' },
+                        },
+                        right: {
+                            label: '',
+                            display: { type: 'label', text: 'RIGHT', colData: 'green' },
+                            button: { type: 'empty' },
+                        },
+                    },
+                ],
             });
 
             await renderer.renderPage('same-color-page');
@@ -308,7 +388,7 @@ describe('PageRenderer', () => {
         it('should show breadcrumb chain for nested pages', () => {
             adapter.breadcrumb = [
                 { id: 'home-main', name: 'Home' },
-                { id: 'klima-main', name: 'Klima' }
+                { id: 'klima-main', name: 'Klima' },
             ];
             const result = renderer.renderStatusBar('klima-main');
             expect(result.text).to.include('HOME > KLIMA');
@@ -326,7 +406,7 @@ describe('PageRenderer', () => {
             adapter.breadcrumb = [
                 { id: 'home', name: 'Hauptmenue' },
                 { id: 'beleuchtung', name: 'Beleuchtung' },
-                { id: 'wohnzimmer', name: 'Wohnzimmer' }
+                { id: 'wohnzimmer', name: 'Wohnzimmer' },
             ];
             const result = renderer.renderStatusBar('wohnzimmer');
             expect(result.text.length).to.equal(24);
@@ -435,12 +515,12 @@ describe('PageRenderer', () => {
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'LIGHTS' },
-                                button: { type: 'navigation', action: 'goto', target: 'lights' }
+                                button: { type: 'navigation', action: 'goto', target: 'lights' },
                             },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
-                        }
-                    ]
-                }
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                    ],
+                },
             ];
             adapter.config.pages = pages;
             adapter.breadcrumb = [{ id: 'test-nav', name: 'Test Nav' }];
@@ -459,7 +539,7 @@ describe('PageRenderer', () => {
                 lines.push({
                     row: 100 + i,
                     left: { label: '', display: { type: 'label', text: `ITEM ${i}` }, button: { type: 'empty' } },
-                    right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                    right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                 });
             }
             const pages = [{ id: 'test-scroll', name: 'Test Scroll', lines }];
@@ -502,7 +582,7 @@ describe('PageRenderer', () => {
             await renderer.renderPage('nonexistent');
 
             const lines = displayPublisher._published[0];
-            const hasError = lines.some(l => l.text.includes('NICHT GEFUNDEN') && l.color === 'red');
+            const hasError = lines.some((l) => l.text.includes('NICHT GEFUNDEN') && l.color === 'red');
             expect(hasError).to.be.true;
         });
     });

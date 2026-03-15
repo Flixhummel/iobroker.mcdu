@@ -15,14 +15,14 @@ function createMockAdapter(config = {}) {
             mqtt: { topicPrefix: 'mcdu' },
             debug: {},
             performance: {},
-            ...config
+            ...config,
         },
         namespace: 'mcdu.0',
         log: {
             debug: () => {},
             info: () => {},
             warn: () => {},
-            error: () => {}
+            error: () => {},
         },
         setStateAsync: async (id, val, ack) => {
             states[id] = { val, ack };
@@ -42,12 +42,16 @@ function createMockAdapter(config = {}) {
         executeButtonAction: async () => {},
         subscribeForeignStates: () => {},
         subscribeStates: () => {},
+        setTimeout: (cb, ms) => setTimeout(cb, ms),
+        setInterval: (cb, ms) => setInterval(cb, ms),
+        clearTimeout: (id) => clearTimeout(id),
+        clearInterval: (id) => clearInterval(id),
         // Test helpers
         _states: states,
         _foreignStates: foreignStates,
         _setForeignState: (id, val, q) => {
             foreignStates[id] = { val, ack: true, q: q || 0x00 };
-        }
+        },
     };
 }
 
@@ -67,7 +71,7 @@ function createMockDisplayPublisher() {
         setDevice: () => {},
         // Test helpers
         _published: published,
-        _publishedLines: publishedLines
+        _publishedLines: publishedLines,
     };
 }
 
@@ -84,12 +88,12 @@ function createMockMqttClient() {
         },
         connected: true,
         _subscriptions: subscriptions,
-        _published: published
+        _published: published,
     };
 }
 
 module.exports = {
     createMockAdapter,
     createMockDisplayPublisher,
-    createMockMqttClient
+    createMockMqttClient,
 };

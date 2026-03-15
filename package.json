@@ -32,9 +32,8 @@
     "@alcalzone/release-script-plugin-iobroker": "^5.1.2",
     "@alcalzone/release-script-plugin-license": "^5.1.1",
     "@alcalzone/release-script-plugin-manual-review": "^5.1.1",
-    "@iobroker/testing": "^5.2.2",
-    "eslint": "^8.57.1",
-    "mocha": "^11.7.3"
+    "@iobroker/eslint-config": "^2.2.0",
+    "@iobroker/testing": "^5.2.2"
   },
   "files": [
     "admin/",
@@ -54,7 +53,7 @@
     "lint:fix": "eslint . --fix",
     "check": "npm run lint && npm test",
     "build": "echo 'No build step required'",
-    "translate": "node admin/i18n.js",
+    "translate": "node scripts/i18n.js",
     "release": "release-script",
     "release:patch": "release-script patch",
     "release:minor": "release-script minor",

@@ -20,64 +20,84 @@ describe('InputModeManager', () => {
                             left: {
                                 label: 'TEMP',
                                 display: { type: 'datapoint', source: 'test.temperature', format: '%.1f', unit: '°C' },
-                                button: { type: 'empty' }
+                                button: { type: 'empty' },
                             },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 5,
                             left: {
                                 label: 'LICHT',
                                 display: { type: 'datapoint', source: 'test.light', format: '%s' },
-                                button: { type: 'empty' }
+                                button: { type: 'empty' },
                             },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 7,
                             left: {
                                 label: 'KLIMA',
                                 display: { type: 'label', text: 'KLIMA' },
-                                button: { type: 'navigation', action: 'goto', target: 'klima-page' }
+                                button: { type: 'navigation', action: 'goto', target: 'klima-page' },
                             },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 9,
                             left: {
                                 label: 'SENSOR',
                                 display: { type: 'datapoint', source: 'test.sensor' },
-                                button: { type: 'empty' }
+                                button: { type: 'empty' },
                             },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
                         },
                         {
                             row: 11,
                             left: {
                                 label: 'STATUS',
                                 display: { type: 'datapoint', source: 'test.status' },
-                                button: { type: 'empty' }
+                                button: { type: 'empty' },
                             },
-                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } }
-                        }
-                    ]
-                }
-            ]
+                            right: { label: '', display: { type: 'empty' }, button: { type: 'empty' } },
+                        },
+                    ],
+                },
+            ],
         });
 
         // Set up datapoint metadata cache
         adapter.datapointMeta = new Map();
         adapter.datapointMeta.set('test.temperature', {
-            write: true, type: 'number', min: 5, max: 30, unit: '°C', states: undefined
+            write: true,
+            type: 'number',
+            min: 5,
+            max: 30,
+            unit: '°C',
+            states: undefined,
         });
         adapter.datapointMeta.set('test.light', {
-            write: true, type: 'boolean', min: undefined, max: undefined, unit: '', states: undefined
+            write: true,
+            type: 'boolean',
+            min: undefined,
+            max: undefined,
+            unit: '',
+            states: undefined,
         });
         adapter.datapointMeta.set('test.sensor', {
-            write: false, type: 'number', min: undefined, max: undefined, unit: '°C', states: undefined
+            write: false,
+            type: 'number',
+            min: undefined,
+            max: undefined,
+            unit: '°C',
+            states: undefined,
         });
         adapter.datapointMeta.set('test.status', {
-            write: true, type: 'string', min: undefined, max: undefined, unit: '', states: undefined
+            write: true,
+            type: 'string',
+            min: undefined,
+            max: undefined,
+            unit: '',
+            states: undefined,
         });
 
         // Set foreign state defaults
@@ -316,7 +336,9 @@ describe('InputModeManager', () => {
             adapter.config.pages[0].parent = 'parent-page';
 
             let navigatedTo = null;
-            adapter.switchToPage = async (id) => { navigatedTo = id; };
+            adapter.switchToPage = async (id) => {
+                navigatedTo = id;
+            };
 
             await inputManager.handleCLR();
             expect(navigatedTo).to.equal('parent-page');

@@ -21,28 +21,28 @@ describe('ButtonSubscriber', () => {
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'LIGHTS' },
-                                button: { type: 'navigation', action: 'goto', target: 'lights-main' }
+                                button: { type: 'navigation', action: 'goto', target: 'lights-main' },
                             },
                             right: {
                                 label: '',
                                 display: { type: 'empty' },
-                                button: { type: 'empty' }
-                            }
+                                button: { type: 'empty' },
+                            },
                         },
                         {
                             row: 5,
                             left: {
                                 label: '',
                                 display: { type: 'label', text: 'CLIMATE' },
-                                button: { type: 'empty' }
+                                button: { type: 'empty' },
                             },
                             right: {
                                 label: '',
                                 display: { type: 'empty' },
-                                button: { type: 'navigation', action: 'goto', target: 'climate-main' }
-                            }
-                        }
-                    ]
+                                button: { type: 'navigation', action: 'goto', target: 'climate-main' },
+                            },
+                        },
+                    ],
                 },
                 {
                     id: 'old-format-page',
@@ -52,15 +52,15 @@ describe('ButtonSubscriber', () => {
                             row: 3,
                             leftButton: { type: 'navigation', action: 'goto', target: 'lights-main' },
                             display: { type: 'label', label: 'LIGHTS' },
-                            rightButton: { type: 'empty' }
-                        }
-                    ]
+                            rightButton: { type: 'empty' },
+                        },
+                    ],
                 },
                 { id: 'lights-main', name: 'Lights', lines: [] },
                 { id: 'climate-main', name: 'Climate', lines: [] },
                 { id: 'status-main', name: 'Status', lines: [] },
-                { id: 'scenes-main', name: 'Scenes', lines: [] }
-            ]
+                { id: 'scenes-main', name: 'Scenes', lines: [] },
+            ],
         });
         mqttClient = createMockMqttClient();
         subscriber = new ButtonSubscriber(adapter, mqttClient);
@@ -85,7 +85,7 @@ describe('ButtonSubscriber', () => {
 
         it('should follow LSK-to-odd-row formula', () => {
             for (let i = 1; i <= 6; i++) {
-                const expectedRow = (i * 2) + 1;
+                const expectedRow = i * 2 + 1;
                 expect(subscriber.buttonRowMap.get(`LSK${i}L`)).to.equal(expectedRow);
                 expect(subscriber.buttonRowMap.get(`LSK${i}R`)).to.equal(expectedRow);
             }
@@ -97,7 +97,7 @@ describe('ButtonSubscriber', () => {
             const lineConfig = {
                 row: 1,
                 left: { button: { type: 'navigation', action: 'goto', target: 'test' } },
-                right: { button: { type: 'empty' } }
+                right: { button: { type: 'empty' } },
             };
             const result = subscriber.getButtonConfig(lineConfig, 'left');
             expect(result.type).to.equal('navigation');
@@ -108,7 +108,7 @@ describe('ButtonSubscriber', () => {
             const lineConfig = {
                 row: 1,
                 left: { button: { type: 'empty' } },
-                right: { button: { type: 'datapoint', action: 'toggle', target: 'state.0' } }
+                right: { button: { type: 'datapoint', action: 'toggle', target: 'state.0' } },
             };
             const result = subscriber.getButtonConfig(lineConfig, 'right');
             expect(result.type).to.equal('datapoint');
@@ -118,7 +118,7 @@ describe('ButtonSubscriber', () => {
             const lineConfig = {
                 row: 1,
                 leftButton: { type: 'navigation', action: 'goto', target: 'old-target' },
-                rightButton: { type: 'empty' }
+                rightButton: { type: 'empty' },
             };
             const result = subscriber.getButtonConfig(lineConfig, 'left');
             expect(result.type).to.equal('navigation');
@@ -129,7 +129,7 @@ describe('ButtonSubscriber', () => {
             const lineConfig = {
                 row: 1,
                 leftButton: { type: 'empty' },
-                rightButton: { type: 'datapoint', action: 'toggle', target: 'old-state' }
+                rightButton: { type: 'datapoint', action: 'toggle', target: 'old-state' },
             };
             const result = subscriber.getButtonConfig(lineConfig, 'right');
             expect(result.type).to.equal('datapoint');
@@ -193,11 +193,11 @@ describe('ButtonSubscriber', () => {
 
     describe('handleFunctionKey', () => {
         it('should call navigateHome on MENU when configured', async () => {
-            adapter.config.functionKeys = [
-                { key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }
-            ];
+            adapter.config.functionKeys = [{ key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }];
             let called = false;
-            adapter.navigateHome = async () => { called = true; };
+            adapter.navigateHome = async () => {
+                called = true;
+            };
 
             await subscriber.handleFunctionKey('MENU');
             expect(called).to.be.true;
@@ -205,10 +205,12 @@ describe('ButtonSubscriber', () => {
 
         it('should navigate to configured target page on INIT', async () => {
             adapter.config.functionKeys = [
-                { key: 'INIT', enabled: true, action: 'gotoPage', targetPageId: 'status-main' }
+                { key: 'INIT', enabled: true, action: 'gotoPage', targetPageId: 'status-main' },
             ];
             let switchedTo = null;
-            adapter.switchToPage = async (id) => { switchedTo = id; };
+            adapter.switchToPage = async (id) => {
+                switchedTo = id;
+            };
 
             await subscriber.handleFunctionKey('INIT');
             expect(switchedTo).to.equal('status-main');
@@ -216,10 +218,12 @@ describe('ButtonSubscriber', () => {
 
         it('should not navigate when key is disabled', async () => {
             adapter.config.functionKeys = [
-                { key: 'FUEL', enabled: false, action: 'gotoPage', targetPageId: 'energie-main' }
+                { key: 'FUEL', enabled: false, action: 'gotoPage', targetPageId: 'energie-main' },
             ];
             let switchedTo = null;
-            adapter.switchToPage = async (id) => { switchedTo = id; };
+            adapter.switchToPage = async (id) => {
+                switchedTo = id;
+            };
 
             await subscriber.handleFunctionKey('FUEL');
             expect(switchedTo).to.equal(null);
@@ -234,7 +238,9 @@ describe('ButtonSubscriber', () => {
         it('should still handle PREV_PAGE for pagination', async () => {
             adapter.pageRenderer = { currentPageOffset: 1, totalPages: 3 };
             let rendered = false;
-            adapter.renderCurrentPage = async () => { rendered = true; };
+            adapter.renderCurrentPage = async () => {
+                rendered = true;
+            };
 
             await subscriber.handleFunctionKey('PREV_PAGE');
             expect(rendered).to.be.true;
@@ -244,44 +250,51 @@ describe('ButtonSubscriber', () => {
         it('should still handle NEXT_PAGE for pagination', async () => {
             adapter.pageRenderer = { currentPageOffset: 0, totalPages: 3 };
             let rendered = false;
-            adapter.renderCurrentPage = async () => { rendered = true; };
+            adapter.renderCurrentPage = async () => {
+                rendered = true;
+            };
 
             await subscriber.handleFunctionKey('NEXT_PAGE');
             expect(rendered).to.be.true;
             expect(adapter.pageRenderer.currentPageOffset).to.equal(1);
         });
-
     });
 
     describe('handleButtonEvent', () => {
         it('should ignore release events', async () => {
             let actionCalled = false;
-            adapter.switchToPage = async () => { actionCalled = true; };
+            adapter.switchToPage = async () => {
+                actionCalled = true;
+            };
 
             const topic = 'mcdu/test-device/buttons/event';
-            const message = Buffer.from(JSON.stringify({
-                button: 'MENU',
-                action: 'release',
-                timestamp: Date.now()
-            }));
+            const message = Buffer.from(
+                JSON.stringify({
+                    button: 'MENU',
+                    action: 'release',
+                    timestamp: Date.now(),
+                })
+            );
 
             await subscriber.handleButtonEvent(topic, message);
             expect(actionCalled).to.be.false;
         });
 
         it('should extract deviceId from topic', async () => {
-            adapter.config.functionKeys = [
-                { key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }
-            ];
+            adapter.config.functionKeys = [{ key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }];
             const topic = 'mcdu/my-device-123/buttons/event';
-            const message = Buffer.from(JSON.stringify({
-                button: 'MENU',
-                action: 'press',
-                timestamp: Date.now()
-            }));
+            const message = Buffer.from(
+                JSON.stringify({
+                    button: 'MENU',
+                    action: 'press',
+                    timestamp: Date.now(),
+                })
+            );
 
             let homeCalled = false;
-            adapter.navigateHome = async () => { homeCalled = true; };
+            adapter.navigateHome = async () => {
+                homeCalled = true;
+            };
 
             await subscriber.handleButtonEvent(topic, message);
             expect(homeCalled).to.be.true;
@@ -289,14 +302,19 @@ describe('ButtonSubscriber', () => {
 
         it('should debounce rapid presses', async () => {
             let callCount = 0;
-            adapter.navigateHome = async () => { callCount++; };
+            adapter.navigateHome = async () => {
+                callCount++;
+            };
 
             const topic = 'mcdu/test-device/buttons/event';
-            const msg = () => Buffer.from(JSON.stringify({
-                button: 'MENU',
-                action: 'press',
-                timestamp: Date.now()
-            }));
+            const msg = () =>
+                Buffer.from(
+                    JSON.stringify({
+                        button: 'MENU',
+                        action: 'press',
+                        timestamp: Date.now(),
+                    })
+                );
 
             subscriber.lastButtonPress = Date.now(); // simulate recent press
 
@@ -317,18 +335,18 @@ describe('ButtonSubscriber', () => {
 
     describe('Edit Mode Clearing', () => {
         it('should clear edit mode on function keys except PREV/NEXT PAGE', async () => {
-            adapter.config.functionKeys = [
-                { key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }
-            ];
+            adapter.config.functionKeys = [{ key: 'MENU', enabled: true, action: 'navigateHome', targetPageId: '' }];
             const inputModeManager = {
                 getMode: () => 'edit',
                 setState: async () => {},
-                getScratchpad: () => ({ getContent: () => '', clear: () => {} })
+                getScratchpad: () => ({ getContent: () => '', clear: () => {} }),
             };
             subscriber.setInputModeManager(inputModeManager);
 
             let modeSet = null;
-            inputModeManager.setState = async (mode) => { modeSet = mode; };
+            inputModeManager.setState = async (mode) => {
+                modeSet = mode;
+            };
 
             adapter.navigateHome = async () => {};
             await subscriber.handleFunctionKey('MENU');
@@ -339,12 +357,14 @@ describe('ButtonSubscriber', () => {
             const inputModeManager = {
                 getMode: () => 'edit',
                 setState: async () => {},
-                getScratchpad: () => ({ getContent: () => '', clear: () => {} })
+                getScratchpad: () => ({ getContent: () => '', clear: () => {} }),
             };
             subscriber.setInputModeManager(inputModeManager);
 
             let modeSet = null;
-            inputModeManager.setState = async (mode) => { modeSet = mode; };
+            inputModeManager.setState = async (mode) => {
+                modeSet = mode;
+            };
 
             adapter.pageRenderer = { currentPageOffset: 0, totalPages: 1 };
             adapter.renderCurrentPage = async () => {};
