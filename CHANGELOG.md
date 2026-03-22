@@ -1,4 +1,6 @@
 # Changelog
+## **WORK IN PROGRESS**
+
 ## 0.2.1 (2026-03-22)
 * Address ioBroker adapter review feedback (reviewer McM1957)
 * Migrate to ESLint 9 flat config with @iobroker/eslint-config v2.2.0
