@@ -129,8 +129,6 @@
     "messagebox": true,
     "connectionType": "local",
     "dataSource": "push",
-    "encryptedNative": ["mqtt.password"],
-    "protectedNative": ["mqtt.password"],
     "tier": 3,
     "icon": "mcdu.png",
     "enabled": true,
@@ -150,6 +148,8 @@
       }
     ]
   },
+  "encryptedNative": ["mqtt.password"],
+  "protectedNative": ["mqtt.password"],
   "native": {
     "mqtt": {
       "broker": "localhost",
