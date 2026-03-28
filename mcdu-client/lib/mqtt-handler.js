@@ -3,7 +3,7 @@
  */
 
 const mqtt = require('mqtt');
-const EventEmitter = require('events');
+const EventEmitter = require('node:events');
 
 class MqttHandler extends EventEmitter {
     constructor(config) {

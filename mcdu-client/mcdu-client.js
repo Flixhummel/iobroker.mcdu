@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-require('dotenv').config({ path: require('path').join(__dirname, 'config.env') });
+require('dotenv').config({ path: require('node:path').join(__dirname, 'config.env') });
 /**
  * MCDU MQTT Client - Phase 3a
  *
@@ -10,8 +10,8 @@ require('dotenv').config({ path: require('path').join(__dirname, 'config.env') }
  */
 
 const mqtt = require('mqtt');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Import hardware driver (from Phase 2)
 const { MCDU } = require('./lib/mcdu');
@@ -29,7 +29,7 @@ const CONFIG = {
     broker: process.env.MQTT_BROKER || 'mqtt://localhost:1883',
     username: process.env.MQTT_USERNAME || '',
     password: process.env.MQTT_PASSWORD || '',
-    clientId: process.env.MQTT_CLIENT_ID || `mcdu-client-${require('os').hostname()}`,
+    clientId: process.env.MQTT_CLIENT_ID || `mcdu-client-${require('node:os').hostname()}`,
     keepalive: parseInt(process.env.MQTT_KEEPALIVE) || 60,
     topicPrefix: process.env.MQTT_TOPIC_PREFIX || 'mcdu'
   },
@@ -175,7 +175,7 @@ function connectMQTT() {
     // Publish online status
     mqttClient.publish(topic('status/online'), JSON.stringify({
       status: 'online',
-      hostname: require('os').hostname(),
+      hostname: require('node:os').hostname(),
       clientId: CONFIG.mqtt.clientId,
       version: '1.0.0',
       mockMode: CONFIG.mockMode,
@@ -185,7 +185,7 @@ function connectMQTT() {
     // Announce device to adapter (Phase 1: Device Registration)
     const deviceAnnouncement = {
       deviceId: CONFIG.mqtt.clientId,
-      hostname: require('os').hostname(),
+      hostname: require('node:os').hostname(),
       ipAddress: getLocalIPAddress(),
       version: '1.0.0',
       timestamp: Date.now()
@@ -689,7 +689,7 @@ function startMockButtonEvents() {
  * @returns {string} IP address or 'unknown'
  */
 function getLocalIPAddress() {
-  const os = require('os');
+  const os = require('node:os');
   const interfaces = os.networkInterfaces();
   
   for (const name of Object.keys(interfaces)) {
@@ -797,9 +797,9 @@ process.on('uncaughtException', (err) => {
 
 async function main() {
   log.info('=== MCDU MQTT Client v1.0.0 ===');
-  log.info('Platform:', require('os').platform(), require('os').arch());
+  log.info('Platform:', require('node:os').platform(), require('node:os').arch());
   log.info('Node.js:', process.version);
-  log.info('Hostname:', require('os').hostname());
+  log.info('Hostname:', require('node:os').hostname());
   log.info('Mock mode:', CONFIG.mockMode);
   log.info('===============================');
 
